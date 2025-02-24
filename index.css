@@ -1,0 +1,32 @@
+*{
+    margin: 0;
+    padding:0;
+    box-sizing: border-box;
+    font-family: "Roboto";
+    
+}
+.css-usftpb{
+    gap: 4px !important;
+}
+.css-usftpb{
+    padding-left: 0px !important;      
+}
+.css-9zp5ti{
+    margin-right: 5px;
+}
+
+.gm-ui-hover-effect {
+    width: 15px !important; /* Adjust width */
+    height: 15px !important; /* Adjust height */
+    top: 5px !important; /* Adjust position */
+    right: 5px !important; /* Adjust position */
+  }
+  .css-c95j6x-MuiTypography-root {
+    margin: 0px;
+    font-family: "Source Sans Pro", sans-serif;
+    font-size: 8px;
+    color: rgb(85, 85, 85);
+  }
+  .css-qpy9kw {
+    width: 55px;
+  }
