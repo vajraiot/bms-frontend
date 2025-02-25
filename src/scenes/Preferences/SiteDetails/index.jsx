@@ -323,10 +323,10 @@ const handleAddSite = async () => {
                     onChange={handleInputChange}
                     disabled={!isEditing && !isAdding}
                     sx={{
-                      height: '40px',
+                      height: '35px',
                       fontSize: '12px',
                       '& .MuiInputBase-root': {
-                        height: '40px',
+                        height: '35px',
                         backgroundColor: (!isEditing && !isAdding) ? '#f5f5f5' : 'inherit', // Gray background when disabled
                       },
                       '& .MuiInputBase-input': {
@@ -379,7 +379,8 @@ const handleAddSite = async () => {
                 disabled={!isEditing && !isAdding}
                 sx={{
                   '& .MuiInputBase-root': {
-                    height: '40px',
+                    height: '35px',
+                    fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal',
                     backgroundColor: (!isEditing && !isAdding) ? '#f0f0f0' : 'transparent', // Light grey background when disabled
                   },
                   '& .MuiInputBase-input': {

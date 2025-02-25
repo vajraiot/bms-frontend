@@ -70,10 +70,10 @@ export default function DischargeCycleWise({
               >
                 {label}
               </Typography>
-              <Typography variant="h5" style={{ color: "inherit" }}>
+              <Typography variant="h5"   fontWeight="bold" style={{ color: "inherit" }}>
                 :
               </Typography>
-              <Typography variant="h5" style={{ color: colors.greenAccent[500] }}>
+              <Typography  fontWeight="bold" variant="h5" style={{ color: "#000f89"}}>
                 {value} {unit || ""}
               </Typography>
             </Box>

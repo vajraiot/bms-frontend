@@ -71,13 +71,13 @@ function ManufacturerDetails({
               <Typography variant="h5" fontWeight="bold" style={{ minWidth: "125px" }}>
                 {label}
               </Typography>
-              <Typography variant="h5" style={{ color: "inherit" }}>
+              <Typography variant="h5"  fontWeight="bold" style={{ color: "inherit" }}>
                 :
               </Typography>
-              <Typography variant="h5"  fontWeight="bold" style={{ color: colors.greenAccent[500] }}>
+              <Typography variant="h5"  fontWeight="bold" style={{ color: "#000f89" }}>
                 {value}
               </Typography>
-              <Typography variant="h5" style={{ color: colors.greenAccent[500], marginLeft: "1px" }}>
+              <Typography variant="h5" fontWeight="bold" style={{ color: "#000f89" , marginLeft: "1px" }}>
                 {unit} {/* Display unit next to the value */}
               </Typography>
             </Box>

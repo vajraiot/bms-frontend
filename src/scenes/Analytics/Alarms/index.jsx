@@ -195,6 +195,7 @@ const Alarms = () => {
                         padding: '3px',
                         minWidth: "150px",
                         whiteSpace: "nowrap",
+                        textAlign:"center"
                       }}
                     >
                       <TableSortLabel
@@ -230,6 +231,7 @@ const Alarms = () => {
                             padding: '3px',
                             fontWeight: 'bold',
                             whiteSpace: "nowrap",
+                            textAlign:"center"
                           }}
                         >
                           {key === 'dcVoltageOLN'

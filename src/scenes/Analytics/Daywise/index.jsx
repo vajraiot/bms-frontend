@@ -174,6 +174,7 @@ const DayWise = () => {
                           padding: '3px',
                           minWidth: "150px",
                           whiteSpace: "nowrap",
+                          textAlign:"center"
                         }}
                       >
                         <TableSortLabel
@@ -205,6 +206,7 @@ const DayWise = () => {
                               border: '1px solid #ccc',
                               padding: '5px',
                               fontWeight: 'bold',
+                              textAlign:"center"
                             }}
                           >
                             {value}

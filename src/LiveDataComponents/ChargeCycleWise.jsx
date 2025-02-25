@@ -64,7 +64,7 @@ function ChargeCycleWise({ PeakChargeCurrent, totalSeconds }) {
 
                             {/* Colon */}
                             <Typography
-                                variant="h5"
+                                variant="h5"  fontWeight="bold"
                                 style={{ color: "inherit" }}
                             >
                                 :
@@ -72,8 +72,8 @@ function ChargeCycleWise({ PeakChargeCurrent, totalSeconds }) {
 
                             {/* Value */}
                             <Typography
-                                variant="h5"
-                                style={{ color: colors.greenAccent[500] }}
+                                variant="h5"  fontWeight="bold"
+                                style={{ color: "#000f89" }}
                             >
                                 {value}{" "}{unit}
                             </Typography>

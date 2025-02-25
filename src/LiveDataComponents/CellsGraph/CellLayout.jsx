@@ -49,29 +49,28 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
     } = thresholds;
 
   
-    // 1. Check for Communication Failure
-    if (cellVoltage === 65.535 || cellTemperature === 65535) {
-      return "Communication Failed";
-    }
-  
-    // 2. Voltage Conditions
-    if (cellVoltage >= HighVoltage) {
-      return "High Voltage";
-    }
-    if (cellVoltage <= OpenBattery) {
-      return "Open Battery";
-    }
-    if (cellVoltage <= BatteryAboutToDie) {
-      return "UT to Die";
-    }
-    if (cellVoltage <= LowVoltage) {
-      return "Low Voltage";
-    }
-  
-    // 3. Temperature Condition
-    if (cellTemperature >= HighTemperature) {
-      return "High Temperature";
-    }
+      // 1. Check for Communication Failure
+      if (cellVoltage === 65.535 || cellTemperature === 65535) {
+        return "Communication Failed";
+      }
+      if (cellTemperature >= parseFloat(HighTemperature)) {
+        return "High Temperature";
+      }
+      if (cellVoltage <= parseFloat(OpenBattery)) {
+        return "Open Battery";
+      }
+      if (cellVoltage <= parseFloat(BatteryAboutToDie) ){
+        return "UT to Die";
+      }
+      if (cellVoltage <= parseFloat(LowVoltage)) {
+        return "Low Voltage";
+      }
+      // 2. Voltage Conditions
+      if (cellVoltage >= parseFloat(HighVoltage)) {
+        return "High Voltage";
+      }
+      // 4. Charging Status
+      return chargingStatus ? "Discharging" : "Charging";
   
     // 4. Charging Status
     return chargingStatus ? "Discharging" : "Charging";

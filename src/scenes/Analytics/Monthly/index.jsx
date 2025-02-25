@@ -323,6 +323,7 @@ const Monthly = () => {
                         padding: '3px',
                         minWidth: "150px",
                         whiteSpace: "nowrap",
+                        textAlign:"center"
                       }}
                     >
                       <TableSortLabel
@@ -353,6 +354,7 @@ const Monthly = () => {
                           border: '1px solid #ccc',
                           padding: '5px',
                           fontWeight: 'bold',
+                          textAlign:"center"
                         }}>{value}</TableCell>
                       ))}
                     </TableRow>

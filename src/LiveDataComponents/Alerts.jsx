@@ -3,9 +3,10 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import {Grid,Tooltip,useTheme,Box,Typography,Grid, Card, CardContent} from "@mui/material";
 import {tokens} from "../theme"
-import { AlertTriangle, BatteryFull ,Power} from 'lucide-react';
+import PowerIcon from "@mui/icons-material/Power"; 
+import { AlertTriangle, BatteryFull ,Power,BatteryLow,BatteryMedium ,CirclePower} from 'lucide-react';
 import fuse from '.././enums/electronic-fuse.png'
-import { ChargerTrip, StringCurrent, ACVoltage, DCVoltage, Buzzer,AnimatedFuseIcon } from '.././enums/ThresholdValues'
+import { ChargerTrip, StringCurrent, ACVoltage, DCVoltage, Buzzer,AnimatedFuseIcon, ChargerLoadIcon, StringCommunicationIcon } from '.././enums/ThresholdValues'
 
 import {
   Box,
@@ -46,13 +47,14 @@ const Alerts = () => {
 
   const detailsMap = {
     bankCycleDC: "Battery status",
-    cellCommunicationFD: "String Commun",
+    bmsSedCommunicationFD: "String Commun",
     buzzer: "Buzzer",
     cellVoltageLHN: "Cell Voltage",
     inputMains: "Input Mains",
     inputFuse: "Input Fuse",
     rectifierFuse: "Rectifier fuse",
     filterFuse: "Filter Fuse",
+    inputPhase:"Input phase",
     dcVoltageOLN: "DC Voltage",
     outputFuse: "Output Fuse",
     chargerLoad: "Charger Load",
@@ -67,11 +69,11 @@ const Alerts = () => {
   const getSeverityFromBit = (bit) => {
     switch (bit) {
       case 0:
-        return { status: "Low", severity: "low" };
+        return { status: "Low", severity: "low",IconComponent:BatteryLow };
       case 1:
-        return { status: "Normal", severity: "medium" };
+        return { status: "Normal", severity: "medium",IconComponent:BatteryMedium  };
       case 2:
-        return { status: "High", severity: "high" };
+        return { status: "High", severity: "high",IconComponent: BatteryFull};
       default:
         return { status: "Unknown", severity: "medium" };
     }
@@ -86,7 +88,7 @@ const Alerts = () => {
       // Logic for status and severity
       if (key === "cellVoltageLHN" || key === "dcVoltageOLN" || key === "acVoltageULN") {
         const bitValue = combinedData[key];
-        ({ status, severity } = getSeverityFromBit(bitValue));
+        ({ status, severity,IconComponent } = getSeverityFromBit(bitValue));
       } else if (key === "chargerTrip") {
         status = combinedData[key] ? "" : "";
         severity = combinedData[key] ? "high" : "medium";
@@ -99,32 +101,52 @@ const Alerts = () => {
       }
 
       // Assign the appropriate SVG component based on the alert type
-      if (key === "bankCycleDC") {
-        IconComponent = combinedData[key] ? Discharging : Charging;
-      } else if (key === "chargerTrip") {
+     if (key === "bmsSedCommunicationFD") {
+        IconComponent=  StringCommunicationIcon;
+      }else if (key === "chargerTrip") {
         IconComponent = ChargerTrip;
-      } else if (key === "acVoltageULN") {
-        IconComponent = ACVoltage;
-      } else if (key === "dcVoltageOLN") {
-        IconComponent = DCVoltage;
-      } else if (key === "resetPushButton") {
-        IconComponent = Buzzer;
+      }
+      //  else if (key === "acVoltageULN") {
+      //   IconComponent = ACVoltage;
+      // } else if (key === "dcVoltageOLN") {
+      //   IconComponent = DCVoltage;
+      // }
+       else if (key === "resetPushButton") {
+        IconComponent =CirclePower;
       } else if (key === "inputMains") {
         IconComponent = () => <Power size={20} style={{ color: "#B71C1C" }} />;
       } else if (key === "buzzer") {
         IconComponent = Buzzer;
-      } else if (key === "cellCommunicationFD") {
-        IconComponent = () => <Radio size={20} style={{ color: "#0D47A1" }} />;
       } else if (key === "batteryCondition") {
         IconComponent = BatteryFull;
       } else if (key === "outputMccb") {
-        IconComponent = () => <ToggleLeft size={20} style={{ color: "#0D47A1" }} />;
+        IconComponent = () => <ToggleLeft size={20}  />;
       }
 
+      if (key === "inputMains" ) {
+        IconComponent = () =>
+          combinedData[key] =
+           <PowerIcon size={25} color="#B71C1C" />
+      } if (key === "inputPhase" ) {
+        IconComponent = () =>
+          combinedData[key] =
+           <PowerIcon size={25} color="#B71C1C" />
+      }
+      
+      if (key === "chargerLoad" ) {
+        IconComponent =ChargerLoadIcon   
+      }
+      // if (
+      //   key === "cellVoltageLHN") {
+      //   IconComponent =()=> <BatteryLow />
+      // }
       // Use AlertTriangle for Failure, Low, High, Tripped states
       if (severity === "high") {
         IconComponent = () => <AlertTriangle size={20} style={{ color: "#B71C1C" }} />;
       }
+      if (key === "bankCycleDC") {
+        IconComponent = combinedData[key] ? Discharging : Charging;
+      } 
 
       // Fuse icons
       if (
@@ -141,7 +163,7 @@ const Alerts = () => {
             <AnimatedFuseIcon size={25} color="#1B5E20" strokeWidth={1.5} isBroken={false} />
           );
       }
-
+      
       return {
         id: index + 1,
         status,
@@ -159,7 +181,7 @@ const Alerts = () => {
       case "medium":
         return { backgroundColor: "#C8E6C9", color: "#1B5E20" };
       case "low":
-        return { backgroundColor: "#BBDEFB", color: "#0D47A1" };
+        return { backgroundColor: "#FFF3E0", color: "#FFAE42" };
       default:
         return { backgroundColor: "#ECEFF1", color: "#455A64" };
     }

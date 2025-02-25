@@ -61,13 +61,15 @@ export const Charger = ({charger}) => {
                 </Typography>
                 <Typography
                   variant="h5"
+                  fontWeight="bold"
                   style={{ color: "inherit" }} // Ensures colon inherits label's color
                 >
                   :
                 </Typography>
                 <Typography
                   variant="h5"
-                  style={{ color: colors.greenAccent[500] }}
+                  fontWeight="bold"
+                  style={{ color: "#000f89" }}
                 >
                   {value}{" "}{unit}
                 </Typography>

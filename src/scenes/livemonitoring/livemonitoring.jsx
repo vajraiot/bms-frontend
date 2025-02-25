@@ -43,13 +43,13 @@ const Bar = () => {
     individualCellVoltage,
   } = Mdata;
   const {
-    siteLocation = "Unknown Location", // Default value if locationName is falsy
+    
     latitude = 0,                     // Default latitude (could use a fallback like 0 or a center point)
     longitude = 0,                    // Default longitude
     vendorName = "Unknown Vendor",    // Default vendor name
     batteryAHCapacity = "Not Specified", // Default battery capacity
     area
-  } = location || {}; // Handle case where location itself might be undefined
+  } = location?.siteLocation || {}; // Handle case where location itself might be undefined
   
      
   const {
@@ -101,7 +101,7 @@ const Bar = () => {
         gridRow: "1",
       }}
     ><Paper elevation={8}>
-      <Topbar vendorName={vendorName} locationName={siteLocation?.area?.name}/>
+      <Topbar liveTime={liveTime} vendorName={vendorName} locationName={area?.name}/>
       </Paper>
     </Box>
   
@@ -137,7 +137,7 @@ const Bar = () => {
         <Grid item xs={5}>
           <Paper elevation={8}>
             <MapWithMarker
-              locationName={siteLocation?.area?.name}
+              locationName={area?.name}
               latitude={latitude}
               longitude={longitude}
               vendorName={vendorName}

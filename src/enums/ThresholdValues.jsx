@@ -402,6 +402,144 @@ export const FuseIcon = ({ size = 20, color = "#0D47A1", strokeWidth = 1.5 }) =>
     </svg>
   );
 };
+export const ChargerLoadIcon = ({ color = "#1B5E20", fillColor, size = 3 }) => {
+  // Derive fill color from main color if not provided
+  const actualFillColor = fillColor || `${color}80`; // 80 adds 50% transparency
+  // Derive light background color
+  const lightColor = `${color}10`; // 10 adds 94% transparency
+
+  return (
+    <svg viewBox="0 0 100 60" style={{ width: `${size}rem` }}>
+      {/* Battery indicator */}
+      <rect 
+        x="35" 
+        y="20" 
+        width="30" 
+        height="20" 
+        rx="2" 
+        ry="2" 
+        fill={lightColor} 
+        stroke={color} 
+        strokeWidth="2" 
+      />
+      
+      {/* Battery tip */}
+      <rect 
+        x="65" 
+        y="27" 
+        width="4" 
+        height="6" 
+        rx="1" 
+        ry="1" 
+        fill={color} 
+      />
+      
+      {/* Charging wave (animated) */}
+      <path
+        d="M30,30 L40,20 L50,40 L60,20 L70,30"
+        stroke={color}
+        strokeWidth="3"
+        fill="none"
+        strokeLinecap="round"
+      >
+        <animate
+          attributeName="d"
+          values="M30,30 L40,20 L50,40 L60,20 L70,30;M30,30 L40,40 L50,20 L60,40 L70,30;M30,30 L40,20 L50,40 L60,20 L70,30"
+          dur="1.5s"
+          repeatCount="indefinite"
+        />
+      </path>
+      
+      <rect 
+        x="38" 
+        y="23" 
+        width="24" 
+        height="14" 
+        fill={actualFillColor}
+      >
+        <animate
+          attributeName="width"
+          values="0;24;24"
+          dur="2s"
+          repeatCount="indefinite"
+        />
+      </rect>
+    </svg>
+  );
+};
+
+export const StringCommunicationIcon = ({
+  size = 23,
+  color = "#1B5E20",
+  strokeWidth = 1.5,
+}) => {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* First Battery Cell */}
+      <rect x="3" y="8" width="4" height="8" rx="0.5" />
+      <line x1="5" y1="6" x2="5" y2="8" />
+      <line x1="5" y1="16" x2="5" y2="18" />
+
+      {/* Second Battery Cell */}
+      <rect x="10" y="8" width="4" height="8" rx="0.5" />
+      <line x1="12" y1="6" x2="12" y2="8" />
+      <line x1="12" y1="16" x2="12" y2="18" />
+
+      {/* Third Battery Cell */}
+      <rect x="17" y="8" width="4" height="8" rx="0.5" />
+      <line x1="19" y1="6" x2="19" y2="8" />
+      <line x1="19" y1="16" x2="19" y2="18" />
+
+      {/* Communication Lines */}
+      <path d="M7 12 h3">
+        <animate
+          attributeName="stroke-dasharray"
+          values="0,6;6,0"
+          dur="1s"
+          repeatCount="indefinite"
+        />
+      </path>
+
+      <path d="M14 12 h3">
+        <animate
+          attributeName="stroke-dasharray"
+          values="0,6;6,0"
+          dur="1s"
+          repeatCount="indefinite"
+        />
+      </path>
+
+      {/* Data Signal Indicators */}
+      <circle cx="8.5" cy="12" r="0.4" fill={color}>
+        <animate
+          attributeName="opacity"
+          values="0;1;0"
+          dur="1.5s"
+          repeatCount="indefinite"
+        />
+      </circle>
+
+      <circle cx="15.5" cy="12" r="0.4" fill={color}>
+        <animate
+          attributeName="opacity"
+          values="0;1;0"
+          dur="1.5s"
+          begin="0.5s"
+          repeatCount="indefinite"
+        />
+      </circle>
+    </svg>
+  );
+};
 
   export const CellThresholdValues = () => {
     const {

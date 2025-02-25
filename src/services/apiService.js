@@ -204,7 +204,7 @@ export const fetchDeviceDetails = async (siteId, serialNumber) => {
             }
         };
 
-        export const fetchStatesDetails = async () => {
+  export const fetchStatesDetails = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/api/states`);
     console.log("Full Response for States: ", response);  // Log the full response to inspect its structure
@@ -272,4 +272,40 @@ export const fetchMapBySite = async (siteId) => {
     throw error;
   }
 };
+export const fetchMapByState = async (state) => {
+ 
+  try {
+    const response = await axios.get(`${BASE_URL}/api/getCoordinates/states?state=${state}`);
+   // console.log("Full Response for Roles: ", response.data);  // Log the full response to inspect its structure
+    return response.data;
+  } catch (error) {
+    console.error("Error in fetching Map details: ", error);
+    throw error;
+  }
+};
+
+
+export const fetchMapByCircle = async (circle) => {
+ 
+  try {
+    const response = await axios.get(`${BASE_URL}/api/getCoordinates/circle?circle=${circle}`);
+   // console.log("Full Response for Roles: ", response.data);  // Log the full response to inspect its structure
+    return response.data;
+  } catch (error) {
+    console.error("Error in fetching Map details: ", error);
+    throw error;
+  }
+};
+export const fetchMapByArea = async (area) => {
+ 
+  try {
+    const response = await axios.get(`${BASE_URL}/api/getCoordinates/area?area=${area}`);
+   // console.log("Full Response for Roles: ", response.data);  // Log the full response to inspect its structure
+    return response.data;
+  } catch (error) {
+    console.error("Error in fetching Map details: ", error);
+    throw error;
+  }
+};
+
            

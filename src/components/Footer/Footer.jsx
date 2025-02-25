@@ -22,7 +22,7 @@ const Footer = () => {
         width: "100%",
         alignItems: "center",
         flexDirection: "row",
-        marginLeft:"200px",
+        marginLeft:"100px",
         gap: "20px",
       }}
     >
