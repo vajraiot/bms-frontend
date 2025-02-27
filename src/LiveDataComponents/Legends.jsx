@@ -7,29 +7,34 @@ import { CellLegends,CellThresholdValues,BatteryLowVoltage,Charging,Discharging}
 const Legends = ({ cellVoltageTemperatureData }) => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
+console.log(CellThresholdValues.HighTemperature,CellThresholdValues.HighVoltage,CellThresholdValues.LowVoltage+" thresholds")
+const {
+    LowVoltage,
+    HighVoltage,
+    HighTemperature,
+  } = CellThresholdValues();
+    const highTempThreshold = parseFloat(HighTemperature) ;
+    const highVoltThreshold = parseFloat(HighVoltage) ;
+    const lowVoltThreshold = parseFloat(LowVoltage) ;
 
     const highTemperatureCount = cellVoltageTemperatureData.filter(
-        (cell) => cell.cellTemperature > CellThresholdValues.HighTemperature
+        ({ cellTemperature }) => cellTemperature > highTempThreshold
     ).length;
 
     const communicatingCount = cellVoltageTemperatureData.filter(
-        (cell) =>
-            cell.cellVoltage !== 65.535 &&
-            cell.cellTemperature !== 65.535 &&
-            cell.cellVoltage !== 65535 &&
-            cell.cellTemperature !== 65535
+        ({ cellVoltage, cellTemperature }) => 
+            cellVoltage !== 65.535 && cellTemperature !== 65535
     ).length;
 
     const nonCommunicatingCount = cellVoltageTemperatureData.length - communicatingCount;
 
     const highVoltageCount = cellVoltageTemperatureData.filter(
-        (cell) => cell.cellVoltage > CellThresholdValues.HighVoltage
+        ({ cellVoltage }) => cellVoltage > highVoltThreshold
     ).length;
 
     const lowVoltageCount = cellVoltageTemperatureData.filter(
-        (cell) => cell.cellVoltage < CellThresholdValues.LowVoltage
+        ({ cellVoltage }) => cellVoltage < lowVoltThreshold
     ).length;
-
     return (
         <Box
             display="flex"
@@ -43,7 +48,6 @@ const Legends = ({ cellVoltageTemperatureData }) => {
             sx={{  overflowX: 'auto' }} // Allow horizontal scrolling if needed
         >
             {[
-              
                 { label: 'High Temp', value: highTemperatureCount, color: "#db4f4a" },
                 { label: 'Commun', value: communicatingCount, color: "#4cceac" },
                 { label: 'Not Commun', value: nonCommunicatingCount, color: "#666666"},
@@ -64,9 +68,6 @@ const Legends = ({ cellVoltageTemperatureData }) => {
                     flexDirection="column"
                     alignItems="center"
                     justifyContent="center"
-                   // padding="5px"
-                   // margin="2px"
-                   // border="1px solid #ccc"
                     borderRadius="8px"
                     //backgroundColor={colors.primary[300]}
                     sx={{ flexShrink: 0 }} // Fixed width and prevent shrinking

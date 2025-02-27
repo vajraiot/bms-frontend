@@ -13,7 +13,7 @@ const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const { setIsAuthenticated, isAuthenticated } = useContext(AppContext);
+  const { setIsAuthenticated, isAuthenticated, setUserRole } = useContext(AppContext);
 
   const fetchRoles = async () => {
     try {
@@ -51,8 +51,8 @@ const LoginPage = () => {
       if (!data || Object.keys(data).length === 0) {
         alert("Invalid credentials. Please try again.");
       } else {
-        alert("Login Successful!");
         setIsAuthenticated(true); // Update authentication state
+        setUserRole(role); // Set the user's role
       }
     } catch (error) {
       console.error("Error during login:", error);
@@ -63,6 +63,7 @@ const LoginPage = () => {
   const togglePasswordVisibility = () => {
     setShowPassword((prevState) => !prevState);
   };
+
   const styles = {
     background: {
       position: "fixed",
@@ -98,7 +99,6 @@ const LoginPage = () => {
       left: "50%",
       transform: "translate(-50%, -50%)", // Center the box
     },
-    
     watermark: {
       position: "absolute",
       top: 0,
@@ -131,7 +131,7 @@ const LoginPage = () => {
       marginBottom: "5px",
       fontSize: "14px",
       color: "#000000",
-      fontWeight:"bold"
+      fontWeight: "bold"
     },
     input: {
       width: "100%",
@@ -143,7 +143,6 @@ const LoginPage = () => {
       color: "#000", // Dark text color for contrast
       boxSizing: "border-box",
       outline: "none",
-      // fontWeight: "bold", // Make text more visible
     },
     passwordContainer: {
       position: "relative",
@@ -199,9 +198,6 @@ const LoginPage = () => {
       padding: "8px 15px",
       borderRadius: "8px",
     }
-    
-    
-    
   };
 
   // Redirect to home page if already authenticated

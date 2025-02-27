@@ -160,11 +160,11 @@ export const fetchDeviceDetails = async (siteId, serialNumber) => {
           
           
           
-          export const deleteSite = async (siteId) => {
+          export const deleteSite = async (siteId, serialNumber) => {
             try {
                 const api = `${BASE_URL}/api/deleteSiteLocationToSiteId`;
                 const response = await axios.delete(api, {
-                    params: { siteId }, 
+                    params: { siteId, serialNumber }, // Pass both siteId and serialNumber as query parameters
                 });
         
                 console.log("Delete Response: ", response.data);

@@ -91,7 +91,7 @@ const Footer = () => {
 
       <Typography variant="body2">
         <Link
-          href="https://www.vajraiot.com"
+          href="http://vajraiot.com//"
           target="_blank"
           rel="noopener noreferrer"
           color="primary"

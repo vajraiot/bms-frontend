@@ -130,7 +130,9 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
   {/* Battery Body */}
   <Box
     sx={{
-     
+      height: "63px",
+      width:"53px",
+      lineHeight: '7px',
       borderTop: '0.5px solid #000',
       borderLeft: '1px solid #000',
       borderRight: '3px solid #000',
@@ -140,7 +142,6 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
       flexDirection: 'column',
       alignItems: 'flex-start',
       justifyContent: 'flex-start',
-
       overflow: 'hidden',
       backgroundColor: '#f5f5f5',
       boxShadow: '5px 5px 10px rgba(0, 0, 0, 0.3)',
@@ -160,17 +161,26 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
     {/* Content */}
     <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column' }}>
       {cellData.cellVoltage === 65.535 || cellData.cellTemperature === 65535 ? (
-        <>
-          <Typography variant="h7" sx={{ color: '#555' }}>
-              ⚡ N/A
+        <Box >
+          <Box display="flex" justifyContent="space-between">
+            <Typography variant="h7" sx={{fontSize: "8px"}}>⚡</Typography>
+            <Typography variant="h7" sx={{  fontWeight: 'bold', color: '#333',fontSize: "9px" }}>
+              N/A
             </Typography>
-            <Box display="flex" justifyContent="space-between">
-          <img src={thermometer} height={12} />
-           <Typography variant="h7" sx={{ color: '#555'}}>
-           N/A
+          </Box>
+          <Box display="flex" alignItems="center" gap={1}>
+          <img src={thermometer} height={12} width={20} style={{ marginLeft: "-4px" }} />
+          <Typography variant="h7" sx={{ fontWeight: 'bold', color: '#333', fontSize: "9px" }}>
+            N/A
           </Typography>
           </Box>
-        </>
+          <Box display="flex" justifyContent="space-between">
+            <Typography variant="h7"  sx={{ fontWeight: 'bold', color: '#333',fontSize: "9px" }}>sg :</Typography>
+            <Typography variant="h7" sx={{ fontWeight: 'bold', color: '#333',fontSize: "9px" }}>
+            N/A
+          </Typography>
+          </Box>
+        </Box>
       ) : (
         <>
           <Box display="flex" justifyContent="space-between">
@@ -184,7 +194,7 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
           <Typography variant="h7" sx={{ fontWeight: 'bold', color: '#333', fontSize: "9px" }}>
             {cellData.cellTemperature} °C
           </Typography>
-        </Box>
+          </Box>
           <Box display="flex" justifyContent="space-between">
             <Typography variant="h7"  sx={{ fontWeight: 'bold', color: '#333',fontSize: "9px" }}>sg :</Typography>
             <Typography variant="h7" sx={{ fontWeight: 'bold', color: '#333',fontSize: "9px" }}>
@@ -254,9 +264,9 @@ const FullScreenOverlay = ({ open, onClose, children }) => {
           onClick={onClose}
           sx={{
             position: 'absolute',
-            top: 16,
-            right: 16,
-            color: 'black',
+            top: 50,
+            right: 270,
+            color: 'red',
           }}
         >
           <CloseIcon />

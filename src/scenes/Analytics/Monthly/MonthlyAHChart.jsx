@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  BarChart,
+  ComposedChart, // Use ComposedChart to combine Bar and Line charts
   Bar,
   XAxis,
   YAxis,
@@ -9,6 +9,7 @@ import {
   Legend,
   ResponsiveContainer,
   LabelList,
+  Line, // Add Line component for temperature and SOC
 } from "recharts";
 
 const MonthlyAHChart = ({ data = [] }) => {
@@ -25,8 +26,8 @@ const MonthlyAHChart = ({ data = [] }) => {
   return (
     <div className="w-full h-96 mt-8">
       <div className="w-full h-full p-4 bg-white rounded-lg shadow-lg">
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart
+        <ResponsiveContainer width="100%" height={300}>
+          <ComposedChart
             data={data}
             barSize={40}
             margin={{ bottom: 40 }} // Adjust bottom margin to fit rotated labels
@@ -39,11 +40,43 @@ const MonthlyAHChart = ({ data = [] }) => {
             {/* <CartesianGrid strokeDasharray="3 3" /> */}
             <XAxis dataKey="month" />
             <YAxis
+              yAxisId="left"
               hide={true}
               tick={{ fontSize: 0, color: "black", fontWeight: 500 }}
               tickCount={10}
+              label={{
+                value: "Amp Hours (AH)",
+                angle: -90,
+                position: "insideLeft",
+                offset: -5,
+              }}
             />
-            <Tooltip />
+           <YAxis
+              yAxisId="right"
+              hide={true}
+              orientation="right"
+              label={{
+                value: "Temperature (°C) / SOC (%)",
+                angle: -90,
+                position: "insideRight",
+                offset: -5,
+              }}
+              tickInterval={5} // Increments of 5
+              domain={[0, "dataMax + 5"]} // Ensures the scale adjusts dynamically
+              ticks={[0, 5, 10, 15, 20, 25, 30, 35, 40]} // Manually setting ticks
+            />
+
+            <Tooltip
+              formatter={(value, name) => {
+                if (name === "Temperature") {
+                  return [`${value} °C`, "Temperature"];
+                } else if (name === "SOC") {
+                  return [`${value} %`, "SOC"];
+                } else {
+                  return [`${value} AH`, name];
+                }
+              }}
+            />
             <Legend />
             <defs>
               <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -55,7 +88,12 @@ const MonthlyAHChart = ({ data = [] }) => {
                 <stop offset="100%" stopColor="#f09819" />
               </linearGradient>
             </defs>
-            <Bar dataKey="cumulativeAHIn" fill="url(#blueGradient)" width="30px">
+            <Bar
+              yAxisId="left"
+              dataKey="cumulativeAHIn"
+              fill="url(#blueGradient)"
+              width="30px"
+            >
               <LabelList
                 dataKey="cumulativeAHIn"
                 position="top"
@@ -63,7 +101,11 @@ const MonthlyAHChart = ({ data = [] }) => {
                 formatter={(value) => value.toFixed(2)} // Format the value to 2 decimal places
               />
             </Bar>
-            <Bar dataKey="cumulativeAHOut" fill="url(#orange)">
+            <Bar
+              yAxisId="left"
+              dataKey="cumulativeAHOut"
+              fill="url(#orange)"
+            >
               <LabelList
                 dataKey="cumulativeAHOut"
                 position="top"
@@ -71,7 +113,23 @@ const MonthlyAHChart = ({ data = [] }) => {
                 formatter={(value) => value.toFixed(2)} // Format the value to 2 decimal places
               />
             </Bar>
-          </BarChart>
+            <Line
+              yAxisId="right"
+              dataKey="sumCumulativeTotalAvgTemp"
+              name="Temperature"
+              stroke="#8884d8"
+              strokeWidth={2}
+              dot={false}
+            />
+            <Line
+              yAxisId="right"
+              dataKey="sumTotalSoc"
+              name="SOC"
+              stroke="#82ca9d" // Green color for SOC
+              strokeWidth={2}
+              dot={false}
+            />
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
     </div>

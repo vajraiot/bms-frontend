@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useContext } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -25,6 +25,9 @@ import {
   ResponsiveContainer,
   LabelList,
 } from "recharts";
+import { useNavigate } from "react-router-dom";
+import { AppContext } from "../../services/AppContext";
+ 
 const CustomTick = (props) => {
   const { x, y, payload } = props;
   return (
@@ -47,8 +50,13 @@ const CustomTick = (props) => {
 
 // Table Dialog to display data in table format
 const TableDialog = ({ open, handleClose, data, alarmType }) => {
+  const{setSiteId,  setSerialNumber,handleSearch
+  }=useContext(AppContext)
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  // const [siteId, setSiteId] = useState(""); // Selected Site ID
+  // const [serialNumber, setSerialNumber] = useState(""); // Selected Serial Number
+  const navigate = useNavigate();
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -64,7 +72,18 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
     page * rowsPerPage + rowsPerPage
   );
 
-  // Determine which columns to display based on the alarm type
+  const handleRowClick = async (item) => {
+     setSiteId("");
+     setSerialNumber("");
+     setSiteId(item.siteId);
+     setSerialNumber(item.serialNumber);
+    
+    // Await handleSearch() before navigation if needed
+     //const data = await handleSearch();
+    if(data){navigate("/livemonitoring");}
+};
+
+
   const getTableColumns = () => {
     const baseColumns = [
       { id: "siteId", label: "Substation ID" },
@@ -205,9 +224,10 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
                 {paginatedData?.map((item, index) => (
                   <TableRow
                     key={index}
+                    onClick={() => handleRowClick(item)}
                     sx={{
                       "&:nth-of-type(odd)": { backgroundColor: "#fafafa" },
-                      "&:hover": { backgroundColor: "#f0f0f0" },
+                      "&:hover": { backgroundColor: "#f0f0f0", cursor: "pointer" },
                     }}
                   >
                     {columns.map((column) => (

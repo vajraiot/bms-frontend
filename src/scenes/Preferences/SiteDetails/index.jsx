@@ -14,16 +14,18 @@ const columnMappingsPart1 = {
   circle: 'Circle Name',
   area: 'Area Name',
   state: 'State Name',
-  // batteryAHCapacity: 'Battery AH Capacity',
+  batteryAHCapacity: 'Battery AH Capacity',
 };
 
 const columnMappingsPart2 = {
+  serialNumber:'Serial Number',
   firstUsedDate: 'First Used Date',
   batterySerialNumber: 'Battery Serial Number',
   batteryBankType: 'Battery Bank Type',
   manufacturerName: 'Manufacturer Name',
   designVoltage: 'Design Voltage',
-  ahCapacity:'Ah capacity'
+  ahCapacity:'Ah capacity',
+ 
 };
 
 const columnMappingsPart3 = {
@@ -46,7 +48,7 @@ const SiteLocation = () => {
   const [areaOptions, setAreaOptions] = useState([]); 
   const [searchData, setSearchData] = useState({
     siteId: '',
-    batterySerialNumber: '',
+    serialNumber: '',
   });
   const {
     siteOptions,
@@ -140,6 +142,7 @@ const SiteLocation = () => {
           vendorName: siteData.vendorName || '',
           batteryAHCapacity: siteData.batteryAHCapacity || '',
           siteId: siteData.siteId || '',
+          serialNumber: siteData.manufacturerDTO?.serialNumber || 'N/A',
           firstUsedDate:siteData.manufacturerDTO?.firstUsedDate||'',
           batterySerialNumber: siteData.manufacturerDTO?.batterySerialNumber || 'N/A',
           batteryBankType: siteData.manufacturerDTO?.batteryBankType || 'N/A',
@@ -154,8 +157,8 @@ const SiteLocation = () => {
           highTemperature: siteData.manufacturerDTO?.highTemperature || 'N/A',
           lowTemperature: siteData.manufacturerDTO?.lowTemperature || 'N/A',
           notCommnVoltage: siteData.manufacturerDTO?.notCommnVoltage || 'N/A',
-          notCommnTemperature: siteData.manufacturerDTO?.notCommnTemperature || 'N/A'
-
+          notCommnTemperature: siteData.manufacturerDTO?.notCommnTemperature || 'N/A',
+          
         };
   
         console.log('Combined form data:', combinedData);
@@ -191,6 +194,7 @@ const SiteLocation = () => {
         batteryAHCapacity: formData?.batteryAHCapacity || '',
         siteId: formData?.siteId || '',
         manufacturerDTO: {
+          serialNumber: formData?.serialNumber || 'N/A',
           firstUsedDate: formData?.firstUsedDate || 'N/A',
           batterySerialNumber: formData?.batterySerialNumber || 'N/A',
           batteryBankType: formData?.batteryBankType || 'N/A',
@@ -235,8 +239,11 @@ const SiteLocation = () => {
 
 const handleAddSite = async () => {
   try {
-    // Ensure that formData contains all required fields
-    console.log('Form Data before API call:', formData);
+    // Validate required fields
+    if (!formData.siteId || !formData.serialNumber) {
+      alert('Site ID and Serial Number are required.');
+      return;
+    }
 
     const combinedData = {
       state: formData?.state || '',
@@ -246,40 +253,35 @@ const handleAddSite = async () => {
       longitude: formData?.longitude || '',
       vendorName: formData?.vendorName || '',
       batteryAHCapacity: formData?.batteryAHCapacity || '',
-      siteId: formData?.siteId || '',
+      siteId: formData.siteId,
       manufacturerDTO: {
-        firstUsedDate: formData?.firstUsedDate || 'N/A',
-        batterySerialNumber: formData?.batterySerialNumber || 'N/A',
-        batteryBankType: formData?.batteryBankType || 'N/A',
-        ahCapacity: formData?.ahCapacity || 'N/A',
-        manufacturerName: formData?.manufacturerName || 'N/A',
-        individualCellVoltage: formData?.individualCellVoltage || 'N/A',
-        designVoltage: formData?.designVoltage || 'N/A',
-        highVoltage: formData?.highVoltage || 'N/A',
-        lowVoltage: formData?.lowVoltage || 'N/A',
-        batteryAboutToDie: formData?.batteryAboutToDie || 'N/A',
-        openBattery: formData?.openBattery || 'N/A',
-        highTemperature: formData?.highTemperature || 'N/A',
-        lowTemperature: formData?.lowTemperature || 'N/A',
-        notCommnVoltage: formData?.notCommnVoltage || 'N/A',
-        notCommnTemperature: formData?.notCommnTemperature || 'N/A',
+        serialNumber: formData.serialNumber,
+        firstUsedDate: formData?.firstUsedDate || '',
+        batterySerialNumber: formData?.batterySerialNumber || '',
+        batteryBankType: formData?.batteryBankType || '',
+        ahCapacity: formData?.ahCapacity || '',
+        manufacturerName: formData?.manufacturerName || '',
+        individualCellVoltage: formData?.individualCellVoltage || '',
+        designVoltage: formData?.designVoltage || '',
+        highVoltage: formData?.highVoltage || '',
+        lowVoltage: formData?.lowVoltage || '',
+        batteryAboutToDie: formData?.batteryAboutToDie || '',
+        openBattery: formData?.openBattery || '',
+        highTemperature: formData?.highTemperature || '',
+        lowTemperature: formData?.lowTemperature || '',
+        notCommnVoltage: formData?.notCommnVoltage || '',
+        notCommnTemperature: formData?.notCommnTemperature || '',
       }
     };
 
-    console.log('Payload being sent to addSiteLocation API:', combinedData);
-
-   
-
     const response = await axios.post(
       `${BASE_URL}/api/postAddNewLocationToSiteId`,
-      combinedData, // Use plain object
+      combinedData,
       { headers: { 'Content-Type': 'application/json' } }
     );
 
-    // Optionally, handle success after API call
     alert('Site added successfully!');
   } catch (error) {
-    // Handle any error from the API call
     if (error.response) {
       console.error('Server response error:', error.response.data);
       alert(`Error: ${error.response.data.message || 'Unknown server error'}`);
@@ -293,13 +295,14 @@ const handleAddSite = async () => {
 
   const handleDeleteSite = async () => {
     try {
-      await deleteSite(siteId);
-      alert('Site deleted successfully!');
-      setFormData({});
+        await deleteSite(siteId, serialNumber); // Pass both siteId and serialNumber
+        alert('Site deleted successfully!');
+        setFormData({});
     } catch (error) {
-      console.error('Error deleting site:', error);
+        console.error('Error deleting site:', error);
+        alert('Failed to delete site. Please check the serial number and try again.');
     }
-  };
+};
   useEffect(() => {
     console.log('Updated formData:', formData); // This will log each time formData updates
   }, [formData]);
@@ -320,7 +323,10 @@ const handleAddSite = async () => {
                     label="Substation ID"
                     name="siteId"
                     value={formData[key] || ''}
-                    onChange={handleInputChange}
+                    onChange={(event,newValue) => {
+                      handleInputChange(event); // Call the existing handleInputChange
+                      setSiteId(newValue); // Update the siteId state
+                    }}
                     disabled={!isEditing && !isAdding}
                     sx={{
                       height: '35px',
@@ -360,7 +366,62 @@ const handleAddSite = async () => {
             </Grid>
           );
         }
-  
+
+        if (key === 'serialNumber') {
+          return (
+            <Grid item xs={12} sm={8} md={4} lg={3} key={key}>
+              <Typography variant="body1" sx={{ fontWeight: 800, fontSize: '12px' }}>
+                {columns[key]}
+              </Typography>
+              <Box width="200px">
+                <FormControl fullWidth margin="dense">
+                  <InputLabel sx={{ fontSize: '12px' }}>Substation ID</InputLabel>
+                  <Select
+                    label="Substation ID"
+                    name="siteId"
+                    value={formData[key] || ''}
+                    onChange={(event) => {
+                      handleInputChange(event); // Call the existing handleInputChange
+                    }}
+                    disabled={!isEditing && !isAdding}
+                    sx={{
+                      height: '35px',
+                      fontSize: '12px',
+                      '& .MuiInputBase-root': {
+                        height: '35px',
+                        backgroundColor: (!isEditing && !isAdding) ? '#f5f5f5' : 'inherit', // Gray background when disabled
+                      },
+                      '& .MuiInputBase-input': {
+                        padding: '5px 10px',
+                        fontSize: '12px',
+                        fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal', // Bold font when disabled
+                        color: (!isEditing && !isAdding) ? '#000' : 'inherit', // Ensure text color is visible
+                        WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit', // Override default text color in disabled state
+                      },
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#d3d3d3',
+                      },
+                      '& .Mui-disabled': {
+                        backgroundColor: '#f5f5f5', // Gray background when disabled
+                        color: '#000000', // Normal text color
+                      },
+                    }}
+                  >
+                    {serialNumberOptions.map((serialNumber) => (
+                      <MenuItem
+                        key={serialNumber}
+                        value={serialNumber}
+                        sx={{ fontSize: '12px', padding: '5px 10px' }}
+                      >
+                        {serialNumber}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+            </Grid>
+          );
+        }
         // Remove the batterySerialNumber block entirely
   
         return (

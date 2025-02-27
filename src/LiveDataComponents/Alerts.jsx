@@ -4,7 +4,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import {Grid,Tooltip,useTheme,Box,Typography,Grid, Card, CardContent} from "@mui/material";
 import {tokens} from "../theme"
 import PowerIcon from "@mui/icons-material/Power"; 
-import { AlertTriangle, BatteryFull ,Power,BatteryLow,BatteryMedium ,CirclePower} from 'lucide-react';
+import { AlertTriangle, BatteryFull ,Power,BatteryLow,BatteryMedium ,CirclePower,Activity} from 'lucide-react';
 import fuse from '.././enums/electronic-fuse.png'
 import { ChargerTrip, StringCurrent, ACVoltage, DCVoltage, Buzzer,AnimatedFuseIcon, ChargerLoadIcon, StringCommunicationIcon } from '.././enums/ThresholdValues'
 
@@ -66,18 +66,33 @@ const Alerts = () => {
     resetPushButton: "Reset Button",
   };
 
-  const getSeverityFromBit = (bit) => {
-    switch (bit) {
-      case 0:
-        return { status: "Low", severity: "low",IconComponent:BatteryLow };
-      case 1:
-        return { status: "Normal", severity: "medium",IconComponent:BatteryMedium  };
-      case 2:
-        return { status: "High", severity: "high",IconComponent: BatteryFull};
-      default:
-        return { status: "Unknown", severity: "medium" };
+  const getSeverityFromBit = (bit, key) => {
+    // If key is acVoltageULN, always return Activity as IconComponent
+    if (key === "acVoltageULN") {
+        switch (bit) {
+            case 0:
+                return { status: "Low", severity: "low", IconComponent: Activity };
+            case 1:
+                return { status: "Normal", severity: "medium", IconComponent: Activity };
+            case 2:
+                return { status: "High", severity: "high", IconComponent: Activity };
+            default:
+                return { status: "Unknown", severity: "medium", IconComponent: Activity };
+        }
     }
-  };
+
+    // For other keys (cellVoltageLHN and dcVoltageOLN), use the original logic
+    switch (bit) {
+        case 0:
+            return { status: "Low", severity: "low", IconComponent: BatteryLow };
+        case 1:
+            return { status: "Normal", severity: "medium", IconComponent: BatteryMedium };
+        case 2:
+            return { status: "High", severity: "high", IconComponent: BatteryFull };
+        default:
+            return { status: "Unknown", severity: "medium" };
+    }
+};
 
   const alerts = useMemo(() => {
     return Object.keys(detailsMap).map((key, index) => {
@@ -88,8 +103,8 @@ const Alerts = () => {
       // Logic for status and severity
       if (key === "cellVoltageLHN" || key === "dcVoltageOLN" || key === "acVoltageULN") {
         const bitValue = combinedData[key];
-        ({ status, severity,IconComponent } = getSeverityFromBit(bitValue));
-      } else if (key === "chargerTrip") {
+        ({ status, severity, IconComponent } = getSeverityFromBit(bitValue, key));
+    } else if (key === "chargerTrip") {
         status = combinedData[key] ? "" : "";
         severity = combinedData[key] ? "high" : "medium";
       } else if (key === "bankCycleDC") {

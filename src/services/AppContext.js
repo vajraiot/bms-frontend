@@ -19,6 +19,7 @@ export const AppProvider = ({ children }) => {
   const [charger,setCharger]=useState(null);
   const [liveTime,setLiveTime]=useState(null);
   const [mapMarkers, setMapMarkers] = useState([]);
+  const [userRole, setUserRole] = useState("");
  
 
 
@@ -71,7 +72,7 @@ export const AppProvider = ({ children }) => {
     setEndDate,
     year,
     setYear,
-    month,
+    month,userRole, setUserRole,
     setMonth,isAuthenticated, setIsAuthenticated,charger,setCharger,liveTime,setLiveTime,mapMarkers, setMapMarkers
 
   

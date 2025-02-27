@@ -28,6 +28,8 @@ const columnMappings = {
   totalChargingEnergy: "Total Charging Energy",
   totalDischargingEnergy: "Total Discharging Energy",
   batteryRunHours: "Battery Run Hours",
+  totalSoc:"SOC",
+  cumulativeTotalAvgTemp:"Temperature",
 };
 
 const DayWise = () => {
@@ -96,6 +98,8 @@ const DayWise = () => {
         cumulativeAHOut,
         totalChargingEnergy,
         totalDischargingEnergy,
+        totalSoc,
+        cumulativeTotalAvgTemp
       } = row;
 
       const formattedDate = dayWiseDate ? dayWiseDate.split("T")[0] : "No Date";
@@ -108,6 +112,9 @@ const DayWise = () => {
         cumulativeAHOut: formatToTwoDecimals(cumulativeAHOut),
         totalChargingEnergy: formatToTwoDecimals(totalChargingEnergy),
         totalDischargingEnergy: formatToTwoDecimals(totalDischargingEnergy),
+        totalSoc: totalSoc,
+        cumulativeTotalAvgTemp: formatToTwoDecimals(cumulativeTotalAvgTemp),
+
       };
     });
 
@@ -138,15 +145,21 @@ const DayWise = () => {
       {/* Scrollable Content */}
       <Box
         sx={{
-          height: "calc(100vh - 150px)", // Adjust height as needed
+          height: "calc(100vh - 200px)", // Adjust height as needed
           overflowY: "auto", // Enable vertical scrolling
           padding: "10px",
         }}
       >
         {/* Graphs Section */}
-        <div>
-          {formattedData && formattedData.length > 0 ? <AhGraph data={data} /> : ""}
-          {formattedData && formattedData.length > 0 ? <ChargingGraph data={data} /> : ""}
+        <div style={{paddingBottom:"10px"}}>
+        <Box paddingBottom={2}>
+        <Paper elevation={10}  >
+          {formattedData && formattedData.length > 0 ? <AhGraph data={data}  /> : ""}
+          </Paper>
+          </Box>
+          <Paper elevation={10} >
+          {formattedData && formattedData.length > 0 ? <ChargingGraph data={data}  /> : ""}
+          </Paper>
         </div>
 
         {/* Table Section */}

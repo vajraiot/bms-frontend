@@ -32,6 +32,8 @@ const columnMappings = {
   totalChargingEnergy: "Total Charging Energy",
   totalDischargingEnergy: "Total Discharging Energy",
   batteryRunHours: "Battery Run Hours",
+  sumTotalSoc:"SOC",
+  sumCumulativeTotalAvgTemp:"Temperature"
 };
 
 const Monthly = () => {
@@ -124,6 +126,8 @@ const Monthly = () => {
         cumulativeAHOut,
         totalChargingEnergy,
         totalDischargingEnergy,
+        sumTotalSoc,
+        sumCumulativeTotalAvgTemp,
       } = row;
 
       return {
@@ -134,6 +138,8 @@ const Monthly = () => {
         cumulativeAHOut: formatToTwoDecimals(cumulativeAHOut),
         totalChargingEnergy: formatToTwoDecimals(totalChargingEnergy),
         totalDischargingEnergy: formatToTwoDecimals(totalDischargingEnergy),
+        sumTotalSoc:sumTotalSoc,
+        sumCumulativeTotalAvgTemp:formatToTwoDecimals(sumCumulativeTotalAvgTemp),
       };
     });
 
