@@ -21,18 +21,18 @@ const TemperatureG = ({ data }) => {
           {/* <CartesianGrid strokeDasharray="3 3" /> */}
           <XAxis 
             dataKey="cellNumber" 
-            tick={{ fill: colors.grey[100] }} 
-            label={{ value: 'Cell Number', position: 'insideBottom', offset: -10, fill: colors.grey[100] }}
+            tick={{ fill: "black" }} 
+            label={{ value: '', position: 'insideBottom', offset: -10, fill: "black" }}
           />
           <YAxis 
             tick={{ fill: colors.grey[100] }} 
-            label={{ value: 'Temperature (°C)', angle: -90, position: 'insideLeft', fill: colors.grey[100] }}
+            label={{ value: 'Temperature', angle: -90, position: 'insideLeft', fill: "black" }}
           />
           <Tooltip 
             contentStyle={{ backgroundColor: colors.primary[400], border: 'none' }}
             formatter={(value) => [`${value} °C`, 'Temperature']}
           />
-          <Legend />
+          {/* <Legend /> */}
           <Bar 
             dataKey="cellTemperature" 
             fill={colors.blueAccent[500]} 

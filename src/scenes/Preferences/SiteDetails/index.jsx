@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import {fetchStatesDetails, fetchCirclesDetails, fetchAreasDetails, fetchSiteDetailsBatteryandChargerdetails, updateSiteLocation, addSiteLocation, deleteSite } from '../../../services/apiService';
-import { Grid, Typography, TextField, Button,Box } from '@mui/material';
+import { Grid, Typography, TextField, Button,Box ,Autocomplete, FormControl, MenuItem } from '@mui/material';
 import SearchAndAddButtons from '../SearchAndAddButtons/index';
 import { AppContext } from "../../../services/AppContext";
 import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
@@ -11,9 +11,9 @@ const columnMappingsPart1 = {
   vendorName: 'Customer',
   latitude: 'Latitude',
   longitude: 'Longitude',
+  state: 'State Name',
   circle: 'Circle Name',
   area: 'Area Name',
-  state: 'State Name',
   batteryAHCapacity: 'Battery AH Capacity',
 };
 
@@ -66,13 +66,21 @@ const SiteLocation = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchSiteDetailsBatteryandChargerdetails();
-        setSiteDetails(data);
+        const statesData = await fetchStatesDetails();
+        const circlesData = await fetchCirclesDetails();
+        const areasData = await fetchAreasDetails();
+
+        console.log("States Data:", statesData); // Debugging: Log the API response
+        console.log("Circles Data:", circlesData); // Debugging: Log the API response
+        console.log("Areas Data:", areasData); // Debugging: Log the API response
+
+        setStateOptions(statesData);
+        setCircleOptions(circlesData);
+        setAreaOptions(areasData);
       } catch (error) {
         console.error('Error fetching site details:', error);
       }
     };
-
     fetchData();
   }, []);
   useEffect(() => {
@@ -92,24 +100,14 @@ const SiteLocation = () => {
     setCircle(""); // Clear previous circle selection
     setArea(""); // Clear previous area selection
 
-    fetchCirclesDetails()
-      .then((data) => {
-        const filteredCircles = data.filter((circle) => circle.stateName === newValue.name);
-        setCircleOptions(filteredCircles); // Update circles based on state
-      })
-      .catch((error) => console.error("Error fetching circles:", error));
+    
   };
 
   const handleCircleChange = (event, newValue) => {
     setCircle(newValue); // Set the selected circle
     setArea(""); // Clear previous area selection
 
-    fetchAreasDetails()
-      .then((data) => {
-        const filteredAreas = data.filter((area) => area.circleName === newValue.name);
-        setAreaOptions(filteredAreas); // Update areas based on circle
-      })
-      .catch((error) => console.error("Error fetching areas:", error));
+    
   };
   const handleSearchChange = (e) => {
     const { name, value } = e.target;
@@ -312,55 +310,54 @@ const handleAddSite = async () => {
       {Object.keys(columns).map((key) => {
         if (key === 'siteId') {
           return (
-            <Grid item xs={12} sm={8} md={4} lg={3} key={key}>
+            <Grid item xs={12} sm={8} md={4} lg={3} key="siteId">
               <Typography variant="body1" sx={{ fontWeight: 800, fontSize: '12px' }}>
-                {columns[key]}
+                Substation ID
               </Typography>
               <Box width="200px">
                 <FormControl fullWidth margin="dense">
-                  <InputLabel sx={{ fontSize: '12px' }}>Substation ID</InputLabel>
-                  <Select
-                    label="Substation ID"
-                    name="siteId"
-                    value={formData[key] || ''}
-                    onChange={(event,newValue) => {
-                      handleInputChange(event); // Call the existing handleInputChange
-                      setSiteId(newValue); // Update the siteId state
+                  <Autocomplete
+                    options={siteOptions}
+                    getOptionLabel={(option) => option.siteId || ''}
+                    value={siteOptions.find((site) => site.siteId === siteId) || null}
+                    onChange={(event, newValue) => {
+                      const selectedSiteId = newValue ? newValue.siteId : '';
+                      setSiteId(selectedSiteId);
+                      handleInputChange({
+                        target: {
+                          name: 'siteId',
+                          value: selectedSiteId,
+                        },
+                      });
                     }}
                     disabled={!isEditing && !isAdding}
-                    sx={{
-                      height: '35px',
-                      fontSize: '12px',
-                      '& .MuiInputBase-root': {
-                        height: '35px',
-                        backgroundColor: (!isEditing && !isAdding) ? '#f5f5f5' : 'inherit', // Gray background when disabled
-                      },
-                      '& .MuiInputBase-input': {
-                        padding: '5px 10px',
-                        fontSize: '12px',
-                        fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal', // Bold font when disabled
-                        color: (!isEditing && !isAdding) ? '#000' : 'inherit', // Ensure text color is visible
-                        WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit', // Override default text color in disabled state
-                      },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#d3d3d3',
-                      },
-                      '& .Mui-disabled': {
-                        backgroundColor: '#f5f5f5', // Gray background when disabled
-                        color: '#000000', // Normal text color
-                      },
-                    }}
-                  >
-                    {siteOptions.map((site) => (
-                      <MenuItem
-                        key={site.siteId}
-                        value={site.siteId}
-                        sx={{ fontSize: '12px', padding: '5px 10px' }}
-                      >
-                        {site.siteId}
-                      </MenuItem>
-                    ))}
-                  </Select>
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Substation ID"
+                        sx={{
+                          '& .MuiInputBase-root': {
+                            height: '35px',
+                            backgroundColor: (!isEditing && !isAdding) ? '#f5f5f5' : 'inherit',
+                          },
+                          '& .MuiInputBase-input': {
+                            padding: '5px 10px',
+                            fontSize: '12px',
+                            fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal',
+                            color: (!isEditing && !isAdding) ? '#000' : 'inherit',
+                            WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit',
+                          },
+                          '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: '#d3d3d3',
+                          },
+                          '& .Mui-disabled': {
+                            backgroundColor: '#f5f5f5',
+                            color: '#000000',
+                          },
+                        }}
+                      />
+                    )}
+                  />
                 </FormControl>
               </Box>
             </Grid>
@@ -369,58 +366,224 @@ const handleAddSite = async () => {
 
         if (key === 'serialNumber') {
           return (
-            <Grid item xs={12} sm={8} md={4} lg={3} key={key}>
+            <Grid item xs={12} sm={8} md={4} lg={3} key="serialNumber">
               <Typography variant="body1" sx={{ fontWeight: 800, fontSize: '12px' }}>
-                {columns[key]}
+                {columns.serialNumber}
               </Typography>
               <Box width="200px">
                 <FormControl fullWidth margin="dense">
-                  <InputLabel sx={{ fontSize: '12px' }}>Substation ID</InputLabel>
-                  <Select
-                    label="Substation ID"
-                    name="siteId"
-                    value={formData[key] || ''}
-                    onChange={(event) => {
-                      handleInputChange(event); // Call the existing handleInputChange
+                  <Autocomplete
+                    options={serialNumberOptions}
+                    getOptionLabel={(option) => option || ''}
+                    value={formData.serialNumber || ''}
+                    onChange={(event, newValue) => {
+                      handleInputChange({
+                        target: {
+                          name: 'serialNumber',
+                          value: newValue || '',
+                        },
+                      });
                     }}
                     disabled={!isEditing && !isAdding}
-                    sx={{
-                      height: '35px',
-                      fontSize: '12px',
-                      '& .MuiInputBase-root': {
-                        height: '35px',
-                        backgroundColor: (!isEditing && !isAdding) ? '#f5f5f5' : 'inherit', // Gray background when disabled
-                      },
-                      '& .MuiInputBase-input': {
-                        padding: '5px 10px',
-                        fontSize: '12px',
-                        fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal', // Bold font when disabled
-                        color: (!isEditing && !isAdding) ? '#000' : 'inherit', // Ensure text color is visible
-                        WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit', // Override default text color in disabled state
-                      },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#d3d3d3',
-                      },
-                      '& .Mui-disabled': {
-                        backgroundColor: '#f5f5f5', // Gray background when disabled
-                        color: '#000000', // Normal text color
-                      },
-                    }}
-                  >
-                    {serialNumberOptions.map((serialNumber) => (
-                      <MenuItem
-                        key={serialNumber}
-                        value={serialNumber}
-                        sx={{ fontSize: '12px', padding: '5px 10px' }}
-                      >
-                        {serialNumber}
-                      </MenuItem>
-                    ))}
-                  </Select>
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Serial Number"
+                        sx={{
+                          '& .MuiInputBase-root': {
+                            height: '35px',
+                            backgroundColor: (!isEditing && !isAdding) ? '#f5f5f5' : 'inherit',
+                          },
+                          '& .MuiInputBase-input': {
+                            padding: '5px 10px',
+                            fontSize: '12px',
+                            fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal',
+                            color: (!isEditing && !isAdding) ? '#000' : 'inherit',
+                            WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit',
+                          },
+                          '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: '#d3d3d3',
+                          },
+                          '& .Mui-disabled': {
+                            backgroundColor: '#f5f5f5',
+                            color: '#000000',
+                          },
+                        }}
+                      />
+                    )}
+                  />
                 </FormControl>
               </Box>
             </Grid>
           );
+        
+        }
+
+
+        if (key === 'state') {
+          return (
+            <Grid item xs={12} sm={8} md={4} lg={3} key="serialNumber">
+              <Typography variant="body1" sx={{ fontWeight: 800, fontSize: '12px' }}>
+                {columns.serialNumber}
+              </Typography>
+              <Box width="200px">
+                <FormControl fullWidth margin="dense">
+                  <Autocomplete
+                    options={stateOptions.map((state) => state.name)}
+                    getOptionLabel={(option) => option || ''}
+                    value={formData.state || ''}
+                    onChange={(event, newValue) => {
+                      handleInputChange({
+                        target: {
+                          name: 'state',
+                          value: newValue || '',
+                        },
+                      });
+                    }}
+                    disabled={!isEditing && !isAdding}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Sate"
+                        sx={{
+                          '& .MuiInputBase-root': {
+                            height: '35px',
+                            backgroundColor: (!isEditing && !isAdding) ? '#f5f5f5' : 'inherit',
+                          },
+                          '& .MuiInputBase-input': {
+                            padding: '5px 10px',
+                            fontSize: '12px',
+                            fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal',
+                            color: (!isEditing && !isAdding) ? '#000' : 'inherit',
+                            WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit',
+                          },
+                          '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: '#d3d3d3',
+                          },
+                          '& .Mui-disabled': {
+                            backgroundColor: '#f5f5f5',
+                            color: '#000000',
+                          },
+                        }}
+                      />
+                    )}
+                  />
+                </FormControl>
+              </Box>
+            </Grid>
+          );
+        
+        }
+
+        if (key === 'circle') {
+          return (
+            <Grid item xs={12} sm={8} md={4} lg={3} key="serialNumber">
+              <Typography variant="body1" sx={{ fontWeight: 800, fontSize: '12px' }}>
+                {columns.serialNumber}
+              </Typography>
+              <Box width="200px">
+                <FormControl fullWidth margin="dense">
+                  <Autocomplete
+                    options={circleOptions.map((circle) => circle.name)}
+                    getOptionLabel={(option) => option || ''}
+                    value={formData.circle || ''}
+                    onChange={(event, newValue) => {
+                      handleInputChange({
+                        target: {
+                          name: 'Circle',
+                          value: newValue || '',
+                        },
+                      });
+                    }}
+                    disabled={!isEditing && !isAdding}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Circle"
+                        sx={{
+                          '& .MuiInputBase-root': {
+                            height: '35px',
+                            backgroundColor: (!isEditing && !isAdding) ? '#f5f5f5' : 'inherit',
+                          },
+                          '& .MuiInputBase-input': {
+                            padding: '5px 10px',
+                            fontSize: '12px',
+                            fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal',
+                            color: (!isEditing && !isAdding) ? '#000' : 'inherit',
+                            WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit',
+                          },
+                          '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: '#d3d3d3',
+                          },
+                          '& .Mui-disabled': {
+                            backgroundColor: '#f5f5f5',
+                            color: '#000000',
+                          },
+                        }}
+                      />
+                    )}
+                  />
+                </FormControl>
+              </Box>
+            </Grid>
+          );
+        
+        }
+
+
+        if (key === 'area') {
+          return (
+            <Grid item xs={12} sm={8} md={4} lg={3} key="serialNumber">
+              <Typography variant="body1" sx={{ fontWeight: 800, fontSize: '12px' }}>
+                {columns.serialNumber}
+              </Typography>
+              <Box width="200px">
+                <FormControl fullWidth margin="dense">
+                  <Autocomplete
+                    options={areaOptions.map((area) => area.name)}
+                    getOptionLabel={(option) => option || ''}
+                    value={formData.area || ''}
+                    onChange={(event, newValue) => {
+                      handleInputChange({
+                        target: {
+                          name: 'area',
+                          value: newValue || '',
+                        },
+                      });
+                    }}
+                    disabled={!isEditing && !isAdding}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Area"
+                        sx={{
+                          '& .MuiInputBase-root': {
+                            height: '35px',
+                            backgroundColor: (!isEditing && !isAdding) ? '#f5f5f5' : 'inherit',
+                          },
+                          '& .MuiInputBase-input': {
+                            padding: '5px 10px',
+                            fontSize: '12px',
+                            fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal',
+                            color: (!isEditing && !isAdding) ? '#000' : 'inherit',
+                            WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit',
+                          },
+                          '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: '#d3d3d3',
+                          },
+                          '& .Mui-disabled': {
+                            backgroundColor: '#f5f5f5',
+                            color: '#000000',
+                          },
+                        }}
+                      />
+                    )}
+                  />
+                </FormControl>
+              </Box>
+            </Grid>
+          );
+        
         }
         // Remove the batterySerialNumber block entirely
   

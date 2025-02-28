@@ -212,14 +212,14 @@ const Dashboard = () => {
         .map((item) => ({
           siteId: item.siteId,
           serialNumber: item.generalDataDTO?.deviceDataDTO?.[0]?.serialNumber || "N/A", 
-          cellsConnectedCount:item.generalDataDTO?.deviceDataDTO?.[0]?.cellsConnectedCount,
           stringvoltage: item.generalDataDTO?.deviceDataDTO?.[0]?.stringvoltage || "N/A",
           instantaneousCurrent:item.generalDataDTO?.deviceDataDTO?.[0]?.instantaneousCurrent,
           ambientTemperature:item.generalDataDTO?.deviceDataDTO?.[0]?.ambientTemperature,
           socLatestValueForEveryCycle:item.generalDataDTO?.deviceDataDTO?.[0]?.socLatestValueForEveryCycle,
           dodLatestValueForEveryCycle:item.generalDataDTO?.deviceDataDTO?.[0]?.dodLatestValueForEveryCycle,
           acVoltage:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.acVoltage,
-         
+          bmsAlarmsDTO:item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO,
+          chargerDTO:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO
         }));
       console.log("item", filteredData);
       return { name: alarmType, count, details };
@@ -273,7 +273,7 @@ const Dashboard = () => {
             generateChartData(filteredData, "Filter Fuse Fail", (item) => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.filterFuse === true),
             generateChartData(filteredData, "Output MCCB Fail", (item) => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.outputMccb === true),
             generateChartData(filteredData, "Input Fuse Fail", (item) => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.inputFuse === true),
-            generateChartData(filteredData, "AC(V) ULN", (item) => item?.item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.acVoltageULN === 2),
+            generateChartData(filteredData, "AC(V) High", (item) => item?.item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.acVoltageULN === 2),
           ];
           break;
   
@@ -317,7 +317,7 @@ const Dashboard = () => {
             generateChartData(filteredData, "Charger Load", (item) => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.chargerLoad === true),
             generateChartData(filteredData, "Alarm Supply Fuse Fail", (item) => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.alarmSupplyFuse === true),
             generateChartData(filteredData, "Test Push Button", (item) => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.testPushButton === true),
-            generateChartData(filteredData, "Reset Push Button ", (item) => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.resetPushButton === true),
+            generateChartData(filteredData, "Reset Push Button", (item) => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.resetPushButton === true),
 
           ];
           break;
@@ -346,7 +346,6 @@ const Dashboard = () => {
       { field: 'statusType', headerName: 'Status' },
       { field: 'vendor', headerName: 'Vendor' },
       { field: 'location', headerName: 'Location' },
-      { field: 'cellsConnectedCount', headerName: 'Cells Count' },
       { field: 'stringVoltage', headerName: 'String Voltage' },
       { field: 'instantaneousCurrent', headerName: 'Instantaneous Current' },
       { field: 'ambientTemperature', headerName: 'Ambient Temperature' },
@@ -376,11 +375,11 @@ const Dashboard = () => {
           statusType: item?.statusType === 1 ? 'Communicating' : 'Non-Communicating',
           vendor: item?.siteLocationDTO?.vendorName || '--',
           location: item?.siteLocationDTO?.area || '--',
-          cellsConnectedCount: item?.generalDataDTO?.deviceDataDTO?.[0]?.cellsConnectedCount || 0,
           stringVoltage: item?.generalDataDTO?.deviceDataDTO?.[0]?.stringVoltage || 0,
           instantaneousCurrent: item?.generalDataDTO?.deviceDataDTO?.[0]?.instantaneousCurrent || 0,
           ambientTemperature: item?.generalDataDTO?.deviceDataDTO?.[0]?.ambientTemperature || 0,
           batteryRunHours: item?.generalDataDTO?.deviceDataDTO?.[0]?.batteryRunHours || 0,
+
         }));
   
         // Set rows for the table in the dialog

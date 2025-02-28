@@ -1,12 +1,43 @@
-import React, { useState } from 'react';
-import { GoogleMap, Marker, InfoWindow, useLoadScript } from '@react-google-maps/api';
-import RoomOutlinedIcon from '@mui/icons-material/RoomOutlined';
+import React, { useState, useEffect } from 'react';
+import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from '@vis.gl/react-google-maps';
 
 const MapComponent = ({ mapMarkers = [], selectedStatus }) => {
   const [selectedMarker, setSelectedMarker] = useState(null);
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: "AIzaSyDRsvO4B8wU4AtMjhgRkjRx0YVdrfwouN4"
-  });
+
+  // Ensure mapMarkers is an array before mapping
+  const markers = Array.isArray(mapMarkers) ? mapMarkers : [];
+
+  // Define marker icon URLs based on statusType
+  const getMarkerIcon = (statusType) => {
+    switch (statusType) {
+      case 1:
+        return 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers/img/marker-icon-2x-green.png'; // green
+      case 0:
+        return 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers/img/marker-icon-2x-red.png'; // red
+      default:
+        return 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers/img/marker-icon-2x-gold.png'; // yellow
+    }
+  };
+
+  // Component to handle map bounds
+  const MapBounds = ({ markers }) => {
+    const map = useMap();
+
+    useEffect(() => {
+      if (!map || !markers.length) return;
+
+      // Create a new bounds object
+      const bounds = new window.google.maps.LatLngBounds();
+      markers.forEach((marker) => {
+        bounds.extend({ lat: parseFloat(marker.lat), lng: parseFloat(marker.lng) });
+      });
+
+      // Fit the map to the bounds
+      map.fitBounds(bounds);
+    }, [map, markers]);
+
+    return null; // This component doesn't render anything
+  };
 
   const handleMarkerClick = (marker) => {
     setSelectedMarker(marker);
@@ -16,110 +47,98 @@ const MapComponent = ({ mapMarkers = [], selectedStatus }) => {
     setSelectedMarker(null);
   };
 
-  if (!isLoaded) return <div>Loading maps...</div>;
-  if (loadError) return <div>Error loading maps...</div>;
-
-  // Ensure mapMarkers is an array before mapping
-  const markers = Array.isArray(mapMarkers) ? mapMarkers : [];
-
   return (
-    <GoogleMap
-      center={{ lat: 17.4065, lng: 78.4772 }}
-      zoom={5}
-      mapContainerStyle={{ height: '440px', width: '100%' }}
-    >
-      {markers.map((marker, index) => {
-        // Define color based on statusType
-        const getIconColor = (statusType) => {
-          switch (statusType) {
-            case 1:
-              return '#4CAF50'; // green
-            case 0:
-              return '#F44336'; // red
-            default:
-              return '#FFC107'; // yellow
-          }
-        };
+    <APIProvider apiKey="AIzaSyDRsvO4B8wU4AtMjhgRkjRx0YVdrfwouN4">
+      <Map
+        defaultCenter={{ lat: 17.4065, lng: 78.4772 }} // Fallback center
+        defaultZoom={15} // Fallback zoom
+        mapId="YOUR_MAP_ID" // Replace with your Map ID
+        style={{ height: '440px', width: '100%' }}
+      >
+        <MapBounds markers={markers} /> {/* Handle dynamic bounds */}
+        {markers.map((marker, index) => {
+          const markerIconUrl = getMarkerIcon(marker.statusType);
 
-        const iconColor = getIconColor(marker.statusType);
-        const infoWindowStyle = {
-          fontSize: '14px',
-          fontFamily: 'Arial, sans-serif',
-          color: '#333',
-          maxWidth: '150px',
-          padding: '0', // Remove padding
-          margin: '0', // Remove margin
-        };
-        
-        const closeButtonStyle = {
-          position: 'absolute',
-          top: '20px',
-          right: '20px',
-          background: 'red',
-          border: '1px solid #ccc',
-          borderRadius: '50%',
-          cursor: 'pointer',
-          fontSize: '10px',
-          fontWeight: 'bold',
-          color: '#ffff',
-          width: '20px',
-          height: '20px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        };
-        
-        const titleStyle = {
-          fontSize: '15px',
-          fontWeight: 'bold',
-          marginBottom: '8px',
-          color: '#2c3e50',
-          backgroundColor: '#FFC107', // Yellow background
-          textAlign: 'center', // Center the title
-          padding: '5px', // Add some padding
-          borderRadius: '4px', // Optional: Add border radius
-        };
-        
-        const contentStyle = {
-          display: 'flex',
-          fontSize: '10px',
-          fontWeight: '200',
-          flexDirection: 'column',
-          gap: '5px', // Add gap between items
-        };
-        
-        return (
-          <Marker
-            key={index}
-            position={{ lat: parseFloat(marker.lat), lng: parseFloat(marker.lng) }}
-            icon={{
-              path: RoomOutlinedIcon.path,
-              fillColor: iconColor,
-              fillOpacity: 1,
-              strokeColor: iconColor,
-              strokeWeight: 1,
-              scale: 2,
-              anchor: new window.google.maps.Point(10, 15),
-            }}
-            onClick={() => handleMarkerClick(marker)}
-          >
-            {selectedMarker === marker && (
-              <InfoWindow onCloseClick={handleCloseInfoWindow} options={{ disableAutoPan: true }}>
-                <div style={infoWindowStyle}>
-                  <button onClick={handleCloseInfoWindow} style={closeButtonStyle}>✖</button>
-                  <div style={titleStyle}>{marker.name}</div>
-                  <div style={contentStyle}>
-                    <span>🔹 <strong>Sub-Station ID:</strong> {marker.siteId}</span>
-                    <span>🔹 <strong>Customer:</strong> {marker.vendor || 'N/A'}</span>
-                    <span>🔹 <strong>SerialNum:</strong> {marker.serialNumber || 'N/A'}</span>
+          const infoWindowStyle = {
+            fontSize: '14px',
+            fontFamily: 'Arial, sans-serif',
+            color: '#333',
+            maxWidth: '150px',
+            padding: '0', // Remove padding
+            margin: '0', // Remove margin
+          };
+
+          const closeButtonStyle = {
+            position: 'absolute',
+            top: '20px',
+            right: '20px',
+            background: 'red',
+            border: '1px solid #ccc',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            fontSize: '10px',
+            fontWeight: 'bold',
+            color: '#ffff',
+            width: '20px',
+            height: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          };
+
+          const titleStyle = {
+            fontSize: '15px',
+            fontWeight: 'bold',
+            marginBottom: '8px',
+            color: '#2c3e50',
+            backgroundColor: '#FFC107', // Yellow background
+            textAlign: 'center', // Center the title
+            padding: '5px', // Add some padding
+            borderRadius: '4px', // Optional: Add border radius
+          };
+
+          const contentStyle = {
+            display: 'flex',
+            fontSize: '10px',
+            fontWeight: '200',
+            flexDirection: 'column',
+            gap: '5px', // Add gap between items
+          };
+
+          return (
+            <React.Fragment key={index}>
+              <AdvancedMarker
+                position={{ lat: parseFloat(marker.lat), lng: parseFloat(marker.lng) }}
+                onClick={() => handleMarkerClick(marker)}
+              >
+                <img
+                  src={markerIconUrl}
+                  alt="Marker"
+                  style={{ width: '18px', height: '30px' }} // Adjust size to match the marker
+                />
+              </AdvancedMarker>
+
+              {selectedMarker === marker && (
+                <InfoWindow
+                  position={{ lat: parseFloat(marker.lat), lng: parseFloat(marker.lng) }}
+                  onCloseClick={handleCloseInfoWindow}
+                >
+                  <div style={infoWindowStyle}>
+                    <button onClick={handleCloseInfoWindow} style={closeButtonStyle}>✖</button>
+                    <div style={titleStyle}>{marker.name}</div>
+                    <div style={contentStyle}>
+                      <span>🔹 <strong>Sub-Station ID:</strong> {marker.siteId}</span>
+                      <span>🔹 <strong>Customer:</strong> {marker.vendor || 'N/A'}</span>
+                      <span>🔹 <strong>SerialNum:</strong> {marker.serialNumber || 'N/A'}</span>
+                    </div>
                   </div>
-                </div>
-              </InfoWindow>
-            )}
-          </Marker>
-        );
-      })}
-    </GoogleMap>
+                </InfoWindow>
+              )}
+            </React.Fragment>
+          );
+        })}
+      </Map>
+    </APIProvider>
   );
 };
 

@@ -7,7 +7,6 @@ import { CellLegends,CellThresholdValues,BatteryLowVoltage,Charging,Discharging}
 const Legends = ({ cellVoltageTemperatureData }) => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
-console.log(CellThresholdValues.HighTemperature,CellThresholdValues.HighVoltage,CellThresholdValues.LowVoltage+" thresholds")
 const {
     LowVoltage,
     HighVoltage,

@@ -3,7 +3,7 @@ import React, { useState} from "react";
 
 import { tokens } from '../../theme';
 
-import { useState } from 'react'
+import { useState,useContext } from 'react'
 import CellVTGraph from '../CellVTGraph';
 import CloseIcon from "@mui/icons-material/Close";
  import thermometer from '../../assets/images/thermometer.svg'
@@ -11,6 +11,7 @@ import {BatteryLowVoltage,Charging,Discharging,OpenBattery,AboutToDie,HighTemper
 import { Paper, Typography, Box,useTheme } from '@mui/material';
 import { useContext } from "react";
 import { ColorModeContext, tokens } from "../../theme";
+import { AppContext } from '../../services/AppContext';
 const statusConfig = {
   'UT to Die': { svg: AboutToDie, color: '#C62828' },
   'Open Battery': { svg: OpenBattery, color: '#FF6D00' },
@@ -24,7 +25,9 @@ const statusConfig = {
 
 const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber }) => {
   const [isOpen, setIsOpen] = useState(false);
-  
+  const { data} = useContext(AppContext);
+  const device = data[0];
+  const { bmsalarms } = device;
   const handleClickOpen = () => {
     setIsOpen(true);
   };
@@ -53,6 +56,7 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
       if (cellVoltage === 65.535 || cellTemperature === 65535) {
         return "Communication Failed";
       }
+      
       if (cellTemperature >= parseFloat(HighTemperature)) {
         return "High Temperature";
       }
@@ -62,13 +66,15 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
       if (cellVoltage <= parseFloat(BatteryAboutToDie) ){
         return "UT to Die";
       }
+      if(bmsalarms.cellVoltageLHN==0){
       if (cellVoltage <= parseFloat(LowVoltage)) {
         return "Low Voltage";
-      }
+      }}
       // 2. Voltage Conditions
+      if(bmsalarms.cellVoltageLHN==2){
       if (cellVoltage >= parseFloat(HighVoltage)) {
         return "High Voltage";
-      }
+      }}
       // 4. Charging Status
       return chargingStatus ? "Discharging" : "Charging";
   

@@ -94,10 +94,10 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
       case "String(V) High":
         baseColumns.push({ id: "stringvoltage", label: "String Voltage High" });
         break;
-      case "String Voltage Low":
+      case "String(V) Low":
         baseColumns.push({ id: "stringvoltage", label: "String Voltage Low" });
         break;
-      case "Cell Voltage Low":
+      case "Cell(V) Low":
         baseColumns.push({ id: "cellVoltageLNH", label: "Cell Voltage Low" });
         break;
       case "SOC Low":
@@ -109,14 +109,14 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
       case "Charger Trip":
         baseColumns.push({ id: "chargerTrip", label: "Charger Trip" });
         break;
-      case "String Voltage High (LNH)":
-        baseColumns.push({ id: "stringVoltageLNHHigh", label: "String Voltage High (LNH)" });
-        break;
       case "Cell(V) High":
-        baseColumns.push({ id: "cellVoltageLNHHigh", label: "Cell Voltage High (LNH)" });
+        baseColumns.push({ id: "cellVoltageLNH", label: "Cell Voltage High " });
         break;
       case "String(A) High":
-        baseColumns.push({ id: "stringCurrentHN", label: "String Current High" });
+        baseColumns.push({ id: "instantaneousCurrent", label: "String Current High" });
+        break;
+      case "String Commu":
+        baseColumns.push({ id: "stringCommunication", label: "String Communication" });
         break;
       case "Input Mains Fail":
         baseColumns.push({ id: "inputMains", label: "Input Mains" });
@@ -136,28 +136,40 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
       case "Input Fuse Fail":
         baseColumns.push({ id: "inputFuse", label: "Input Fuse" });
         break;
+      case "Output Fuse Fail":
+        baseColumns.push({ id: "outputFuse", label: "Input Fuse" });
+        break;
       case "AC(V) ULN":
         baseColumns.push({ id: "acVoltageULN", label: "AC Voltage Low" });
         break;
-      case "Ambient Temperature High":
-        baseColumns.push({ id: "ambientTemperatureHN", label: "Ambient Temperature High" });
+      case "Ambient (°C) High":
+        baseColumns.push({ id: "ambientTemperature", label: "Ambient Temperature High" });
         break;
-      case "Cell Communication Failure":
-        baseColumns.push({ id: "cellCommunication", label: "Cell Communication" });
+      case "Cell Comm Fail":
+        baseColumns.push({ id: "cellCommunicationFD", label: "Cell Communication" });
         break;
-      case "DC Voltage Low":
+      case "DC Over Voltage":
+        baseColumns.push({ id: "dcVoltageOLN", label: "DC Voltage High" });
+        break;
+      case "DC Under Voltage":
         baseColumns.push({ id: "dcVoltageOLN", label: "DC Voltage Low" });
         break;
-      case "DC Under Voltage Detection":
-        baseColumns.push({ id: "acVoltageOLN", label: "AC Voltage Low (Output)" });
+      case "Battery Bank(Discharging)":
+        baseColumns.push({ id: "bankCycleDC", label: "Battery Bank(Discharging)" });
         break;
-      case "Buzzer":
+      case "AC(V) High":
+        baseColumns.push({ id: "acVoltage", label: "AC Voltage High" });
+        break;
+      case "AC Under Voltage":
+        baseColumns.push({ id: "acVoltage", label: "AC Voltage Low" });
+        break;
+      case "Buzzer Alarm":
         baseColumns.push({ id: "buzzer", label: "Buzzer" });
         break;
       case "Charger Load":
         baseColumns.push({ id: "chargerLoad", label: "Charger Load" });
         break;
-      case "Alarm Supply Fuse Failure":
+      case "Alarm Supply Fuse Fail":
         baseColumns.push({ id: "alarmSupplyFuse", label: "Alarm Supply Fuse" });
         break;
       case "Test Push Button":
@@ -302,58 +314,60 @@ const DataDialog = ({
         switch (data.name) {
           case "String(V) High":
             return detail.stringvoltage !== undefined;
-          case "String Voltage Low":
+          case "String(V) Low":
             return detail.stringvoltage !== undefined;
-          case "Cell Voltage Low":
-            return detail.cellVoltageLNH !== undefined;
+          case "Cell(V) Low":
+            return detail.bmsAlarmsDTO?.cellVoltageLNH !== undefined? "Cell Voltage Low" : null;
           case "SOC Low":
             return detail.socLatestValueForEveryCycle !== undefined;
           case "Battery Condition":
-            return detail.batteryCondition !== undefined;
+            return detail.chargerDTO?.batteryCondition !== undefined? "Battery Condition" : null;
           case "Charger Trip":
-            return detail.chargerTrip !== undefined;
+            return detail.chargerDTO?.chargerTrip !== undefined ?"Charger Tripped" : null;
           case "Cell(V) High":
-            return detail.cellVoltageLNHHigh !== undefined;
+            return detail.bmsAlarmsDTO?.cellVoltageLNH !== undefined ? "Cell Voltage High" : null;
           case "String(A) High":
             return detail.instantaneousCurrent !== undefined;
-          case "String Voltage High (LNH)":
-            return detail.stringVoltageLNHHigh !== undefined;
-          case "Cell(V) High":
-            return detail.cellVoltageLNHHigh !== undefined;
-          case "String(A) High":
-            return detail.stringCurrentHN !== undefined;
+          case "Battery Bank(Discharging)":
+              return detail.bmsAlarmsDTO?.bankDischargeCycle!== undefined ? "Battery Bank Discharging" : null;
+          case "String Commu":
+            return detail.bmsAlarmsDTO?.bmsSedCommunication !== undefined ? "String Communication Fail" : null;
           case "Input Mains Fail":
-            return detail.inputMains !== undefined;
+            return detail.chargerDTO?.inputMains !== undefined? "Input Mains Fail" : null;
           case "Input Phase Fail":
-            return detail.inputPhase !== undefined;
+            return detail.chargerDTO?.inputPhase !== undefined? "Input Phase Fail" : null;
           case "Rectifier Fuse Fail":
-            return detail.rectifierFuse !== undefined;
+            return detail.chargerDTO?.rectifierFuse !== undefined? "Rectifier Fuse Fail" : null;
           case "Filter Fuse Fail":
-            return detail.filterFuse !== undefined;
+            return detail.chargerDTO?.filterFuse !== undefined? "Filter Fuse Fail" : null;
+          case "Output Fuse Fail":
+              return detail.chargerDTO?.outputFuse !== undefined? "Output Fuse Fail" : null; 
           case "Output MCCB Fail":
-            return detail.outputMccb !== undefined;
+            return detail.chargerDTO?.outputMccb !== undefined? "Output MCCB Fail" : null;
           case "Input Fuse Fail":
-            return detail.inputFuse !== undefined;
-          case "AC(V) ULN":
+            return detail.chargerDTO?.inputFuse !== undefined? "Input Fuse Fail" : null;
+          case "AC Under Voltage":
             return detail.acVoltage !== undefined;
-          case "Ambient Temperature High":
+          case "AC(V) High":
+            return detail.acVoltage !== undefined;
+          case "Ambient (°C) High":
             return detail.ambientTemperature !== undefined;
-          case "Cell Communication Failure":
-            return detail.cellCommunication !== undefined;
-          case "DC Voltage Low":
-            return detail.dcVoltageOLN !== undefined;
-          case "DC Under Voltage Detection":
-            return detail.acVoltage !== undefined;
-          case "Buzzer":
-            return detail.buzzer !== undefined;
+          case "Cell Comm Fail":
+            return detail.bmsAlarmsDTO?.cellCommunication !== undefined? "String Communication Fail" : null;
+          case "DC Under Voltage":
+            return detail.chargerDTO?.dcVoltageOLN !== undefined? "DC Under Voltage" : null;
+          case "DC Over Voltage":
+            return detail.chargerDTO?.dcVoltageOLN !== undefined? "DC Over Voltage" : null;
+          case "Buzzer Alarm":
+            return detail.bmsAlarmsDTO?.buzzer !== undefined? "String Communication Fail" : null;
           case "Charger Load":
-            return detail.chargerLoad !== undefined;
-          case "Alarm Supply Fuse Failure":
-            return detail.alarmSupplyFuse !== undefined;
+            return detail.chargerDTO?.chargerLoad !== undefined? "Charger Load" : null;
+          case "Alarm Supply Fuse Fail":
+            return detail.chargerDTO?.alarmSupplyFuse !== undefined? "Alarm Supply Fuse Fail" : null;
           case "Test Push Button":
-            return detail.testPushButton !== undefined;
+            return detail.chargerDTO?.testPushButton !== undefined? "Test Push Button Pressed" : null;
           case "Reset Push Button":
-            return detail.resetPushButton !== undefined;
+            return detail.chargerDTO?.resetPushButton !== undefined? "Reset Push Button Pressed" : null;
           default:
             return true; // Show all rows if no specific alarm type is selected
         }

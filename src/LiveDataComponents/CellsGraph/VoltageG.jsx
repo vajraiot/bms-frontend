@@ -14,24 +14,24 @@ const VoltageG = ({ data }) => {
   }));
 
   return (
-    <Box sx={{ height: '200px', width: '100%', }}>
+    <Box sx={{ height: '200px', width: '100%', marginBottom: '50px'}}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={filteredData}>
           {/* <CartesianGrid strokeDasharray="3 3" /> */}
           <XAxis 
             dataKey="cellNumber" 
-            tick={{ fill: colors.grey[100] }} 
-            label={{ value: 'Cell Number', position: 'insideBottom', offset: -10, fill: colors.grey[100] }}
+            tick={{ fill: 'black' }} 
+            label={{ value: '', position: 'insideBottom', offset: -10, fill: "black" }}
           />
           <YAxis 
-            tick={{ fill: colors.grey[100] }} 
-            label={{ value: 'Voltage (V)', angle: -90, position: 'insideLeft', fill: colors.grey[100] }}
+            tick={{ fill: 'black' }} 
+            label={{ value: 'Voltage (V)', angle: -90, position: 'insideLeft', fill: 'black' }}
           />
           <Tooltip 
             contentStyle={{ backgroundColor: colors.primary[400], border: 'none' }}
             formatter={(value) => [`${value} V`, 'Voltage']}
           />
-          <Legend />
+          {/* <Legend /> */}
           <Bar 
             dataKey="cellVoltage" 
             fill={colors.greenAccent[500]} 

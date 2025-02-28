@@ -28,7 +28,7 @@ const Footer = () => {
     >
       <Box style={{ display: "flex", gap: "10px", alignItems: "center" }}>
         {/* Facebook Icon */}
-        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+        <a href="https://www.facebook.com/vajraiot/" target="_blank" rel="noopener noreferrer">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="20" height="20">
             <circle cx="20" cy="20" r="20" fill="#1877F2" />
             <path
@@ -59,7 +59,7 @@ const Footer = () => {
         </a>
 
         {/* Twitter/X Icon */}
-        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
+        <a href="https://x.com/vajraiot%20" target="_blank" rel="noopener noreferrer">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="20" height="20">
             <circle cx="20" cy="20" r="20" fill="#000" />
             <path d="M28 15l-4 4 4 4h-3l-5-5v5h-3V15h3v5l5-5z" fill="white" />
@@ -67,7 +67,7 @@ const Footer = () => {
         </a>
 
         {/* LinkedIn Icon */}
-        <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
+        <a href="https://www.linkedin.com/company/vajra-iot-pvt-ltd/" target="_blank" rel="noopener noreferrer">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="20" height="20">
             <circle cx="20" cy="20" r="20" fill="#0A66C2" />
             <path
