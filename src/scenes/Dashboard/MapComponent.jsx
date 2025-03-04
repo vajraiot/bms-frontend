@@ -46,100 +46,118 @@ const MapComponent = ({ mapMarkers = [], selectedStatus }) => {
   const handleCloseInfoWindow = () => {
     setSelectedMarker(null);
   };
+  const hideDefaultCloseButton = `
+  .gm-style-iw button.gm-ui-hover-effect {
+    display: none !important;
+  }
+`
 
   return (
-    <APIProvider apiKey="AIzaSyDRsvO4B8wU4AtMjhgRkjRx0YVdrfwouN4">
-      <Map
-        defaultCenter={{ lat: 17.4065, lng: 78.4772 }} // Fallback center
-        defaultZoom={15} // Fallback zoom
-        mapId="57f9f0203fe55f5e" // Replace with your Map ID
-        style={{ height: '440px', width: '100%' }}
-      >
-        <MapBounds markers={markers} /> {/* Handle dynamic bounds */}
-        {markers.map((marker, index) => {
-          const markerIconUrl = getMarkerIcon(marker.statusType);
+    <>
+    <style>{hideDefaultCloseButton}</style>
+      <APIProvider apiKey="AIzaSyDRsvO4B8wU4AtMjhgRkjRx0YVdrfwouN4">
+        <Map
+          defaultCenter={{ lat: 17.4065, lng: 78.4772 }} // Fallback center
+          defaultZoom={15} // Fallback zoom
+          mapId="57f9f0203fe55f5e" // Replace with your Map ID
+          style={{ height: '440px', width: '100%' }}
+        >
+          <MapBounds markers={markers} /> {/* Handle dynamic bounds */}
+          {markers.map((marker, index) => {
+            const markerIconUrl = getMarkerIcon(marker.statusType);
 
-          const infoWindowStyle = {
-            fontSize: '14px',
-            fontFamily: 'Arial, sans-serif',
-            color: '#333',
-            maxWidth: '150px',
-            padding: '0', // Remove padding
-            margin: '0', // Remove margin
-          };
+            const infoWindowStyle = {
+              fontSize: '14px',
+              fontFamily: 'Arial, sans-serif',
+              color: '#333',
+              minWidth: "150px", 
+              padding: "1px", //
+              margin: '0', // Remove margin
+            };
 
-          const closeButtonStyle = {
-            position: 'absolute',
-            top: '20px',
-            right: '20px',
-            background: 'red',
-            border: '1px solid #ccc',
-            borderRadius: '50%',
-            cursor: 'pointer',
-            fontSize: '10px',
-            fontWeight: 'bold',
-            color: '#ffff',
-            width: '20px',
-            height: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          };
+            const closeButtonStyle = {
+              position: 'absolute',
+              top: "5px", // Adjusted for better fit
+              right: "5px", // Adjusted for better fit
+              background: 'red',
+              border: '1px solid #ccc',
+              borderRadius: '50%',
+              cursor: 'pointer',
+              fontSize: '10px',
+              fontWeight: 'bold',
+              color: '#ffff',
+              width: '20px',
+              height: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            };
 
-          const titleStyle = {
-            fontSize: '15px',
-            fontWeight: 'bold',
-            marginBottom: '8px',
-            color: '#2c3e50',
-            backgroundColor: '#FFC107', // Yellow background
-            textAlign: 'center', // Center the title
-            padding: '5px', // Add some padding
-            borderRadius: '4px', // Optional: Add border radius
-          };
+            const titleStyle = {
+              fontSize: '15px',
+              fontWeight: 'bold',
+              marginBottom: '8px',
+              color: '#2c3e50',
+              backgroundColor: '#FFC107', // Yellow background
+              textAlign: 'center', // Center the title
+              padding: '5px', // Add some padding
+              borderRadius: '4px', // Optional: Add border radius
+            };
 
-          const contentStyle = {
-            display: 'flex',
-            fontSize: '10px',
-            fontWeight: '200',
-            flexDirection: 'column',
-            gap: '5px', // Add gap between items
-          };
+            const contentStyle = {
+              display: 'flex',
+              fontSize: '10px',
+              fontWeight: '200',
+              flexDirection: 'column',
+              gap: '5px', // Add gap between items
+            };
 
-          return (
-            <React.Fragment key={index}>
-              <AdvancedMarker
-                position={{ lat: parseFloat(marker.lat), lng: parseFloat(marker.lng) }}
-                onClick={() => handleMarkerClick(marker)}
-              >
-                <img
-                  src={markerIconUrl}
-                  alt="Marker"
-                  style={{ width: '18px', height: '30px' }} // Adjust size to match the marker
-                />
-              </AdvancedMarker>
-
-              {selectedMarker === marker && (
-                <InfoWindow
+            return (
+              <React.Fragment key={index}>
+                <AdvancedMarker
                   position={{ lat: parseFloat(marker.lat), lng: parseFloat(marker.lng) }}
-                  onCloseClick={handleCloseInfoWindow}
+                  onClick={() => handleMarkerClick(marker)}
                 >
-                  <div style={infoWindowStyle}>
-                    <button onClick={handleCloseInfoWindow} style={closeButtonStyle}>✖</button>
-                    <div style={titleStyle}>{marker.name}</div>
-                    <div style={contentStyle}>
-                      <span>🔹 <strong>Sub-Station ID:</strong> {marker.siteId}</span>
-                      <span>🔹 <strong>Customer:</strong> {marker.vendor || 'N/A'}</span>
-                      <span>🔹 <strong>SerialNum:</strong> {marker.serialNumber || 'N/A'}</span>
-                    </div>
+                  <img
+                    src={markerIconUrl}
+                    alt="Marker"
+                    style={{ width: '18px', height: '30px' }} // Adjust size to match the marker
+                  />
+                </AdvancedMarker>
+
+                {selectedMarker === marker && (
+                  
+                <InfoWindow
+                position={{ lat: parseFloat(marker.lat), lng: parseFloat(marker.lng) }}
+                pixelOffset={[0, -10]}
+                onCloseClick={handleCloseInfoWindow}
+              >
+                <div style={infoWindowStyle} onClick={handleCloseInfoWindow}>
+                  <div style={titleStyle}>{marker.name}</div>
+                  <div style={contentStyle}>
+                    <span>
+                      🔹 <strong>Sub-Station ID:</strong> {marker.siteId}
+                    </span>
+                    <span>
+                      🔹 <strong>Customer:</strong> {marker.vendor || "N/A"}
+                    </span>
+                    <span>
+                      🔹 <strong>SerialNum:</strong> {marker.serialNumber || "N/A"}
+                    </span>
                   </div>
-                </InfoWindow>
-              )}
-            </React.Fragment>
-          );
-        })}
-      </Map>
-    </APIProvider>
+                </div>
+              </InfoWindow>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </Map>
+      </APIProvider>
+    </>
   );
+  
 };
+
+
 
 export default MapComponent;
