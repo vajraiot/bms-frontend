@@ -5,8 +5,8 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import SearchIcon from "@mui/icons-material/Search";
-import { useNavigate } from "react-router-dom";
-// import deadline from "../../data/icons/deadline.png";
+import { useNavigate , useLocation} from "react-router-dom";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { AppContext } from "../../services/AppContext";
 import { fetchManufacturerDetails, fetchDeviceDetails } from "../../services/apiService";
 // import { useDateTimeField } from "@mui/x-date-pickers/DateTimeField/useDateTimeField";
@@ -16,6 +16,7 @@ const Topbar = ({ liveTime="", vendorName, locationName = "" }) => {
   const colors = tokens(theme.palette.mode);
   const colorMode = useContext(ColorModeContext);
   const navigate = useNavigate();
+  const location = useLocation(); 
 
   const {
     siteOptions,
@@ -28,7 +29,7 @@ const Topbar = ({ liveTime="", vendorName, locationName = "" }) => {
     setMdata,
     setCharger,
     charger,setLiveTime,
-    data, setLocation
+    data, setLocation,handleSearch
   } = useContext(AppContext);
  
 
@@ -37,48 +38,13 @@ const Topbar = ({ liveTime="", vendorName, locationName = "" }) => {
     serialNumber: false,
   });
 
-  const handleSearch = async () => {
-    if (siteId && serialNumber) {
-      try {
-        // Clear previous data
-        setMdata(null); // Clear previous manufacturer details
-        setData([]);    // Clear previous device data
-        setCharger([]); // Clear previous charger data
-        setLocation(null);
-        setLiveTime(null);
-        // Fetch manufacturer details
-        const manufacturerDetails = await fetchManufacturerDetails(siteId, serialNumber);
-        setMdata(manufacturerDetails); // Store manufacturer details
+  const fromDashboard = location.state?.fromDashboard || false;
 
-        // Fetch device details
-        const deviceResponse = await fetchDeviceDetails(siteId, serialNumber);
-        const { chargerMonitoringData, deviceData, packetDateTime } = deviceResponse;
-        console.log(packetDateTime + "packet time");
-        setData(deviceData); // Store device data
-        console.log(data+" data")
-        setLiveTime(packetDateTime);
-       
-        setCharger(chargerMonitoringData); // Store charger data
-        console.log(chargerMonitoringData + " charger response");
-
-        if (deviceResponse && deviceResponse.deviceData) {
-          // Handle device data if needed
-        }
-
-        if (deviceResponse) {
-          // Handle device response if needed
-        }
-        const selectedSite = siteOptions.find((site) => site.siteId === siteId);
-        setLocation(selectedSite)
-        // Return the fetched data for further usage
-        return deviceResponse;
-      } catch (error) {
-        console.error("Error during search:", error);
-      }
-    } else {
-      console.error("Please select both Site ID and Serial Number.");
-    }
+  // Handle back navigation
+  const handleBackToDashboard = () => {
+    navigate("/");
   };
+
 
   function convertOwlDatetimeToCustomDate(dateString) {
     if (dateString == null || dateString == "") {
@@ -109,6 +75,18 @@ const Topbar = ({ liveTime="", vendorName, locationName = "" }) => {
       paddingBottom: 0, // Reduce any padding at the bottom
     }}
   >
+    <Box
+  display="flex"
+  alignItems="center"
+  sx={{ marginRight: 2, color: "black" }}
+>
+  <IconButton 
+    onClick={handleBackToDashboard} 
+    sx={{ color: "black" }} // Explicitly set to black for visibility
+  >
+    <ArrowBackIcon />
+  </IconButton>
+</Box>
       {/* Search Options */}
       <Box
         display="grid"

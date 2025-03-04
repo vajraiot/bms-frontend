@@ -139,10 +139,69 @@ const DashBoardBar = () => {
   return (
     <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" p={1} gap={2}>
       <Box display="grid" gridTemplateColumns="repeat(5, 1fr)" gap={2}>
-        {/* SubStation ID */}
+      <Autocomplete
+          disablePortal
+          options={stateOptions.map((state) => state.name)}
+          value={state}
+          onChange={handleStateChange}
+          renderOption={(props, option) =>
+            renderHighlightedOption(props, option, state)
+          }
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="State"
+              InputLabelProps={{
+                sx: {
+                  fontWeight: "bold",
+                },
+              }}
+              sx={{
+                "& .MuiInputBase-root": {
+                  fontWeight: "bold",
+                  height: "35px",
+                  marginTop: '5px',
+                },
+              }}
+            />
+          )}
+          sx={{ width: "150px" }}
+        />
+
+        {/* Circle */}
         <Autocomplete
           disablePortal
-          disableClearable
+          options={circleOptions.map((circle) => circle.name)}
+          value={circle}
+          onChange={handleCircleChange}
+          renderOption={(props, option) =>
+            renderHighlightedOption(props, option, circle)
+          }
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Circle"
+              InputLabelProps={{
+                sx: {
+                  fontWeight: "bold",
+                },
+              }}
+              sx={{
+                "& .MuiInputBase-root": {
+                  fontWeight: "bold",
+                  height: "35px",
+                  marginTop: '5px',
+                },
+              }}
+            />
+          )}
+          sx={{ width: "150px" }}
+        />
+
+        {/* SubStation ID */}
+        
+        <Autocomplete
+          disablePortal
           options={siteOptions.map((site) => site.siteId)}
           value={siteId}
           onChange={async (event, newValue) => {
@@ -197,99 +256,39 @@ const DashBoardBar = () => {
 
         {/* Serial Number */}
         <Autocomplete
-          disablePortal
-          disableClearable
-          options={serialNumberOptions}
-          value={serialNumber}
-          onChange={(event, newValue) => setSerialNumber(newValue)}
-          renderOption={(props, option) =>
-            renderHighlightedOption(props, option, serialNumber)
-          }
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="Serial Number"
-              InputLabelProps={{
-                sx: {
-                  fontWeight: "bold",
-                },
-              }}
-              sx={{
-                "& .MuiInputBase-root": {
-                  fontWeight: "bold",
-                  height: "35px",
-                  marginTop: '5px',
-                },
-              }}
-            />
-          )}
-          sx={{ width: "150px" }}
-        />
+  disablePortal
+  // Remove disableClearable or set it to false
+  options={serialNumberOptions}
+  value={serialNumber}
+  onChange={(event, newValue) => setSerialNumber(newValue)}
+  renderOption={(props, option) =>
+    renderHighlightedOption(props, option, serialNumber)
+  }
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="Serial Number"
+      InputLabelProps={{
+        sx: {
+          fontWeight: "bold",
+        },
+      }}
+      sx={{
+        "& .MuiInputBase-root": {
+          fontWeight: "bold",
+          height: "35px",
+          marginTop: "5px",
+        },
+      }}
+    />
+  )}
+  sx={{ width: "150px" }}
+/>
 
         {/* State */}
-        <Autocomplete
-          disablePortal
-          disableClearable
-          options={stateOptions.map((state) => state.name)}
-          value={state}
-          onChange={handleStateChange}
-          renderOption={(props, option) =>
-            renderHighlightedOption(props, option, state)
-          }
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="State"
-              InputLabelProps={{
-                sx: {
-                  fontWeight: "bold",
-                },
-              }}
-              sx={{
-                "& .MuiInputBase-root": {
-                  fontWeight: "bold",
-                  height: "35px",
-                  marginTop: '5px',
-                },
-              }}
-            />
-          )}
-          sx={{ width: "150px" }}
-        />
-
-        {/* Circle */}
-        <Autocomplete
-          disablePortal
-          disableClearable
-          options={circleOptions.map((circle) => circle.name)}
-          value={circle}
-          onChange={handleCircleChange}
-          renderOption={(props, option) =>
-            renderHighlightedOption(props, option, circle)
-          }
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="Circle"
-              InputLabelProps={{
-                sx: {
-                  fontWeight: "bold",
-                },
-              }}
-              sx={{
-                "& .MuiInputBase-root": {
-                  fontWeight: "bold",
-                  height: "35px",
-                  marginTop: '5px',
-                },
-              }}
-            />
-          )}
-          sx={{ width: "150px" }}
-        />
-
+       
         {/* Area */}
-        <Autocomplete
+        {/* <Autocomplete
           disablePortal
           disableClearable
           options={areaOptions.map((area) => area.name)}
@@ -317,7 +316,7 @@ const DashBoardBar = () => {
             />
           )}
           sx={{ width: "150px" }}
-        />
+        /> */}
       </Box>
     </Box>
   );

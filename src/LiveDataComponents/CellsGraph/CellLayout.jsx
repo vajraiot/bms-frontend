@@ -215,9 +215,13 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
 </Paper>
 
       {/* Full-Screen Overlay */}
-      <FullScreenOverlay open={isOpen} onClose={handleClose}>
-        <CellVTGraph serial={serialNumber} site={siteId} cellNumber={cellData.cellNumber} />
-      </FullScreenOverlay>
+      <CellVTGraph
+      open={isOpen}
+      onClose={handleClose}
+      serial={serialNumber}
+      site={siteId}
+      cellNumber={cellData.cellNumber}
+    />
     </>
   );
 };

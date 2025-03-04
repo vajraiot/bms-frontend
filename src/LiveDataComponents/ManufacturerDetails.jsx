@@ -43,7 +43,7 @@ function ManufacturerDetails({
        
       >
         <Typography sx={{ alignSelf: "center"}}  variant="h6" mb="10px">
-          <strong>Manufacturer Details</strong>
+          <strong>Manufacturer Info</strong>
         </Typography>
         <Box display="flex" flexDirection="column">
           {[

@@ -53,9 +53,42 @@ export const AppProvider = ({ children }) => {
       setSerialNumberOptions([]); // Clear if no site matches
     }
   };
+  const handleSearch = async () => {
+    if (siteId && serialNumber) {
+      try {
+        // Clear previous data
+        setMdata(null); // Clear previous manufacturer details
+        setData([]);    // Clear previous device data
+        setCharger([]); // Clear previous charger data
+        setLocation(null);
+        setLiveTime(null);
+        // Fetch manufacturer details
+        const manufacturerDetails = await fetchManufacturerDetails(siteId, serialNumber);
+        const deviceResponse = await fetchDeviceDetails(siteId, serialNumber);
+        const { chargerMonitoringData, deviceData, packetDateTime } = deviceResponse;
+        if (deviceResponse && deviceData && manufacturerDetails && packetDateTime) {
+          setData(deviceData); // Store device data
+          setMdata(manufacturerDetails);
+          setLiveTime(packetDateTime);
+        }
+        if (deviceResponse && chargerMonitoringData) {
+          // Handle device response if needed
+          setCharger(chargerMonitoringData); // Store charger data
+        }
+        const selectedSite = siteOptions.find((site) => site.siteId === siteId);
+        setLocation(selectedSite)
+        // Return the fetched data for further usage
+        return deviceResponse;
+      } catch (error) {
+        console.error("Error during search:", error);
+      }
+    } else {
+      console.error("Please select both Site ID and Serial Number.");
+    }
+  };
 
   const contextValue = {
-    siteOptions,
+    siteOptions,handleSearch,
     serialNumberOptions,
     siteId,
     serialNumber,

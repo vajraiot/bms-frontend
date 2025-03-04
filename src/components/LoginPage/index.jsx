@@ -1,31 +1,67 @@
-import React, { useState, useEffect, useContext } from "react";
-import Login from "../../assets/images/login.jpg"; // Import the background image
-import Watermark from "../../assets/images/png/watermark.png"; // Import the watermark image
-import { fetchLoginRoles, fetchLoginDetails } from "../../services/apiService";
+import { useState, useEffect, useContext, useRef } from "react";
+import Login from "../../assets/images/login.png";
+import Watermark from "../../assets/images/watermark.jpeg";
+import { fetchLoginDetails } from "../../services/apiService";
 import { Navigate } from "react-router-dom";
 import { AppContext } from "../../services/AppContext";
 import Logo from "../../assets/images/png/vajra.png";
 import MahaLogo from "../../assets/images/png/maha.png";
+import { AlignCenter } from "lucide-react";
 
 const LoginPage = () => {
   const [role, setRole] = useState("");
-  const [roles, setRoles] = useState([]); // Initialize roles as an empty array
+  const [roles, setRoles] = useState([]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [captchaInput, setCaptchaInput] = useState("");
+  const [captchaText, setCaptchaText] = useState("");
+  const captchaCanvasRef = useRef(null);
   const { setIsAuthenticated, isAuthenticated, setUserRole } = useContext(AppContext);
 
   const fetchRoles = async () => {
     try {
       const response = await fetch("http://122.175.45.16:51270/getListofLoginRoles");
-      if (!response.ok) {
-        throw new Error("Failed to fetch roles");
-      }
+      if (!response.ok) throw new Error("Failed to fetch roles");
       const data = await response.json();
-      setRoles(data || []); // Ensure roles is an array
+      setRoles(data || []);
     } catch (error) {
       console.error("Error fetching roles:", error);
       alert("Failed to fetch roles. Please try again later.");
+    }
+  };
+
+  const generateCaptcha = () => {
+    const canvas = captchaCanvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const newCaptchaText = Array(6)
+      .fill()
+      .map(() => characters.charAt(Math.floor(Math.random() * characters.length)))
+      .join("");
+    setCaptchaText(newCaptchaText);
+
+    ctx.fillStyle = "#f0f0f0";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.font = "24px Arial"; // Reduced font size for compactness
+    ctx.fillStyle = "#333";
+    for (let i = 0; i < newCaptchaText.length; i++) {
+      ctx.save();
+      ctx.translate(25 * i + 15, 35); // Adjusted spacing
+      ctx.rotate((Math.random() - 0.5) * 0.4);
+      ctx.fillText(newCaptchaText[i], 0, 0);
+      ctx.restore();
+    }
+
+    for (let i = 0; i < 5; i++) {
+      ctx.beginPath();
+      ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+      ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+      ctx.strokeStyle = "#aaa";
+      ctx.stroke();
     }
   };
 
@@ -33,26 +69,36 @@ const LoginPage = () => {
     fetchRoles();
   }, []);
 
+  useEffect(() => {
+    if (captchaCanvasRef.current) {
+      generateCaptcha();
+    }
+  }, [captchaCanvasRef.current]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate that all fields are filled
-    if (!role || !username || !password) {
-      alert("Please fill in all fields.");
+    if (!role || !username || !password || !captchaInput) {
+      alert("Please fill in all fields, including the CAPTCHA.");
+      return;
+    }
+
+    if (captchaInput.toLowerCase() !== captchaText.toLowerCase()) {
+      alert("Invalid CAPTCHA. Please try again.");
+      setCaptchaInput("");
+      generateCaptcha();
       return;
     }
 
     try {
-      // Call the login function from appService.js
       const data = await fetchLoginDetails(role, username, password);
       console.log("Login Response:", data);
 
-      // Check if the response object is empty or has no success property
       if (!data || Object.keys(data).length === 0) {
         alert("Invalid credentials. Please try again.");
       } else {
-        setIsAuthenticated(true); // Update authentication state
-        setUserRole(role); // Set the user's role
+        setIsAuthenticated(true);
+        setUserRole(role);
       }
     } catch (error) {
       console.error("Error during login:", error);
@@ -60,9 +106,7 @@ const LoginPage = () => {
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword((prevState) => !prevState);
-  };
+  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
   const styles = {
     background: {
@@ -73,74 +117,64 @@ const LoginPage = () => {
       height: "100%",
       backgroundImage: `url(${Login})`,
       backgroundPosition: "center",
+      backgroundSize: "cover",
       zIndex: -1,
     },
-    backgroundShade: {
-      position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      zIndex: 0,
-    },
     wrapper: {
-      width: "90%",
-      maxWidth: "350px",
-      padding: "20px",
+      width: "85%", // Reduced from 90%
+      maxWidth: "320px", // Reduced from 400px
+      padding: "20px", // Reduced from 30px
       margin: "auto",
-      border: "2px solid rgba(252, 7, 7, 0.2)",
-      borderRadius: "15px",
+      border: "1px solid rgba(255, 255, 255, 0.3)",
+      borderRadius: "10px", // Slightly smaller radius
       textAlign: "center",
-      backgroundColor: "rgba(255, 255, 255, 0.5)", // Transparent white background
-      backdropFilter: "blur(10px)", // Adds a blur effect for better visibility
-      zIndex: 1,
+      backgroundColor: "rgba(255, 255, 255, 0.8)",
+      backdropFilter: "blur(10px)",
+      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
       position: "absolute",
       top: "50%",
       left: "50%",
-      transform: "translate(-50%, -50%)", // Center the box
+      transform: "translate(-50%, -50%)",
+      zIndex: 1,
     },
     watermark: {
       position: "absolute",
-      top: 0,
+      top: 25,
       left: 0,
       width: "100%",
-      height: "100%",
+      height: "80%",
+      
       backgroundImage: `url(${Watermark})`,
       backgroundRepeat: "no-repeat",
       backgroundPosition: "center",
-      backgroundSize: "100%", // Adjust the size
-      opacity: 0.3, // Light color for the watermark
-      zIndex: -1, // Ensure it's behind the content
-    },
-    title: {
-      marginBottom: "20px",
-      fontSize: "24px",
-      fontWeight: "bold",
-      color: "#666",
+      backgroundSize: "cover",
+      opacity: 0.2,
+      zIndex: -1,
+      paddingTop:1
     },
     form: {
       display: "flex",
       flexDirection: "column",
-      gap: "15px",
+      gap: "10px", // Reduced from 15px
     },
     inputBox: {
       textAlign: "left",
     },
     label: {
       display: "block",
-      marginBottom: "5px",
-      fontSize: "14px",
-      color: "#000000",
-      fontWeight: "bold"
+      marginBottom: "3px", // Reduced from 5px
+      fontSize: "12px", // Reduced from 14px
+      color: "#333",
+      fontWeight: "bold",
     },
     input: {
       width: "100%",
-      padding: "10px",
-      fontSize: "16px",
-      border: "2px solid rgba(252, 7, 7, 0.2)", // Brighter border color
+      padding: "8px", // Reduced from 10px
+      fontSize: "12px", // Reduced from 14px
+      border: "1px solid #ccc",
       borderRadius: "4px",
-      backgroundColor: "rgba(255, 255, 255, 2)", // Fully white background
-      color: "#000", // Dark text color for contrast
+      backgroundColor: "#fff",
+      color: "#333",
       boxSizing: "border-box",
       outline: "none",
     },
@@ -151,17 +185,17 @@ const LoginPage = () => {
     },
     showPasswordButton: {
       position: "absolute",
-      right: "10px",
+      right: "8px", // Adjusted for smaller input
       background: "none",
       border: "none",
       cursor: "pointer",
-      fontSize: "18px",
+      fontSize: "16px", // Slightly smaller
       color: "#666",
       outline: "none",
     },
     button: {
-      padding: "12px",
-      fontSize: "16px",
+      padding: "10px", // Reduced from 12px
+      fontSize: "14px", // Reduced from 16px
       backgroundColor: "#007BFF",
       color: "white",
       border: "none",
@@ -171,39 +205,58 @@ const LoginPage = () => {
     },
     logoContainer: {
       position: "absolute",
-      top: "20px",
+      top: "15px", // Slightly closer to top
       width: "100%",
       display: "flex",
-      justifyContent: "space-between", // Aligns logos at left & right
-      padding: "0 20px", // Adds some spacing from edges
-      zIndex: 2, // Ensure it's above the background
+      justifyContent: "space-between",
+      padding: "0 15px", // Reduced from 20px
+      zIndex: 2,
     },
     Logo: {
-      width: "120px", // Adjust size as needed
+      width: "100px", // Reduced from 120px
       height: "auto",
     },
     MahaLogo: {
-      width: "120px", // Adjust size as needed
+      width: "100px", // Reduced from 120px
       height: "auto",
     },
     quoteContainer: {
       position: "fixed",
-      bottom: "50px", // Adjust distance from the bottom
-      right: "20px",  // Move it to the right side
-      textAlign: "right", // Align text to the right
-      fontSize: "20px",
+      bottom: "15px", // Closer to bottom
+      right: "15px", // Closer to right
+      textAlign: "right",
+      fontSize: "20px", // Reduced from 16px
       fontStyle: "italic",
       fontWeight: "bold",
-      color: "orange", // Corrected color syntax
-      padding: "8px 15px",
-      borderRadius: "8px",
-    }
+      color: "orange",
+      padding: "6px 10px", // Reduced padding
+      borderRadius: "6px", // Smaller radius
+    },
+    captchaContainer: {
+      marginTop: "10px", // Reduced from 15px
+      display: "flex",
+      flexDirection: "row", // Changed to row for side-by-side layout
+      alignItems: "center",
+      gap: "10px",
+    },
+    captchaCanvas: {
+      border: "1px solid #ccc",
+      borderRadius: "4px",
+      width: "160px", // Reduced canvas width
+      height: "50px", // Reduced canvas height
+    },
+    reloadButton: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontSize: "18px",
+      color: "#666",
+      padding: "0",
+      outline: "none",
+    },
   };
 
-  // Redirect to home page if already authenticated
-  if (isAuthenticated) {
-    return <Navigate to="/" />;
-  }
+  if (isAuthenticated) return <Navigate to="/" />;
 
   return (
     <div>
@@ -212,10 +265,8 @@ const LoginPage = () => {
         <img src={MahaLogo} alt="MahaLogo" style={styles.MahaLogo} />
       </div>
       <div style={styles.background}></div>
-      <div style={styles.backgroundShade}></div>
       <div style={styles.wrapper}>
         <div style={styles.watermark}></div>
-        <h2 style={styles.title}>Login</h2>
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.inputBox}>
             <label style={styles.label}>Role</label>
@@ -225,14 +276,10 @@ const LoginPage = () => {
               required
               style={styles.input}
             >
-              <option value="" disabled>
-                Select your role
-              </option>
+              <option value="" disabled>Select your role</option>
               {Array.isArray(roles) && roles.length > 0 ? (
                 roles.map((roleOption, index) => (
-                  <option key={index} value={roleOption}>
-                    {roleOption}
-                  </option>
+                  <option key={index} value={roleOption}>{roleOption}</option>
                 ))
               ) : (
                 <option disabled>Loading roles...</option>
@@ -257,7 +304,7 @@ const LoginPage = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                style={{ ...styles.input, paddingRight: "40px" }}
+                style={{ ...styles.input, paddingRight: "30px" }} // Adjusted padding
               />
               <button
                 type="button"
@@ -269,13 +316,37 @@ const LoginPage = () => {
               </button>
             </div>
           </div>
+          <div style={styles.captchaContainer}>
+            <canvas
+              ref={captchaCanvasRef}
+              width="160" // Matches style
+              height="50" // Matches style
+              style={styles.captchaCanvas}
+            />
+            <button
+              type="button"
+              onClick={generateCaptcha}
+              style={styles.reloadButton}
+              aria-label="Refresh CAPTCHA"
+            >
+              🔄
+            </button>
+            <input
+              type="text"
+              value={captchaInput}
+              onChange={(e) => setCaptchaInput(e.target.value)}
+              placeholder="Enter CAPTCHA"
+              required
+              style={styles.input}
+            />
+          </div>
           <button type="submit" style={styles.button}>
             Login
           </button>
         </form>
       </div>
       <div style={styles.quoteContainer}>
-        "A well-managed battery is the heart of a<br></br> sustainable future....!"
+      "Enhancing Battery Life with Smart Prediction & Fault Detection... For a Smoother Ride! 🚀🔋"
       </div>
     </div>
   );

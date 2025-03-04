@@ -1,187 +1,181 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
-import { 
-  Box, Typography, Table, TableBody, TableCell, TableContainer, 
-  TableHead, TableRow,TablePagination, Paper,  Button,IconButton 
+import {
+  Box, Typography, Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, TablePagination, Paper, Button, Dialog,
+  DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { AppContext } from "../../services/AppContext";
+import { useNavigate } from "react-router-dom";
 
 const PieChartComponent2 = ({ data1, handlePieClickCommu }) => {
+  const { setSiteId, setSerialNumber, handleSearch } = useContext(AppContext);
   const [clickedSection, setClickedSection] = useState(null);
-  const [isTableVisible, setIsTableVisible] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [tableData, setTableData] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const navigate = useNavigate();
 
-  const outerRadius = 85;
-  const innerRadius = 30;
-  const chartSize = 220;
-  const API_URL = "http://122.175.45.16:51270/getCommnStatus?marginMinutes=1";
+  // Constants
+  const CHART_SIZE = 220;
+  const OUTER_RADIUS = 85;
+  const INNER_RADIUS = 30;
+  const API_URL = "http://122.175.45.16:51270/getCommnStatus?marginMinutes=240";
+  const TITLE_GRADIENT = 'linear-gradient(90deg, rgb(0, 212, 255) 0%, rgb(9, 9, 121) 35%, rgb(0, 212, 255) 100%)';
+  const HEADER_GRADIENT = 'linear-gradient(to bottom, #d82b27, #f09819)';
+  const BUTTON_COLOR = 'rgb(216, 43, 39)';
+  const BUTTON_HOVER_COLOR = 'rgb(180, 30, 28)';
 
-  // Function to fetch data from backend
+  const TABLE_HEADERS = [
+    "Site ID", "Serial Number", "Vendor", "Location", "Cells Connected",
+    "String Voltage", "Instantaneous Current", "Ambient Temperature", "Battery Run Hours"
+  ];
+
+  const TABLE_CELL_STYLE = {
+    color: 'white',
+    fontWeight: 'bold',
+    background: HEADER_GRADIENT,
+    padding: '3px',
+    minWidth: '150px',
+    whiteSpace: 'nowrap',
+    textAlign: 'center'
+  };
+
+  // Fetch communication status
   const fetchCommunicationStatus = async () => {
     try {
       const response = await fetch(API_URL);
-      const data = await response.json();
-      return data;
+      return await response.json();
     } catch (error) {
       console.error("Error fetching communication status:", error);
       return [];
     }
   };
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
+  // Pagination handlers
+  const handleChangePage = (event, newPage) => setPage(newPage);
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
 
-  // Handle Pie Click
+  // Pie chart click handler
   const handleClick = async (data, index) => {
     setClickedSection(data.name);
-    setIsTableVisible(true);
+    setIsDialogOpen(true);
 
-    // Fetch Data for Selected Section
     try {
       const response = await fetchCommunicationStatus();
-
-      // Filter data based on the clicked section
-      const filteredData = response.filter(item => {
-        if (data.name === 'Communicating') {
-          return item.statusType === 1; // Only communicating devices (statusType = 1)
-        } else if (data.name === 'Non-Communicating') {
-          return item.statusType === 0; // Only non-communicating devices (statusType = 0)
-        }
-        return false;
-      }).map((item) => ({
-        siteId: item?.siteId || '--',
-        statusType: item?.statusType === 1 ? 'Communicating' : 'Non-Communicating',
-        vendor: item?.siteLocationDTO?.vendorName || '--',
-        location: item?.siteLocationDTO?.area || '--',
-        cellsConnectedCount: item?.generalDataDTO?.deviceDataDTO?.[0]?.cellsConnectedCount || 0,
-        stringVoltage: item?.generalDataDTO?.deviceDataDTO?.[0]?.stringvoltage || 0,
-        instantaneousCurrent: item?.generalDataDTO?.deviceDataDTO?.[0]?.instantaneousCurrent || 0,
-        ambientTemperature: item?.generalDataDTO?.deviceDataDTO?.[0]?.ambientTemperature || 0,
-        batteryRunHours: item?.generalDataDTO?.deviceDataDTO?.[0]?.batteryRunHours || 0,
-      }));
-
+      const filteredData = response
+        .filter(item => data.name === 'Communicating' ? item.statusType === 1 : item.statusType === 0)
+        .map(item => ({
+          siteId: item?.siteId || '--',
+          serialNumber: item?.generalDataDTO?.deviceDataDTO[0]?.serialNumber || 'N/A',
+          statusType: item?.statusType === 1 ? 'Communicating' : 'Non-Communicating',
+          vendor: item?.siteLocationDTO?.vendorName || '--',
+          location: item?.siteLocationDTO?.area || '--',
+          cellsConnectedCount: item?.generalDataDTO?.deviceDataDTO?.[0]?.cellsConnectedCount || 0,
+          stringVoltage: item?.generalDataDTO?.deviceDataDTO?.[0]?.stringvoltage || 0,
+          instantaneousCurrent: item?.generalDataDTO?.deviceDataDTO?.[0]?.instantaneousCurrent || 0,
+          ambientTemperature: item?.generalDataDTO?.deviceDataDTO?.[0]?.ambientTemperature || 0,
+          batteryRunHours: item?.generalDataDTO?.deviceDataDTO?.[0]?.batteryRunHours || 0,
+        }));
       setTableData(filteredData);
     } catch (error) {
       console.error("Error processing data:", error);
       setTableData([]);
     }
 
-    if (handlePieClickCommu) {
-      handlePieClickCommu(data, index);
-    }
+    handlePieClickCommu?.(data, index);
   };
 
-  // Close Table
-  const handleCloseTable = () => {
-    setIsTableVisible(false);
+  // Row click handler
+  const handleRowClick = async (item) => {
+    setSiteId(item.siteId);
+    setSerialNumber(item.serialNumber);
+    const data = await handleSearch();
+    if (data) navigate("/livemonitoring");
   };
 
-  // Render Table
-  const renderTable = () => {
-    if (!isTableVisible || !clickedSection) return null;
+  const handleCloseDialog = () => setIsDialogOpen(false);
 
-    return (
-      <Box
-        sx={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          zIndex: 1000,
-          backgroundColor: 'white',
-          boxShadow: 3,
-          borderRadius: 2,
-          p: 2,
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            background: 'linear-gradient(90deg, rgb(0, 212, 255) 0%, rgb(9, 9, 121) 35%, rgb(0, 212, 255) 100%)',
-            color: 'white',
-            borderRadius: '4px',
-            padding: '10px',
-            mb: 2,
-          }}
-        >
-          <Typography variant="h6" gutterBottom>
-            {clickedSection} Devices
-          </Typography>
+  const renderDialog = () => (
+    <Dialog open={isDialogOpen} onClose={handleCloseDialog} maxWidth="lg" fullWidth>
+      <DialogTitle>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', background: TITLE_GRADIENT, color: 'white', borderRadius: '4px', padding: '10px' }}>
+          <Typography variant="h6">{clickedSection} Devices</Typography>
         </Box>
-    
+      </DialogTitle>
+      <DialogContent>
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
-              <TableRow sx={{ backgroundColor: 'rgb(216, 43, 39)' }}>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Site ID</TableCell>
-                {/* <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Status</TableCell> */}
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Vendor</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Location</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Cells Connected</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>String Voltage</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Instantaneous Current</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Ambient Temperature</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Battery Run Hours</TableCell>
+              <TableRow>
+                {TABLE_HEADERS.map((header, index) => (
+                  <TableCell key={index} sx={TABLE_CELL_STYLE}>{header}</TableCell>
+                ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {tableData.map((row, index) => (
+              {tableData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
                 <TableRow key={index}>
-                  <TableCell>{row.siteId}</TableCell>
-                  {/* <TableCell>{row.statusType}</TableCell> */}
-                  <TableCell>{row.vendor}</TableCell>
-                  <TableCell>{row.location}</TableCell>
-                  <TableCell>{row.cellsConnectedCount}</TableCell>
-                  <TableCell>{row.stringVoltage}</TableCell>
-                  <TableCell>{row.instantaneousCurrent}</TableCell>
-                  <TableCell>{row.ambientTemperature}</TableCell>
-                  <TableCell>{row.batteryRunHours}</TableCell>
+                 <TableCell>
+  <span
+    style={{
+      color: "#1976d2",
+      textDecoration: "underline",
+      cursor: "pointer",
+      border: "1px solid #ccc",
+      padding: "3px",
+      fontWeight: "bold",
+      whiteSpace: "nowrap",
+      textAlign: "center",
+    }}
+    title="Double tap here"
+    onClick={() => handleRowClick(row)}
+  >
+    {row.siteId}
+  </span>
+</TableCell> <TableCell   style={{padding: "3px",fontWeight: "bold",whiteSpace: "nowrap",textAlign: "center",}}>{row.serialNumber}</TableCell>
+                  <TableCell style={{padding: "3px",fontWeight: "bold",whiteSpace: "nowrap",textAlign: "center",}}>{row.vendor}</TableCell>
+                  <TableCell style={{padding: "3px",fontWeight: "bold",whiteSpace: "nowrap",textAlign: "center",}}> {row.location}</TableCell>
+                  <TableCell style={{padding: "3px",fontWeight: "bold",whiteSpace: "nowrap",textAlign: "center",}}>{row.cellsConnectedCount}</TableCell>
+                  <TableCell style={{padding: "3px",fontWeight: "bold",whiteSpace: "nowrap",textAlign: "center",}}>{row.stringVoltage} V</TableCell>
+                  <TableCell style={{padding: "3px",fontWeight: "bold",whiteSpace: "nowrap",textAlign: "center",}}>{row.instantaneousCurrent} A</TableCell>
+                  <TableCell style={{padding: "3px",fontWeight: "bold",whiteSpace: "nowrap",textAlign: "center",}}>{row.ambientTemperature} °C</TableCell>
+                  <TableCell style={{padding: "3px",fontWeight: "bold",whiteSpace: "nowrap",textAlign: "center",}}>{row.batteryRunHours}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
         <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
-        component="div"
-        count={tableData.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      />
-
-      {/* Close Button */}
-      <Box display="flex" justifyContent="flex-end" mt={2}>
-  <Button
-    variant="contained"
-    onClick={handleCloseTable}
-    sx={{
-      backgroundColor: 'rgb(216, 43, 39)',
-      '&:hover': { backgroundColor: 'rgb(180, 30, 28)' }, // Darker shade on hover
-    }}
-  >
-    Close
-  </Button>
-      </Box>
-      </Box>
-    );
-  };
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={tableData.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button
+          variant="contained"
+          onClick={handleCloseDialog}
+          sx={{ backgroundColor: BUTTON_COLOR, color: 'white', '&:hover': { backgroundColor: BUTTON_HOVER_COLOR } }}
+        >
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
 
   return (
     <Box display="flex" justifyContent="center" alignItems="center" flexDirection="column">
       <Box display="flex" justifyContent="center" alignItems="center">
-        <PieChart width={chartSize} height={chartSize}>
+        <PieChart width={CHART_SIZE} height={CHART_SIZE}>
           <defs>
             <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
               <feDropShadow dx="2" dy="2" stdDeviation="3" floodColor="rgba(0, 0, 0, 0.7)" />
@@ -196,32 +190,27 @@ const PieChartComponent2 = ({ data1, handlePieClickCommu }) => {
               <stop offset="100%" stopColor="#F71735" />
             </linearGradient>
           </defs>
-
           <Pie
             data={data1}
             dataKey="value"
             nameKey="name"
             cx="50%"
             cy="50%"
-            innerRadius={innerRadius}
-            paddingAngle="5"
-            cornerRadius="5"
-            outerRadius={outerRadius}
+            innerRadius={INNER_RADIUS}
+            paddingAngle={5}
+            cornerRadius={5}
+            outerRadius={OUTER_RADIUS}
             label
             onClick={handleClick}
             style={{ filter: 'url(#shadow)' }}
           >
             {data1.map((entry, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={index === 0 ? 'url(#greenGradient)' : 'url(#notcommuGradient)'}
-              />
+              <Cell key={`cell-${index}`} fill={index === 0 ? 'url(#greenGradient)' : 'url(#notcommuGradient)'} />
             ))}
           </Pie>
           <Tooltip />
         </PieChart>
 
-        {/* Legend Section */}
         <Box ml={2} display="flex" flexDirection="column" justifyContent="center">
           {data1.map((entry, index) => (
             <Box key={index} display="flex" alignItems="center" mb={1}>
@@ -230,13 +219,9 @@ const PieChartComponent2 = ({ data1, handlePieClickCommu }) => {
                 height={10}
                 borderRadius="50%"
                 mr={1}
-                style={{
-                  background: `linear-gradient(to right, ${
-                    index === 0 ? '#0d900b, #02DEB2,#62B816' : '#e41c38, #F71735'
-                  })`,
-                }}
+                sx={{ background: `linear-gradient(to right, ${index === 0 ? '#0d900b, #02DEB2, #62B816' : '#e41c38, #F71735'})` }}
               />
-              <Typography variant="body2" style={{ fontWeight: 'bold', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)' }}>
+              <Typography variant="body2" sx={{ fontWeight: 'bold', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)' }}>
                 {entry.name}
               </Typography>
             </Box>
@@ -244,8 +229,7 @@ const PieChartComponent2 = ({ data1, handlePieClickCommu }) => {
         </Box>
       </Box>
 
-      {/* Render Table */}
-      {renderTable()}
+      {renderDialog()}
     </Box>
   );
 };

@@ -218,8 +218,28 @@ const Dashboard = () => {
           socLatestValueForEveryCycle:item.generalDataDTO?.deviceDataDTO?.[0]?.socLatestValueForEveryCycle,
           dodLatestValueForEveryCycle:item.generalDataDTO?.deviceDataDTO?.[0]?.dodLatestValueForEveryCycle,
           acVoltage:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.acVoltage,
-          bmsAlarmsDTO:item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO,
-          chargerDTO:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO
+          inputMains:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.inputMains,
+          batteryCondition:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.batteryCondition,
+          chargerTrip:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerTrip?.chargerTrip,
+          inputPhase:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.inputPhase,
+          rectifierFuse:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.rectifierFuse,
+          filterFuse:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.filterFuse,
+          outputFuse:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.outputFuse,
+          dcVoltageOLN:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.dcVoltageOLN,
+          outputMccb:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.outputMccb,
+          chargerLoad:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.chargerLoad,
+          inputFuse:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.inputFuse,
+          alarmSupplyFuse:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.alarmSupplyFuse,
+          testPushButton:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.testPushButton,
+          resetPushButton:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.resetPushButton,
+          cellVoltageLNH:item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.cellVoltageLNH,
+          bankDischargeCycle:item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.bankDischargeCycle ,
+          bmsSedCommunication:item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.bmsSedCommunication ,
+          cellCommunication:item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.cellCommunication ,
+          buzzer:item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.buzzer ,
+        
+
+
         }));
       console.log("item", filteredData);
       return { name: alarmType, count, details };
@@ -244,7 +264,7 @@ const Dashboard = () => {
             generateChartData(filteredData, "String(V) Low", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.stringVoltageLNH === 0),
             generateChartData(filteredData, "Cell(V) Low", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.cellVoltageLNH === 0),
             generateChartData(filteredData, "SOC Low", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.socLN === true),
-            generateChartData(filteredData, "Battery Open", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.batteryCondition === true),
+            // generateChartData(filteredData, "Battery Open", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.batteryCondition === true),
             generateChartData(filteredData, "Charger Trip", (item) => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.chargerTrip === true),
           ];
           break;
@@ -259,7 +279,8 @@ const Dashboard = () => {
             chargerMonitoring?.rectifierFuse === true || // Rectifier Fuse Failure
             chargerMonitoring?.filterFuse === true || // Filter Fuse Failure
             chargerMonitoring?.outputMccb === true || // Output MCCB Failure
-            chargerMonitoring?.inputFuse === true || // Input Fuse Failure
+            chargerMonitoring?.inputFuse === true ||
+            chargerMonitoring?.batteryCondition === true|| // Input Fuse Failure
             chargerMonitoring?.acVoltageULN === 2
           ));
   
@@ -273,6 +294,7 @@ const Dashboard = () => {
             generateChartData(filteredData, "Filter Fuse Fail", (item) => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.filterFuse === true),
             generateChartData(filteredData, "Output MCCB Fail", (item) => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.outputMccb === true),
             generateChartData(filteredData, "Input Fuse Fail", (item) => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.inputFuse === true),
+            generateChartData(filteredData, "Battery Condition", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.batteryCondition === true),
             generateChartData(filteredData, "AC(V) High", (item) => item?.item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.acVoltageULN === 2),
           ];
           break;
@@ -299,6 +321,7 @@ const Dashboard = () => {
   
         case 'Minor Count':
           filteredData = filterData(response, (bmsAlarms, chargerMonitoring) => (
+            bmsAlarms?.bankDischargeCycle === true ||
             bmsAlarms?.bmsSedCommunication === true || // Battery Status (Discharging)
             bmsAlarms?.stringCommunication === true || // String Communication
             bmsAlarms?.cellTemperatureHN === true || // Cell Temperature High
@@ -311,9 +334,10 @@ const Dashboard = () => {
   
           chartData = [
 
-            generateChartData(filteredData, "Battery Bank(Discharging)", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.bmsSedCommunication === true),
-            generateChartData(filteredData, "String Commu", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.stringCommunication === true),
+            generateChartData(filteredData, "Battery Bank(Discharging)", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.bankDischargeCycle === true),
+            generateChartData(filteredData, "String Commu", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.bmsSedCommunication === true),
             generateChartData(filteredData, "Buzzer Alarm", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.buzzer === true),
+            generateChartData(filteredData, "Cell Temperature", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.cellTemperatureHN === true),
             generateChartData(filteredData, "Charger Load", (item) => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.chargerLoad === true),
             generateChartData(filteredData, "Alarm Supply Fuse Fail", (item) => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.alarmSupplyFuse === true),
             generateChartData(filteredData, "Test Push Button", (item) => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.testPushButton === true),

@@ -52,7 +52,7 @@ const MapComponent = ({ mapMarkers = [], selectedStatus }) => {
       <Map
         defaultCenter={{ lat: 17.4065, lng: 78.4772 }} // Fallback center
         defaultZoom={15} // Fallback zoom
-        mapId="YOUR_MAP_ID" // Replace with your Map ID
+        mapId="57f9f0203fe55f5e" // Replace with your Map ID
         style={{ height: '440px', width: '100%' }}
       >
         <MapBounds markers={markers} /> {/* Handle dynamic bounds */}

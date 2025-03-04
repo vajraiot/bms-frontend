@@ -58,7 +58,7 @@ const Sidebar = () => {
     <Box
       sx={{
         "& .pro-sidebar": {
-          paddingTop: "75px",
+          // paddingTop: "75px",
           width: isCollapsed ? "80px" : "210px",
           minWidth: isCollapsed ? "80px" : "210px",
           transition: "width 0.3s ease",

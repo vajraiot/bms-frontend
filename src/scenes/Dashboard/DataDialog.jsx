@@ -1,4 +1,4 @@
-import React, { useState,useContext } from "react";
+import React, { useState,useContext,useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -50,12 +50,10 @@ const CustomTick = (props) => {
 
 // Table Dialog to display data in table format
 const TableDialog = ({ open, handleClose, data, alarmType }) => {
-  const{setSiteId,  setSerialNumber,handleSearch
-  }=useContext(AppContext)
+  const { setSiteId, setSerialNumber, handleSearch,siteId,serialNumber } = useContext(AppContext);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  // const [siteId, setSiteId] = useState(""); // Selected Site ID
-  // const [serialNumber, setSerialNumber] = useState(""); // Selected Serial Number
+  const [clickedItem, setClickedItem] = useState(null);
   const navigate = useNavigate();
 
   const handleChangePage = (event, newPage) => {
@@ -72,18 +70,36 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
     page * rowsPerPage + rowsPerPage
   );
 
-  const handleRowClick = async (item) => {
-     setSiteId("");
-     setSerialNumber("");
-     setSiteId(item.siteId);
-     setSerialNumber(item.serialNumber);
-    
-    // Await handleSearch() before navigation if needed
-     //const data = await handleSearch();
-    if(data){navigate("/livemonitoring");}
-};
+  // useEffect to trigger handleSearch and navigation after siteId and serialNumber are set
+  useEffect(() => {
+    let mounted = true;
 
+    const performSearchAndNavigate = async () => {
+      if (mounted && siteId && serialNumber) {
+        const result = await handleSearch();
+        if (result) {
+          navigate("/livemonitoring");
+        }
+      }
+    };
 
+    // Trigger only if a row was clicked and both siteId and serialNumber are set
+    if (clickedItem && siteId === clickedItem.siteId && serialNumber === clickedItem.serialNumber) {
+      performSearchAndNavigate();
+      // Reset clickedItem to prevent re-triggering
+      setClickedItem(null);
+    }
+
+    return () => {
+      mounted = false;
+    };
+  }, [siteId, serialNumber, handleSearch, navigate, clickedItem]);
+
+  const handleRowClick = (item) => {
+    setSiteId(item.siteId); // Update siteId in context
+    setSerialNumber(item.serialNumber); // Update serialNumber in context
+    setClickedItem(item); // Set local state to track the clicked row
+  };
   const getTableColumns = () => {
     const baseColumns = [
       { id: "siteId", label: "Substation ID" },
@@ -146,7 +162,7 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
         baseColumns.push({ id: "ambientTemperature", label: "Ambient Temperature High" });
         break;
       case "Cell Comm Fail":
-        baseColumns.push({ id: "cellCommunicationFD", label: "Cell Communication" });
+        baseColumns.push({ id: "cellCommunication", label: "Cell Communication" });
         break;
       case "DC Over Voltage":
         baseColumns.push({ id: "dcVoltageOLN", label: "DC Voltage High" });
@@ -155,7 +171,7 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
         baseColumns.push({ id: "dcVoltageOLN", label: "DC Voltage Low" });
         break;
       case "Battery Bank(Discharging)":
-        baseColumns.push({ id: "bankCycleDC", label: "Battery Bank(Discharging)" });
+        baseColumns.push({ id: "bankDischargeCycle", label: "Battery Bank(Discharging)" });
         break;
       case "AC(V) High":
         baseColumns.push({ id: "acVoltage", label: "AC Voltage High" });
@@ -199,7 +215,7 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
           textAlign: "center",
         }}
       >
-        Data for {data.name} - {alarmType}
+         {data.name} - {alarmType}
       </DialogTitle>
       <DialogContent>
         <Typography variant="body1">
@@ -222,9 +238,12 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
                       key={column.id}
                       sx={{
                         border: "1px solid #ccc",
-                        padding: "5px",
+                        padding: "3px",
                         fontWeight: "bold",
                         color: "#ffffff",
+                        whiteSpace: "nowrap",
+                        textAlign:"center"
+                        
                       }}
                     >
                       {column.label}
@@ -233,23 +252,43 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {paginatedData?.map((item, index) => (
-                  <TableRow
-                    key={index}
-                    onClick={() => handleRowClick(item)}
-                    sx={{
-                      "&:nth-of-type(odd)": { backgroundColor: "#fafafa" },
-                      "&:hover": { backgroundColor: "#f0f0f0", cursor: "pointer" },
-                    }}
-                  >
-                    {columns.map((column) => (
-                      <TableCell key={column.id}>
-                        {item[column.id] || "-"}
-                      </TableCell>
-                    ))}
-                  </TableRow>
+            {paginatedData?.map((item, index) => (
+              <TableRow
+                key={index}
+                onClick={() => handleRowClick(item)}
+                sx={{
+                  "&:nth-of-type(odd)": { backgroundColor: "#fafafa" },
+                  "&:hover": { backgroundColor: "#f0f0f0", cursor: "pointer" },
+                }}
+              >
+                {columns.map((column) => (
+                <TableCell key={column.id} 
+                style={column.id === 'siteId' ? { 
+                  color: "#1976d2", 
+                  textDecoration: "underline", 
+                  cursor: "pointer",
+                  border: '1px solid #ccc',
+                  padding: '3px',
+                  fontWeight: 'bold',
+                  whiteSpace: "nowrap",
+                  textAlign: "center"
+                } : {}}
+                title={column.id === 'siteId' ? 'Double tap here' : undefined}
+              >
+                {column.id === 'dcVoltageOLN' || column.id === 'cellVoltageLNH'
+                  ? (item[column.id] === 0 ? 'Low' : item[column.id] === 1 ? 'Normal' : item[column.id] === 2 ? 'Over' : item[column.id])
+                  : typeof item[column.id] === 'boolean'
+                  ? item[column.id]
+                    ? 'Fail'
+                    : 'Normal'
+                  : item[column.id] !== undefined && item[column.id] !== null
+                  ? item[column.id]
+                  : 'No Data'}
+              </TableCell>
                 ))}
-              </TableBody>
+              </TableRow>
+            ))}
+          </TableBody>
             </Table>
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
@@ -317,35 +356,35 @@ const DataDialog = ({
           case "String(V) Low":
             return detail.stringvoltage !== undefined;
           case "Cell(V) Low":
-            return detail.bmsAlarmsDTO?.cellVoltageLNH !== undefined? "Cell Voltage Low" : null;
+            return detail.cellVoltageLNH !== undefined;
           case "SOC Low":
             return detail.socLatestValueForEveryCycle !== undefined;
           case "Battery Condition":
-            return detail.chargerDTO?.batteryCondition !== undefined? "Battery Condition" : null;
+            return detail.batteryCondition !== undefined;
           case "Charger Trip":
-            return detail.chargerDTO?.chargerTrip !== undefined ?"Charger Tripped" : null;
+            return detail.chargerTrip !== undefined ;
           case "Cell(V) High":
-            return detail.bmsAlarmsDTO?.cellVoltageLNH !== undefined ? "Cell Voltage High" : null;
+            return detail.cellVoltageLNH !== undefined ;
           case "String(A) High":
             return detail.instantaneousCurrent !== undefined;
           case "Battery Bank(Discharging)":
-              return detail.bmsAlarmsDTO?.bankDischargeCycle!== undefined ? "Battery Bank Discharging" : null;
+              return detail.bankDischargeCycle!== undefined ;
           case "String Commu":
-            return detail.bmsAlarmsDTO?.bmsSedCommunication !== undefined ? "String Communication Fail" : null;
+            return detail.bmsSedCommunication !== undefined ;
           case "Input Mains Fail":
-            return detail.chargerDTO?.inputMains !== undefined? "Input Mains Fail" : null;
+            return detail.inputMains !== undefined
           case "Input Phase Fail":
-            return detail.chargerDTO?.inputPhase !== undefined? "Input Phase Fail" : null;
+            return detail.inputPhase !== undefined;
           case "Rectifier Fuse Fail":
-            return detail.chargerDTO?.rectifierFuse !== undefined? "Rectifier Fuse Fail" : null;
+            return detail.rectifierFuse !== undefined;
           case "Filter Fuse Fail":
-            return detail.chargerDTO?.filterFuse !== undefined? "Filter Fuse Fail" : null;
+            return detail.filterFuse !== undefined;
           case "Output Fuse Fail":
-              return detail.chargerDTO?.outputFuse !== undefined? "Output Fuse Fail" : null; 
+              return detail.outputFuse !== undefined;
           case "Output MCCB Fail":
-            return detail.chargerDTO?.outputMccb !== undefined? "Output MCCB Fail" : null;
+            return detail.outputMccb !== undefined;
           case "Input Fuse Fail":
-            return detail.chargerDTO?.inputFuse !== undefined? "Input Fuse Fail" : null;
+            return detail.inputFuse !== undefined;
           case "AC Under Voltage":
             return detail.acVoltage !== undefined;
           case "AC(V) High":
@@ -353,21 +392,21 @@ const DataDialog = ({
           case "Ambient (°C) High":
             return detail.ambientTemperature !== undefined;
           case "Cell Comm Fail":
-            return detail.bmsAlarmsDTO?.cellCommunication !== undefined? "String Communication Fail" : null;
+            return detail.cellCommunication !== undefined;
           case "DC Under Voltage":
-            return detail.chargerDTO?.dcVoltageOLN !== undefined? "DC Under Voltage" : null;
+            return detail.dcVoltageOLN !== undefined;
           case "DC Over Voltage":
-            return detail.chargerDTO?.dcVoltageOLN !== undefined? "DC Over Voltage" : null;
+            return detail.dcVoltageOLN !== undefined;
           case "Buzzer Alarm":
-            return detail.bmsAlarmsDTO?.buzzer !== undefined? "String Communication Fail" : null;
+            return detail.buzzer !== undefined;
           case "Charger Load":
-            return detail.chargerDTO?.chargerLoad !== undefined? "Charger Load" : null;
+            return detail.chargerLoad !== undefined;
           case "Alarm Supply Fuse Fail":
-            return detail.chargerDTO?.alarmSupplyFuse !== undefined? "Alarm Supply Fuse Fail" : null;
+            return detail.alarmSupplyFuse !== undefined;
           case "Test Push Button":
-            return detail.chargerDTO?.testPushButton !== undefined? "Test Push Button Pressed" : null;
+            return detail.testPushButton !== undefined;
           case "Reset Push Button":
-            return detail.chargerDTO?.resetPushButton !== undefined? "Reset Push Button Pressed" : null;
+            return detail.resetPushButton !== undefined;
           default:
             return true; // Show all rows if no specific alarm type is selected
         }

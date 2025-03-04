@@ -59,7 +59,7 @@ export default function Cummulative({
         mr="10px"
       >
         <Typography sx={{ alignSelf: "center"}}  variant="h6" mb="10px">
-          <strong>Cummulative Data</strong>
+          <strong>Cummulative Info</strong>
         </Typography>
         <Box display="flex" flexDirection="column">
           {[

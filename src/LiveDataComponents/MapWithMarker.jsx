@@ -109,17 +109,23 @@
 import React from "react";
 import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
 
-const MapWithMarker = ({ locationName = "", latitude, longitude, vendorName, batteryAHCapacity }) => {
+export default MapWithMarker = ({ locationName = "", latitude, longitude, vendorName, batteryAHCapacity }) => {
   const [selectedMarker, setSelectedMarker] = React.useState(false);
   const [mapError, setMapError] = React.useState(null);
-
-  const defaultCenter = {
+  const [mapCenter, setMapCenter] = React.useState({
     lat: 19.2403,
     lng: 73.1305,
-  };
+  });
 
-  const lat = parseFloat(latitude) || defaultCenter.lat;
-  const lng = parseFloat(longitude) || defaultCenter.lng;
+  const lat = parseFloat(latitude) || mapCenter.lat;
+  const lng = parseFloat(longitude) || mapCenter.lng;
+
+  // Update map center when latitude or longitude changes
+  React.useEffect(() => {
+    if (latitude && longitude) {
+      setMapCenter({ lat, lng });
+    }
+  }, [latitude, longitude]);
 
   const handleMarkerClick = () => setSelectedMarker(true);
   const handleCloseInfoWindow = () => setSelectedMarker(false);
@@ -138,7 +144,7 @@ const MapWithMarker = ({ locationName = "", latitude, longitude, vendorName, bat
         <div>{mapError}</div>
       ) : (
         <Map
-          center={defaultCenter}
+          center={mapCenter} // Use dynamic center
           zoom={10}
           style={{ height: "200px", width: "100%" }}
           mapId="57f9f0203fe55f5e" // Replace with your Map ID (e.g., "bms-map")
@@ -173,7 +179,7 @@ const MapWithMarker = ({ locationName = "", latitude, longitude, vendorName, bat
               >
                 <strong>{locationName || "Location"}</strong>
                 <br />
-                Vendor: {vendorName || "N/A"}
+                Customer: {vendorName || "N/A"}
                 <br />
                 Battery Capacity: {batteryAHCapacity || "N/A"} AH
               </div>
@@ -184,5 +190,3 @@ const MapWithMarker = ({ locationName = "", latitude, longitude, vendorName, bat
     </APIProvider>
   );
 };
-
-export default MapWithMarker;

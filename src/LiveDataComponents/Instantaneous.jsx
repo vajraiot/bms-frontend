@@ -20,7 +20,7 @@ export const Instantaneous = ({voltage,current,soc,dod,ambientTemperature}) => {
           ml="8px"
         >
           <Typography variant="h6" mb="10px">
-            <strong>Instantaneous Data</strong>
+            <strong>Instantaneous Info</strong>
           </Typography>
           <Box
             display="flex"

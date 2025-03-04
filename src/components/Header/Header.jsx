@@ -27,7 +27,7 @@ const Header = () => {
           textShadow: '2px 2px 5px rgba(0, 0, 0, 0.3)', // Shadow added to text
         }}
       >
-        Remote Battery Management & Battery Charger Monitoring System
+        Remote Battery Monitoring & Battery Charger Monitoring System
       </Typography>
     </Box>
   );

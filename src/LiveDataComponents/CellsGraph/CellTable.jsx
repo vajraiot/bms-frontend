@@ -40,7 +40,7 @@ const VoltageTemperatureTable = ({ data }) => {
   });
 
   return (
-    <Box m="2px">
+    <Box m="2px" overflow="auto">
       <Box
         height="500px" // Fixed height for the table
         sx={{

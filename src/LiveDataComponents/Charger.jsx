@@ -23,7 +23,7 @@ export const Charger = ({charger}) => {
           ml="8px"
         >
           <Typography variant="h6" mb="10px" sx={{ textAlign: "center", width: "100%" }}>
-  <strong>Charger Data</strong>
+  <strong>Charger Info</strong>
 </Typography>
 
           <Box
@@ -32,7 +32,7 @@ export const Charger = ({charger}) => {
           >
             {[
         
-              { label: "AC Voltage", value: acVoltage, unit: "V" ,icon:Acvoltage},
+              { label: "AC Voltage", value: acVoltage/100, unit: "V" ,icon:Acvoltage},
               { label: "AC Current", value: acCurrent, unit: "A",icon:Accurrent },
               { label: "Frequency", value: frequency, unit: "Hz",icon:frequenc },
       

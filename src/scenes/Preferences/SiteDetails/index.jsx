@@ -311,10 +311,7 @@ const handleAddSite = async () => {
         if (key === 'siteId') {
           return (
             <Grid item xs={12} sm={8} md={4} lg={3} key="siteId">
-              <Typography variant="body1" sx={{ fontWeight: 800, fontSize: '12px' }}>
-                Substation ID
-              </Typography>
-              <Box width="200px">
+              <Box width="150px" textAlign="center">
                 <FormControl fullWidth margin="dense">
                   <Autocomplete
                     options={siteOptions}
@@ -335,6 +332,16 @@ const handleAddSite = async () => {
                       <TextField
                         {...params}
                         label="Substation ID"
+                        InputLabelProps={{
+                          sx: {
+                            fontWeight: "bold",
+                            color:"balck",
+                          },
+                        }}
+                        inputProps={{
+                          ...params.inputProps,
+                          style: { textAlign: 'center' },
+                        }}
                         sx={{
                           '& .MuiInputBase-root': {
                             height: '35px',
@@ -363,14 +370,11 @@ const handleAddSite = async () => {
             </Grid>
           );
         }
-
+  
         if (key === 'serialNumber') {
           return (
             <Grid item xs={12} sm={8} md={4} lg={3} key="serialNumber">
-              <Typography variant="body1" sx={{ fontWeight: 800, fontSize: '12px' }}>
-                {columns.serialNumber}
-              </Typography>
-              <Box width="200px">
+              <Box width="150px">
                 <FormControl fullWidth margin="dense">
                   <Autocomplete
                     options={serialNumberOptions}
@@ -389,6 +393,16 @@ const handleAddSite = async () => {
                       <TextField
                         {...params}
                         label="Serial Number"
+                        InputLabelProps={{
+                          sx: {
+                            fontWeight: "bold",
+                            color:"balck",
+                          },
+                        }}
+                        inputProps={{
+                          ...params.inputProps,
+                          style: { textAlign: 'center' },
+                        }}
                         sx={{
                           '& .MuiInputBase-root': {
                             height: '35px',
@@ -416,17 +430,12 @@ const handleAddSite = async () => {
               </Box>
             </Grid>
           );
-        
         }
-
-
+  
         if (key === 'state') {
           return (
-            <Grid item xs={12} sm={8} md={4} lg={3} key="serialNumber">
-              <Typography variant="body1" sx={{ fontWeight: 800, fontSize: '12px' }}>
-                {columns.serialNumber}
-              </Typography>
-              <Box width="200px">
+            <Grid item xs={12} sm={8} md={4} lg={3} key="state">
+              <Box width="150px">
                 <FormControl fullWidth margin="dense">
                   <Autocomplete
                     options={stateOptions.map((state) => state.name)}
@@ -444,7 +453,17 @@ const handleAddSite = async () => {
                     renderInput={(params) => (
                       <TextField
                         {...params}
-                        label="Sate"
+                        label="State"
+                        InputLabelProps={{
+                          sx: {
+                            fontWeight: "bold",
+                            color:"balck",
+                          },
+                        }}
+                        inputProps={{
+                          ...params.inputProps,
+                          style: { textAlign: 'center' },
+                        }}
                         sx={{
                           '& .MuiInputBase-root': {
                             height: '35px',
@@ -472,16 +491,12 @@ const handleAddSite = async () => {
               </Box>
             </Grid>
           );
-        
         }
-
+  
         if (key === 'circle') {
           return (
-            <Grid item xs={12} sm={8} md={4} lg={3} key="serialNumber">
-              <Typography variant="body1" sx={{ fontWeight: 800, fontSize: '12px' }}>
-                {columns.serialNumber}
-              </Typography>
-              <Box width="200px">
+            <Grid item xs={12} sm={8} md={4} lg={3} key="circle">
+              <Box width="150px">
                 <FormControl fullWidth margin="dense">
                   <Autocomplete
                     options={circleOptions.map((circle) => circle.name)}
@@ -490,7 +505,7 @@ const handleAddSite = async () => {
                     onChange={(event, newValue) => {
                       handleInputChange({
                         target: {
-                          name: 'Circle',
+                          name: 'circle',
                           value: newValue || '',
                         },
                       });
@@ -500,6 +515,16 @@ const handleAddSite = async () => {
                       <TextField
                         {...params}
                         label="Circle"
+                        InputLabelProps={{
+                          sx: {
+                            fontWeight: "bold",
+                            color:"balck",
+                          },
+                        }}
+                        inputProps={{
+                          ...params.inputProps,
+                          style: { textAlign: 'center' },
+                        }}
                         sx={{
                           '& .MuiInputBase-root': {
                             height: '35px',
@@ -527,17 +552,12 @@ const handleAddSite = async () => {
               </Box>
             </Grid>
           );
-        
         }
-
-
+  
         if (key === 'area') {
           return (
-            <Grid item xs={12} sm={8} md={4} lg={3} key="serialNumber">
-              <Typography variant="body1" sx={{ fontWeight: 800, fontSize: '12px' }}>
-                {columns.serialNumber}
-              </Typography>
-              <Box width="200px">
+            <Grid item xs={12} sm={8} md={4} lg={3} key="area">
+              <Box width="150px">
                 <FormControl fullWidth margin="dense">
                   <Autocomplete
                     options={areaOptions.map((area) => area.name)}
@@ -556,6 +576,16 @@ const handleAddSite = async () => {
                       <TextField
                         {...params}
                         label="Area"
+                        InputLabelProps={{
+                          sx: {
+                            fontWeight: "bold",
+                            color:"balck",
+                          },
+                        }}
+                        inputProps={{
+                          ...params.inputProps,
+                          style: { textAlign: 'center' },
+                        }}
                         sx={{
                           '& .MuiInputBase-root': {
                             height: '35px',
@@ -583,16 +613,11 @@ const handleAddSite = async () => {
               </Box>
             </Grid>
           );
-        
         }
-        // Remove the batterySerialNumber block entirely
   
         return (
           <Grid item xs={12} sm={8} md={4} lg={3} key={key}>
-            <Typography variant="body1" sx={{ fontWeight: 800, fontSize: '12px' }}>
-              {columns[key]}
-            </Typography>
-            <Box width="200px" sx={{ marginTop: '1.5px' }}>
+            <Box width="150px" sx={{ marginTop: '1.5px' }}>
               <TextField
                 label={columns[key]}
                 name={key}
@@ -601,18 +626,27 @@ const handleAddSite = async () => {
                 fullWidth
                 margin="dense"
                 disabled={!isEditing && !isAdding}
+                inputProps={{
+                  style: { textAlign: 'center' ,},
+                }}
+                InputLabelProps={{
+                  sx: {
+                    fontWeight: "bold",
+                    color:"balck",
+                  },
+                }}
                 sx={{
                   '& .MuiInputBase-root': {
                     height: '35px',
                     fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal',
-                    backgroundColor: (!isEditing && !isAdding) ? '#f0f0f0' : 'transparent', // Light grey background when disabled
+                    backgroundColor: (!isEditing && !isAdding) ? '#f0f0f0' : 'transparent',
                   },
                   '& .MuiInputBase-input': {
                     padding: '5px 10px',
                     fontSize: '12px',
-                    fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal', // Bold font when disabled
-                    color: (!isEditing && !isAdding) ? '#000' : 'inherit', // Ensure text color is visible
-                    WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit', // Override default text color in disabled state
+                    fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal',
+                    color: (!isEditing && !isAdding) ? '#000' : 'inherit',
+                    WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit',
                   },
                   '& .MuiFormLabel-root': {
                     fontSize: '12px',

@@ -44,7 +44,7 @@ const columnMappings = {
   instantaneousCurrent: "Instantaneous Current (A)",
   ambientTemperature: "Ambient Temperature (°C)",
   batteryRunHours: "Battery Run Hours (s)",
-  serverTime: "Server Time",
+  serverTime: "Server Date Time",
   packetDateTime: "Packet Date Time",
   bmsalarmsString: "BMS Alarms String",
 };
