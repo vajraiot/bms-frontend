@@ -346,7 +346,7 @@ const LoginPage = () => {
         </form>
       </div>
       <div style={styles.quoteContainer}>
-      "Enhancing Battery Life with Smart Prediction & Fault Detection... For a Smoother Ride! 🚀🔋"
+      "Enhancing Battery Life with Smart Prediction & Fault Detection...!"
       </div>
     </div>
   );

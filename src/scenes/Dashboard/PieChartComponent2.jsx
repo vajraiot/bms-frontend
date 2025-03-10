@@ -28,7 +28,7 @@ const PieChartComponent2 = ({ data1, handlePieClickCommu }) => {
   const BUTTON_HOVER_COLOR = 'rgb(180, 30, 28)';
 
   const TABLE_HEADERS = [
-    "Site ID", "Serial Number", "Vendor", "Location", "Cells Connected",
+    "Substation ID", "Serial Number", "Vendor", "Location", "Cells Connected",
     "String Voltage", "Instantaneous Current", "Ambient Temperature", "Battery Run Hours"
   ];
 
