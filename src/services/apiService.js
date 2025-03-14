@@ -275,7 +275,7 @@ export const fetchMapBySite = async (siteId) => {
 export const fetchMapByState = async (state) => {
  
   try {
-    const response = await axios.get(`${BASE_URL}/api/getCoordinates/states?state=${state}`);
+    const response = await axios.get(`${BASE_URL}/api/getCoordinates/states?state=${state}&marginMinutes=${20}`);
    // console.log("Full Response for Roles: ", response.data);  // Log the full response to inspect its structure
     return response.data;
   } catch (error) {
@@ -288,7 +288,7 @@ export const fetchMapByState = async (state) => {
 export const fetchMapByCircle = async (circle) => {
  
   try {
-    const response = await axios.get(`${BASE_URL}/api/getCoordinates/circle?circle=${circle}`);
+    const response = await axios.get(`${BASE_URL}/api/getCoordinates/circle?circle=${circle}&marginMinutes=${20}`);
    // console.log("Full Response for Roles: ", response.data);  // Log the full response to inspect its structure
     return response.data;
   } catch (error) {
@@ -299,7 +299,7 @@ export const fetchMapByCircle = async (circle) => {
 export const fetchMapByArea = async (area) => {
  
   try {
-    const response = await axios.get(`${BASE_URL}/api/getCoordinates/area?area=${area}`);
+    const response = await axios.get(`${BASE_URL}/api/getCoordinates/area?area=${area}&marginMinutes=${20}`);
    // console.log("Full Response for Roles: ", response.data);  // Log the full response to inspect its structure
     return response.data;
   } catch (error) {

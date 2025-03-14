@@ -32,7 +32,7 @@ export const Charger = ({charger}) => {
           >
             {[
         
-              { label: "AC Voltage", value: acVoltage/100, unit: "V" ,icon:Acvoltage},
+              { label: "AC Voltage", value: acVoltage, unit: "V" ,icon:Acvoltage},
               { label: "AC Current", value: acCurrent, unit: "A",icon:Accurrent },
               { label: "Frequency", value: frequency, unit: "Hz",icon:frequenc },
       

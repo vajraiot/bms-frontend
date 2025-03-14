@@ -3,6 +3,11 @@ import {fetchStatesDetails, fetchCirclesDetails, fetchAreasDetails, fetchSiteDet
 import { Grid, Typography, TextField, Button,Box ,Autocomplete, FormControl, MenuItem } from '@mui/material';
 import SearchAndAddButtons from '../SearchAndAddButtons/index';
 import { AppContext } from "../../../services/AppContext";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 const BASE_URL = "http://122.175.45.16:51270";
 import axios from "axios";
@@ -14,7 +19,7 @@ const columnMappingsPart1 = {
   state: 'State Name',
   circle: 'Circle Name',
   area: 'Area Name',
-  batteryAHCapacity: 'Battery AH Capacity',
+  // batteryAHCapacity: 'Battery AH Capacity',
 };
 
 const columnMappingsPart2 = {
@@ -174,10 +179,17 @@ const SiteLocation = () => {
   const handleEdit = () => setIsEditing(!isEditing);
 
   const handleAdd = () => {
-    setIsAdding(true);
-    setFormData({});
+    if (isAdding) {
+      // Cancel Add: Reset form and exit Add mode
+      setIsAdding(false);
+      setFormData({}); // Reset form data (or restore previous data if needed)
+    } else {
+      // Start Add: Enable Add mode and clear form
+      setIsAdding(true);
+      setFormData({}); // Clear form for a new entry
+    }
   };
-
+ 
   const handleUpdate = async () => {
     try {
       console.log('Form Data before API call:', formData);
@@ -279,6 +291,7 @@ const handleAddSite = async () => {
     );
 
     alert('Site added successfully!');
+    setIsAdding(false);
   } catch (error) {
     if (error.response) {
       console.error('Server response error:', error.response.data);
@@ -291,39 +304,312 @@ const handleAddSite = async () => {
 };
 
 
-  const handleDeleteSite = async () => {
-    try {
-        await deleteSite(siteId, serialNumber); // Pass both siteId and serialNumber
-        alert('Site deleted successfully!');
-        setFormData({});
-    } catch (error) {
-        console.error('Error deleting site:', error);
-        alert('Failed to delete site. Please check the serial number and try again.');
-    }
+const handleDeleteSite = async () => {
+  if (!siteId || !serialNumber) {
+    toast.error('Please select both Substation ID and Serial Number to delete the site.');
+    return;
+  }
+
+  try {
+    await deleteSite(siteId, serialNumber);
+    toast.success('Site deleted successfully!');
+    setFormData({});
+  } catch (error) {
+    console.error('Error deleting site:', error);
+    toast.error('Failed to delete site. Please try again.');
+  }
 };
   useEffect(() => {
     console.log('Updated formData:', formData); // This will log each time formData updates
   }, [formData]);
 
-  const renderFormFields = (columns) => (
-    <Grid container spacing={2}>
-      {Object.keys(columns).map((key) => {
-        if (key === 'siteId') {
-          return (
-            <Grid item xs={12} sm={8} md={4} lg={3} key="siteId">
-              <Box width="150px" textAlign="center">
-                <FormControl fullWidth margin="dense">
-                  <Autocomplete
-                    options={siteOptions}
-                    getOptionLabel={(option) => option.siteId || ''}
-                    value={siteOptions.find((site) => site.siteId === siteId) || null}
-                    onChange={(event, newValue) => {
-                      const selectedSiteId = newValue ? newValue.siteId : '';
-                      setSiteId(selectedSiteId);
+
+const renderFormFields = (columns) => {
+  // Separate states for "Other" selection and custom input
+  const [isOtherSelected, setIsOtherSelected] = React.useState({
+    state: false,
+    circle: false,
+    area: false,
+  });
+  const [otherValues, setOtherValues] = React.useState({
+    state: '',
+    circle: '',
+    area: '',
+  });
+
+  return (
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <Grid container spacing={2}>
+        {Object.keys(columns).map((key) => {
+          if (key === 'siteId') {
+            return (
+              <Grid item xs={12} sm={8} md={4} lg={3} key="siteId">
+                <Box width="150px" textAlign="center">
+                  <FormControl fullWidth margin="dense">
+                    <Autocomplete
+                      options={siteOptions.map((site) => site.siteId)}
+                      value={formData.siteId || ''}
+                      onChange={(event, newValue) => {
+                        setSiteId(newValue);
+                        handleInputChange({
+                          target: {
+                            name: 'siteId',
+                            value: newValue,
+                          },
+                        });
+                      }}
+                      disabled={!isEditing && !isAdding}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Substation ID"
+                          InputLabelProps={{
+                            sx: {
+                              fontWeight: "bold",
+                              color: "black",
+                            },
+                          }}
+                          inputProps={{
+                            ...params.inputProps,
+                            style: { textAlign: 'center' },
+                          }}
+                          sx={{
+                            '& .MuiInputBase-root': {
+                              height: '35px',
+                              backgroundColor: (!isEditing && !isAdding) ? '#f5f5f5' : 'inherit',
+                            },
+                            '& .MuiInputBase-input': {
+                              padding: '5px 10px',
+                              fontSize: '12px',
+                              fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal',
+                              color: (!isEditing && !isAdding) ? '#000' : 'inherit',
+                              WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit',
+                            },
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#d3d3d3',
+                            },
+                            '& .Mui-disabled': {
+                              backgroundColor: '#f5f5f5',
+                              color: '#000000',
+                            },
+                          }}
+                        />
+                      )}
+                    />
+                  </FormControl>
+                </Box>
+              </Grid>
+            );
+          }
+
+          if (key === 'serialNumber') {
+            return (
+              <Grid item xs={12} sm={8} md={4} lg={3} key="serialNumber">
+                <Box width="150px">
+                  <FormControl fullWidth margin="dense">
+                    <Autocomplete
+                      options={serialNumberOptions}
+                      getOptionLabel={(option) => option || ''}
+                      value={formData.serialNumber || ''}
+                      onChange={(event, newValue) => {
+                        handleInputChange({
+                          target: {
+                            name: 'serialNumber',
+                            value: newValue || '',
+                          },
+                        });
+                      }}
+                      disabled={!isEditing && !isAdding}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Serial Number"
+                          InputLabelProps={{
+                            sx: {
+                              fontWeight: "bold",
+                              color: "black",
+                            },
+                          }}
+                          inputProps={{
+                            ...params.inputProps,
+                            style: { textAlign: 'center' },
+                          }}
+                          sx={{
+                            '& .MuiInputBase-root': {
+                              height: '35px',
+                              backgroundColor: (!isEditing && !isAdding) ? '#f5f5f5' : 'inherit',
+                            },
+                            '& .MuiInputBase-input': {
+                              padding: '5px 10px',
+                              fontSize: '12px',
+                              fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal',
+                              color: (!isEditing && !isAdding) ? '#000' : 'inherit',
+                              WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit',
+                            },
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#d3d3d3',
+                            },
+                            '& .Mui-disabled': {
+                              backgroundColor: '#f5f5f5',
+                              color: '#000000',
+                            },
+                          }}
+                        />
+                      )}
+                    />
+                  </FormControl>
+                </Box>
+              </Grid>
+            );
+          }
+
+          if (key === 'state' || key === 'circle' || key === 'area') {
+            const options = key === 'state' ? stateOptions : key === 'circle' ? circleOptions : areaOptions;
+            const optionsList = options.map((item) => item.name);
+
+            return (
+              <Grid item xs={12} sm={8} md={4} lg={3} key={key}>
+                <Box width="150px">
+                  <FormControl fullWidth margin="dense">
+                    <Autocomplete
+                      options={[...optionsList, 'Other']}
+                      getOptionLabel={(option) => option || ''}
+                      value={formData[key] || ''}
+                      onChange={(event, newValue) => {
+                        if (newValue === 'Other') {
+                          // Set "Other" as selected for this field
+                          setIsOtherSelected((prev) => ({
+                            ...prev,
+                            [key]: true,
+                          }));
+                          setOtherValues((prev) => ({
+                            ...prev,
+                            [key]: '',
+                          }));
+                          handleInputChange({
+                            target: {
+                              name: key,
+                              value: '',
+                            },
+                          });
+                        } else {
+                          // Reset "Other" selection for this field
+                          setIsOtherSelected((prev) => ({
+                            ...prev,
+                            [key]: false,
+                          }));
+                          handleInputChange({
+                            target: {
+                              name: key,
+                              value: newValue || '',
+                            },
+                          });
+                        }
+                      }}
+                      disabled={!isEditing && !isAdding}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label={columns[key]}
+                          InputLabelProps={{
+                            sx: {
+                              fontWeight: "bold",
+                              color: "black",
+                            },
+                          }}
+                          inputProps={{
+                            ...params.inputProps,
+                            style: { textAlign: 'center' },
+                          }}
+                          sx={{
+                            '& .MuiInputBase-root': {
+                              height: '35px',
+                              backgroundColor: (!isEditing && !isAdding) ? '#f5f5f5' : 'inherit',
+                            },
+                            '& .MuiInputBase-input': {
+                              padding: '5px 10px',
+                              fontSize: '12px',
+                              fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal',
+                              color: (!isEditing && !isAdding) ? '#000' : 'inherit',
+                              WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit',
+                            },
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#d3d3d3',
+                            },
+                            '& .Mui-disabled': {
+                              backgroundColor: '#f5f5f5',
+                              color: '#000000',
+                            },
+                          }}
+                        />
+                      )}
+                    />
+                    {isOtherSelected[key] && (
+                      <TextField
+                        label={`Enter ${columns[key]}`}
+                        value={otherValues[key]}
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          setOtherValues((prev) => ({
+                            ...prev,
+                            [key]: value,
+                          }));
+                          handleInputChange({
+                            target: {
+                              name: key,
+                              value: value,
+                            },
+                          });
+                        }}
+                        fullWidth
+                        margin="dense"
+                        disabled={!isEditing && !isAdding}
+                        inputProps={{
+                          style: { textAlign: 'center' },
+                        }}
+                        InputLabelProps={{
+                          sx: {
+                            fontWeight: "bold",
+                            color: "black",
+                          },
+                        }}
+                        sx={{
+                          '& .MuiInputBase-root': {
+                            height: '35px',
+                            fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal',
+                            backgroundColor: (!isEditing && !isAdding) ? '#f0f0f0' : 'transparent',
+                          },
+                          '& .MuiInputBase-input': {
+                            padding: '5px 10px',
+                            fontSize: '12px',
+                            fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal',
+                            color: (!isEditing && !isAdding) ? '#000' : 'inherit',
+                            WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit',
+                          },
+                          '& .MuiFormLabel-root': {
+                            fontSize: '12px',
+                          },
+                        }}
+                      />
+                    )}
+                  </FormControl>
+                </Box>
+              </Grid>
+            );
+          }
+
+          if (key === 'firstUsedDate') {
+            return (
+              <Grid item xs={12} sm={8} md={4} lg={3} key={key}>
+                <Box width="150px">
+                  <DatePicker
+                    label="First Used Date"
+                    value={formData.firstUsedDate ? new Date(formData.firstUsedDate) : null} // Ensure Date object
+                    onChange={(newValue) => {
                       handleInputChange({
                         target: {
-                          name: 'siteId',
-                          value: selectedSiteId,
+                          name: 'firstUsedDate',
+                          value: newValue, // newValue is already a Date object from DatePicker
                         },
                       });
                     }}
@@ -331,16 +617,16 @@ const handleAddSite = async () => {
                     renderInput={(params) => (
                       <TextField
                         {...params}
-                        label="Substation ID"
+                        fullWidth
+                        margin="dense"
+                        inputProps={{
+                          style: { textAlign: 'center' },
+                        }}
                         InputLabelProps={{
                           sx: {
                             fontWeight: "bold",
-                            color:"balck",
+                            color: "black",
                           },
-                        }}
-                        inputProps={{
-                          ...params.inputProps,
-                          style: { textAlign: 'center' },
                         }}
                         sx={{
                           '& .MuiInputBase-root': {
@@ -365,300 +651,68 @@ const handleAddSite = async () => {
                       />
                     )}
                   />
-                </FormControl>
-              </Box>
-            </Grid>
-          );
-        }
-  
-        if (key === 'serialNumber') {
+                </Box>
+              </Grid>
+            );
+          }
+
           return (
-            <Grid item xs={12} sm={8} md={4} lg={3} key="serialNumber">
-              <Box width="150px">
-                <FormControl fullWidth margin="dense">
-                  <Autocomplete
-                    options={serialNumberOptions}
-                    getOptionLabel={(option) => option || ''}
-                    value={formData.serialNumber || ''}
-                    onChange={(event, newValue) => {
-                      handleInputChange({
-                        target: {
-                          name: 'serialNumber',
-                          value: newValue || '',
-                        },
-                      });
-                    }}
-                    disabled={!isEditing && !isAdding}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Serial Number"
-                        InputLabelProps={{
-                          sx: {
-                            fontWeight: "bold",
-                            color:"balck",
-                          },
-                        }}
-                        inputProps={{
-                          ...params.inputProps,
-                          style: { textAlign: 'center' },
-                        }}
-                        sx={{
-                          '& .MuiInputBase-root': {
-                            height: '35px',
-                            backgroundColor: (!isEditing && !isAdding) ? '#f5f5f5' : 'inherit',
-                          },
-                          '& .MuiInputBase-input': {
-                            padding: '5px 10px',
-                            fontSize: '12px',
-                            fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal',
-                            color: (!isEditing && !isAdding) ? '#000' : 'inherit',
-                            WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit',
-                          },
-                          '& .MuiOutlinedInput-notchedOutline': {
-                            borderColor: '#d3d3d3',
-                          },
-                          '& .Mui-disabled': {
-                            backgroundColor: '#f5f5f5',
-                            color: '#000000',
-                          },
-                        }}
-                      />
-                    )}
-                  />
-                </FormControl>
+            <Grid item xs={12} sm={8} md={4} lg={3} key={key}>
+              <Box width="150px" sx={{ marginTop: '1.5px' }}>
+                <TextField
+                  label={columns[key]}
+                  name={key}
+                  value={formData[key] || ''}
+                  onChange={handleInputChange}
+                  fullWidth
+                  margin="dense"
+                  disabled={!isEditing && !isAdding}
+                  type={
+                    key === 'designVoltage' ||
+                    key === 'ahCapacity' ||
+                    key === 'individualCellVoltage' ||
+                    key === 'highVoltage' ||
+                    key === 'lowVoltage' ||
+                    key === 'highTemperature' ||
+                    key === 'lowTemperature'
+                      ? 'number'
+                      : 'text'
+                  }
+                  inputProps={{
+                    style: { textAlign: 'center' },
+                  }}
+                  InputLabelProps={{
+                    sx: {
+                      fontWeight: "bold",
+                      color: "black",
+                    },
+                  }}
+                  sx={{
+                    '& .MuiInputBase-root': {
+                      height: '35px',
+                      fontWeight: (!isEditing && !isAdding) ? 'bold' : 'bold',
+                      backgroundColor: (!isEditing && !isAdding) ? '#f0f0f0' : 'transparent',
+                    },
+                    '& .MuiInputBase-input': {
+                      padding: '2px 10px',
+                      fontSize: '12px',
+                      fontWeight: (!isEditing && !isAdding) ? 'bold' : 'bold',
+                      color: (!isEditing && !isAdding) ? '#000' : 'inherit',
+                      WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit',
+                    },
+                    '& .MuiFormLabel-root': {
+                      fontSize: '12px',
+                    },
+                  }}
+                />
               </Box>
             </Grid>
           );
-        }
-  
-        if (key === 'state') {
-          return (
-            <Grid item xs={12} sm={8} md={4} lg={3} key="state">
-              <Box width="150px">
-                <FormControl fullWidth margin="dense">
-                  <Autocomplete
-                    options={stateOptions.map((state) => state.name)}
-                    getOptionLabel={(option) => option || ''}
-                    value={formData.state || ''}
-                    onChange={(event, newValue) => {
-                      handleInputChange({
-                        target: {
-                          name: 'state',
-                          value: newValue || '',
-                        },
-                      });
-                    }}
-                    disabled={!isEditing && !isAdding}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="State"
-                        InputLabelProps={{
-                          sx: {
-                            fontWeight: "bold",
-                            color:"balck",
-                          },
-                        }}
-                        inputProps={{
-                          ...params.inputProps,
-                          style: { textAlign: 'center' },
-                        }}
-                        sx={{
-                          '& .MuiInputBase-root': {
-                            height: '35px',
-                            backgroundColor: (!isEditing && !isAdding) ? '#f5f5f5' : 'inherit',
-                          },
-                          '& .MuiInputBase-input': {
-                            padding: '5px 10px',
-                            fontSize: '12px',
-                            fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal',
-                            color: (!isEditing && !isAdding) ? '#000' : 'inherit',
-                            WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit',
-                          },
-                          '& .MuiOutlinedInput-notchedOutline': {
-                            borderColor: '#d3d3d3',
-                          },
-                          '& .Mui-disabled': {
-                            backgroundColor: '#f5f5f5',
-                            color: '#000000',
-                          },
-                        }}
-                      />
-                    )}
-                  />
-                </FormControl>
-              </Box>
-            </Grid>
-          );
-        }
-  
-        if (key === 'circle') {
-          return (
-            <Grid item xs={12} sm={8} md={4} lg={3} key="circle">
-              <Box width="150px">
-                <FormControl fullWidth margin="dense">
-                  <Autocomplete
-                    options={circleOptions.map((circle) => circle.name)}
-                    getOptionLabel={(option) => option || ''}
-                    value={formData.circle || ''}
-                    onChange={(event, newValue) => {
-                      handleInputChange({
-                        target: {
-                          name: 'circle',
-                          value: newValue || '',
-                        },
-                      });
-                    }}
-                    disabled={!isEditing && !isAdding}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Circle"
-                        InputLabelProps={{
-                          sx: {
-                            fontWeight: "bold",
-                            color:"balck",
-                          },
-                        }}
-                        inputProps={{
-                          ...params.inputProps,
-                          style: { textAlign: 'center' },
-                        }}
-                        sx={{
-                          '& .MuiInputBase-root': {
-                            height: '35px',
-                            backgroundColor: (!isEditing && !isAdding) ? '#f5f5f5' : 'inherit',
-                          },
-                          '& .MuiInputBase-input': {
-                            padding: '5px 10px',
-                            fontSize: '12px',
-                            fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal',
-                            color: (!isEditing && !isAdding) ? '#000' : 'inherit',
-                            WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit',
-                          },
-                          '& .MuiOutlinedInput-notchedOutline': {
-                            borderColor: '#d3d3d3',
-                          },
-                          '& .Mui-disabled': {
-                            backgroundColor: '#f5f5f5',
-                            color: '#000000',
-                          },
-                        }}
-                      />
-                    )}
-                  />
-                </FormControl>
-              </Box>
-            </Grid>
-          );
-        }
-  
-        if (key === 'area') {
-          return (
-            <Grid item xs={12} sm={8} md={4} lg={3} key="area">
-              <Box width="150px">
-                <FormControl fullWidth margin="dense">
-                  <Autocomplete
-                    options={areaOptions.map((area) => area.name)}
-                    getOptionLabel={(option) => option || ''}
-                    value={formData.area || ''}
-                    onChange={(event, newValue) => {
-                      handleInputChange({
-                        target: {
-                          name: 'area',
-                          value: newValue || '',
-                        },
-                      });
-                    }}
-                    disabled={!isEditing && !isAdding}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Area"
-                        InputLabelProps={{
-                          sx: {
-                            fontWeight: "bold",
-                            color:"balck",
-                          },
-                        }}
-                        inputProps={{
-                          ...params.inputProps,
-                          style: { textAlign: 'center' },
-                        }}
-                        sx={{
-                          '& .MuiInputBase-root': {
-                            height: '35px',
-                            backgroundColor: (!isEditing && !isAdding) ? '#f5f5f5' : 'inherit',
-                          },
-                          '& .MuiInputBase-input': {
-                            padding: '5px 10px',
-                            fontSize: '12px',
-                            fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal',
-                            color: (!isEditing && !isAdding) ? '#000' : 'inherit',
-                            WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit',
-                          },
-                          '& .MuiOutlinedInput-notchedOutline': {
-                            borderColor: '#d3d3d3',
-                          },
-                          '& .Mui-disabled': {
-                            backgroundColor: '#f5f5f5',
-                            color: '#000000',
-                          },
-                        }}
-                      />
-                    )}
-                  />
-                </FormControl>
-              </Box>
-            </Grid>
-          );
-        }
-  
-        return (
-          <Grid item xs={12} sm={8} md={4} lg={3} key={key}>
-            <Box width="150px" sx={{ marginTop: '1.5px' }}>
-              <TextField
-                label={columns[key]}
-                name={key}
-                value={formData[key] || ''}
-                onChange={handleInputChange}
-                fullWidth
-                margin="dense"
-                disabled={!isEditing && !isAdding}
-                inputProps={{
-                  style: { textAlign: 'center' ,},
-                }}
-                InputLabelProps={{
-                  sx: {
-                    fontWeight: "bold",
-                    color:"balck",
-                  },
-                }}
-                sx={{
-                  '& .MuiInputBase-root': {
-                    height: '35px',
-                    fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal',
-                    backgroundColor: (!isEditing && !isAdding) ? '#f0f0f0' : 'transparent',
-                  },
-                  '& .MuiInputBase-input': {
-                    padding: '5px 10px',
-                    fontSize: '12px',
-                    fontWeight: (!isEditing && !isAdding) ? 'bold' : 'normal',
-                    color: (!isEditing && !isAdding) ? '#000' : 'inherit',
-                    WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit',
-                  },
-                  '& .MuiFormLabel-root': {
-                    fontSize: '12px',
-                  },
-                }}
-              />
-            </Box>
-          </Grid>
-        );
-      })}
-    </Grid>
+        })}
+      </Grid>
+    </LocalizationProvider>
   );
+};
 return (
   <div style={{ padding: '20px', fontSize: '18px' }}> {/* Set the base font size here */}
     <SearchAndAddButtons

@@ -27,7 +27,7 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
   const [isOpen, setIsOpen] = useState(false);
   const { data} = useContext(AppContext);
   const device = data[0];
-  const { bmsalarms } = device;
+  const { bmsAlarmsDTO} = device;
   const handleClickOpen = () => {
     setIsOpen(true);
   };
@@ -56,30 +56,28 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
       if (cellVoltage === 65.535 || cellTemperature === 65535) {
         return "Communication Failed";
       }
-      
+      if(bmsAlarmsDTO.cellVoltageHN){
       if (cellTemperature >= parseFloat(HighTemperature)) {
         return "High Temperature";
       }
+    }
       if (cellVoltage <= parseFloat(OpenBattery)) {
         return "Open Battery";
       }
       if (cellVoltage <= parseFloat(BatteryAboutToDie) ){
         return "UT to Die";
       }
-      if(bmsalarms.cellVoltageLHN==0){
+      if(bmsAlarmsDTO.cellVoltageLN){
       if (cellVoltage <= parseFloat(LowVoltage)) {
         return "Low Voltage";
       }}
       // 2. Voltage Conditions
-      if(bmsalarms.cellVoltageLHN==2){
+      if(bmsAlarmsDTO.cellVoltageHN){
       if (cellVoltage >= parseFloat(HighVoltage)) {
         return "High Voltage";
       }}
       // 4. Charging Status
       return chargingStatus ? "Discharging" : "Charging";
-  
-    // 4. Charging Status
-    return chargingStatus ? "Discharging" : "Charging";
   };
   
 
@@ -96,6 +94,7 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
     flexDirection: 'column',
     alignItems: 'center',
     width: '65px',
+    height: '76px', 
     cursor: 'pointer',
     transition: 'transform 0.2s ease',
     ':hover': {
@@ -192,19 +191,21 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
           <Box display="flex" justifyContent="space-between">
             <Typography variant="h7" sx={{fontSize: "8px"}}>⚡</Typography>
             <Typography variant="h7" sx={{  fontWeight: 'bold', color: '#333',fontSize: "9px" }}>
-              {cellData.cellVoltage} V
+              {cellData?.cellVoltage} V
             </Typography>
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
           <img src={thermometer} height={12} width={20} style={{ marginLeft: "-4px" }} />
           <Typography variant="h7" sx={{ fontWeight: 'bold', color: '#333', fontSize: "9px" }}>
-            {cellData.cellTemperature} °C
+            {cellData?.cellTemperature} °C
           </Typography>
           </Box>
           <Box display="flex" justifyContent="space-between">
             <Typography variant="h7"  sx={{ fontWeight: 'bold', color: '#333',fontSize: "9px" }}>sg :</Typography>
             <Typography variant="h7" sx={{ fontWeight: 'bold', color: '#333',fontSize: "9px" }}>
-             {cellData.cellSpecificgravity} 
+            {cellData?.cellSpecificgravity !== undefined && cellData?.cellSpecificgravity !== null
+            ? Number(cellData.cellSpecificgravity).toFixed(5)
+            : "N/A"}
           </Typography>
           </Box>
         </>

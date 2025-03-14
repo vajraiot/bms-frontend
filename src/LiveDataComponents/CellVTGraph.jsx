@@ -10,11 +10,11 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { Box, Paper, Typography, Stack, IconButton,useTheme } from "@mui/material";
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import CloseIcon from "@mui/icons-material/Close";
+import {convertOwlDatetimeToCustomDate} from "../services/AppContext"
 // import "./CellVTGraph.css";
 import { tokens } from '../theme';
 const CellVTGraph = ({ site, serial, cellNumber, open, onClose }) => {
   const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
   const [startDate, setStartDate] = useState(new Date());
   const [chartType, setChartType] = useState("line");
   const [cellData, setCellData] = useState([]);
@@ -27,6 +27,18 @@ const CellVTGraph = ({ site, serial, cellNumber, open, onClose }) => {
     xAxis: { type: "datetime" },
     yAxis: { title: { text: "Voltage (V)" } },
     series: [],
+    accessibility: { enabled: false }, // Suppress accessibility warning
+  });
+  const [sgChartOptions, setSgChartOptions] = useState({
+    chart: {
+      height: 300,
+      width: 900,
+    },
+    title: { text: "Specific Gravity-Time Graph" },
+    xAxis: { type: "datetime" },
+    yAxis: { title: { text: "Specific Gravity" } },
+    series: [],
+    accessibility: { enabled: false }, // Suppress accessibility warning
   });
   const [temperatureChartOptions, setTemperatureChartOptions] = useState({
     chart: {
@@ -37,6 +49,7 @@ const CellVTGraph = ({ site, serial, cellNumber, open, onClose }) => {
     xAxis: { type: "datetime" },
     yAxis: { title: { text: "Temperature (°C)" } },
     series: [],
+    accessibility: { enabled: false }, // Suppress accessibility warning
   });
 
   const [cellInfo, setCellInfo] = useState({
@@ -77,6 +90,7 @@ const CellVTGraph = ({ site, serial, cellNumber, open, onClose }) => {
         return response.json();
       })
       .then((data) => {
+        console.log("API Data:", data); // Debug: Log API data
         setCellData(data);
         generateCharts(
           data.filter(
@@ -90,25 +104,50 @@ const CellVTGraph = ({ site, serial, cellNumber, open, onClose }) => {
       });
   };
 
+  const manipulateDateTime = (dateString) => {
+    if (dateString == null || dateString === "") {
+      return "";
+    }
+    const utcDate = new Date(dateString);
+    if (isNaN(utcDate)) {
+      console.error("Invalid date string:", dateString);
+      return "";
+    }
+  
+    // Adjust to local timezone (e.g., IST) and set minutes to 59
+    const localDate = new Date(utcDate.getTime() + (5.5 * 60 * 60 * 1000)); // UTC+05:30
+    localDate.setMinutes(59); // Force minutes to 59
+    localDate.setSeconds(0);  // Optional: Reset seconds to 0
+    const timestamp = localDate.getTime();
+  
+    console.log("Original:", dateString, "Adjusted Timestamp:", timestamp);
+    return timestamp;
+  };
+
   const generateCharts = (data) => {
     const voltageData = data.map((item) => ({
-      x: new Date(item.packetDateTime).getTime(),
+      x: manipulateDateTime(item.packetDateTime), // Use manipulated timestamp
       y: item.cellVoltage,
     }));
 
     const temperatureData = data.map((item) => ({
-      x: new Date(item.packetDateTime).getTime(),
+      x: manipulateDateTime(item.packetDateTime), // Use manipulated timestamp
       y: item.cellTemperature,
+    }));
+
+    const sgData = data.map((item) => ({
+      x: manipulateDateTime(item.packetDateTime), // Use manipulated timestamp
+      y: item.cellSpecificgravity,
     }));
 
     const xAxisConfig = {
       type: "datetime",
       labels: {
-        format: "{value:%Y-%m-%d %H:%M:%S}",
+        format: "{value:%d-%m-%Y %H:%M:%S}", // Format for DD-MM-YYYY HH:MM:SS
         rotation: -45,
       },
       tickPixelInterval: 50,
-      tickInterval: 1 * 60 * 1000,
+      tickInterval: 1 * 60 * 1000, // 1-minute interval
     };
 
     setVoltageChartOptions({
@@ -126,8 +165,25 @@ const CellVTGraph = ({ site, serial, cellNumber, open, onClose }) => {
         ],
       },
       credits: { enabled: false },
+      accessibility: { enabled: false }, // Suppress accessibility warning
     });
-
+    setSgChartOptions({
+      chart: { type: "line", height: 250, width: 750 },
+      title: { text: "Specific Gravity-Time Graph" },
+      xAxis: xAxisConfig,
+      yAxis: { title: { text: "Specific Gravity" } },
+      series: [{ name: "Specific Gravity", data: sgData, type: chartType }],
+      responsive: {
+        rules: [
+          {
+            condition: { maxWidth: 600 },
+            chartOptions: { legend: { enabled: false } },
+          },
+        ],
+      },
+      credits: { enabled: false },
+      accessibility: { enabled: false }, // Suppress accessibility warning
+    });
     setTemperatureChartOptions({
       chart: { type: "line", height: 250, width: 750 },
       title: { text: "Temperature-Time Graph" },
@@ -143,6 +199,7 @@ const CellVTGraph = ({ site, serial, cellNumber, open, onClose }) => {
         ],
       },
       credits: { enabled: false },
+      accessibility: { enabled: false }, // Suppress accessibility warning
     });
   };
 
@@ -150,7 +207,7 @@ const CellVTGraph = ({ site, serial, cellNumber, open, onClose }) => {
     const startDateTime = `${startDate.toISOString().slice(0, 10)} 00:00:00`;
     const endDateTime = `${startDate.toISOString().slice(0, 10)} 23:59:59`;
 
-    const url = `http://122.175.45.16:51470/downloadCellDataReport?siteId=${cellInfo.siteId}&serialNumber=${cellInfo.serialNumber}&cellNumber=${cellInfo.cellNumber}&strStartDate=${startDateTime}&strEndDate=${endDateTime}`;
+    const url = `http://122.175.45.16:51270/downloadCellDataReport?siteId=${cellInfo.siteId}&serialNumber=${cellInfo.serialNumber}&cellNumber=${cellInfo.cellNumber}&strStartDate=${startDateTime}&strEndDate=${endDateTime}`;
 
     const anchor = document.createElement("a");
     anchor.href = url;
@@ -161,6 +218,7 @@ const CellVTGraph = ({ site, serial, cellNumber, open, onClose }) => {
     anchor.click();
     document.body.removeChild(anchor);
   };
+  
 
   return (
     <Dialog
@@ -294,6 +352,19 @@ const CellVTGraph = ({ site, serial, cellNumber, open, onClose }) => {
                 <HighchartsReact
                   highcharts={Highcharts}
                   options={temperatureChartOptions}
+                />
+              </Box>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <HighchartsReact
+                  highcharts={Highcharts}
+                  options={sgChartOptions}
                 />
               </Box>
             </Box>

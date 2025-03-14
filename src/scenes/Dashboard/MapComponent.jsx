@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from '@vis.gl/react-google-maps';
-
+import CloseIcon from '@mui/icons-material/Close';
 const MapComponent = ({ mapMarkers = [], selectedStatus }) => {
   const [selectedMarker, setSelectedMarker] = useState(null);
 
@@ -56,11 +56,11 @@ const MapComponent = ({ mapMarkers = [], selectedStatus }) => {
     <>
     <style>{hideDefaultCloseButton}</style>
       <APIProvider apiKey="AIzaSyDRsvO4B8wU4AtMjhgRkjRx0YVdrfwouN4">
-        <Map
-          defaultCenter={{ lat: 17.4065, lng: 78.4772 }} // Fallback center
-          defaultZoom={15} // Fallback zoom
-          mapId="57f9f0203fe55f5e" // Replace with your Map ID
-          style={{ height: '440px', width: '100%' }}
+      <Map
+        defaultCenter={{ lat: 17.4065, lng: 78.4772 }}
+        zoom={7}// Lower value = more zoomed out (e.g., 5 or 6)
+        mapId="57f9f0203fe55f5e"
+        style={{ height: '470px', width: '100%' }}
         >
           <MapBounds markers={markers} /> {/* Handle dynamic bounds */}
           {markers.map((marker, index) => {
@@ -76,21 +76,17 @@ const MapComponent = ({ mapMarkers = [], selectedStatus }) => {
             };
 
             const closeButtonStyle = {
-              position: 'absolute',
-              top: "5px", // Adjusted for better fit
+              position: 'fixed',
+              top: "1px", // Adjusted for better fit
               right: "5px", // Adjusted for better fit
-              background: 'red',
-              border: '1px solid #ccc',
-              borderRadius: '50%',
               cursor: 'pointer',
-              fontSize: '10px',
+              fontSize: '8px',
               fontWeight: 'bold',
-              color: '#ffff',
               width: '20px',
               height: '20px',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'flex-end'
             };
 
             const titleStyle = {
@@ -133,6 +129,7 @@ const MapComponent = ({ mapMarkers = [], selectedStatus }) => {
                 onCloseClick={handleCloseInfoWindow}
               >
                 <div style={infoWindowStyle} onClick={handleCloseInfoWindow}>
+                  <CloseIcon style={closeButtonStyle} onClick={handleCloseInfoWindow} />
                   <div style={titleStyle}>{marker.name}</div>
                   <div style={contentStyle}>
                     <span>

@@ -19,9 +19,9 @@ const PieChartComponent2 = ({ data1, handlePieClickCommu }) => {
 
   // Constants
   const CHART_SIZE = 220;
-  const OUTER_RADIUS = 85;
-  const INNER_RADIUS = 30;
-  const API_URL = "http://122.175.45.16:51270/getCommnStatus?marginMinutes=240";
+  const OUTER_RADIUS = 80;
+  const INNER_RADIUS = 25;
+  const API_URL = "http://122.175.45.16:51270/getCommnStatus?marginMinutes=15";
   const TITLE_GRADIENT = 'linear-gradient(90deg, rgb(0, 212, 255) 0%, rgb(9, 9, 121) 35%, rgb(0, 212, 255) 100%)';
   const HEADER_GRADIENT = 'linear-gradient(to bottom, #d82b27, #f09819)';
   const BUTTON_COLOR = 'rgb(216, 43, 39)';
@@ -95,7 +95,7 @@ const PieChartComponent2 = ({ data1, handlePieClickCommu }) => {
     setSiteId(item.siteId);
     setSerialNumber(item.serialNumber);
     const data = await handleSearch();
-    if (data) navigate("/livemonitoring");
+    if (data) navigate("/livemonitoring", { state: { from: '/' } });
   };
 
   const handleCloseDialog = () => setIsDialogOpen(false);
@@ -120,31 +120,32 @@ const PieChartComponent2 = ({ data1, handlePieClickCommu }) => {
             <TableBody>
               {tableData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
                 <TableRow key={index}>
-                 <TableCell>
-  <span
-    style={{
-      color: "#1976d2",
-      textDecoration: "underline",
-      cursor: "pointer",
-      border: "1px solid #ccc",
-      padding: "3px",
-      fontWeight: "bold",
-      whiteSpace: "nowrap",
-      textAlign: "center",
-    }}
-    title="Double tap here"
-    onClick={() => handleRowClick(row)}
-  >
-    {row.siteId}
-  </span>
-</TableCell> <TableCell   style={{padding: "3px",fontWeight: "bold",whiteSpace: "nowrap",textAlign: "center",}}>{row.serialNumber}</TableCell>
-                  <TableCell style={{padding: "3px",fontWeight: "bold",whiteSpace: "nowrap",textAlign: "center",}}>{row.vendor}</TableCell>
-                  <TableCell style={{padding: "3px",fontWeight: "bold",whiteSpace: "nowrap",textAlign: "center",}}> {row.location}</TableCell>
-                  <TableCell style={{padding: "3px",fontWeight: "bold",whiteSpace: "nowrap",textAlign: "center",}}>{row.cellsConnectedCount}</TableCell>
-                  <TableCell style={{padding: "3px",fontWeight: "bold",whiteSpace: "nowrap",textAlign: "center",}}>{row.stringVoltage} V</TableCell>
-                  <TableCell style={{padding: "3px",fontWeight: "bold",whiteSpace: "nowrap",textAlign: "center",}}>{row.instantaneousCurrent} A</TableCell>
-                  <TableCell style={{padding: "3px",fontWeight: "bold",whiteSpace: "nowrap",textAlign: "center",}}>{row.ambientTemperature} °C</TableCell>
-                  <TableCell style={{padding: "3px",fontWeight: "bold",whiteSpace: "nowrap",textAlign: "center",}}>{row.batteryRunHours}</TableCell>
+                  <TableCell>
+                    <span
+                      style={{
+                        color: "#1976d2",
+                        textDecoration: "underline",
+                        cursor: "pointer",
+                        border: "1px solid #ccc",
+                        padding: "3px",
+                        fontWeight: "bold",
+                        whiteSpace: "nowrap",
+                        textAlign: "center",
+                      }}
+                      title="Double tap here"
+                      onClick={() => handleRowClick(row)}
+                    >
+                      {row.siteId}
+                    </span>
+                  </TableCell>
+                  <TableCell style={{ padding: "3px", fontWeight: "bold", whiteSpace: "nowrap", textAlign: "center" }}>{row.serialNumber}</TableCell>
+                  <TableCell style={{ padding: "3px", fontWeight: "bold", whiteSpace: "nowrap", textAlign: "center" }}>{row.vendor}</TableCell>
+                  <TableCell style={{ padding: "3px", fontWeight: "bold", whiteSpace: "nowrap", textAlign: "center" }}>{row.location}</TableCell>
+                  <TableCell style={{ padding: "3px", fontWeight: "bold", whiteSpace: "nowrap", textAlign: "center" }}>{row.cellsConnectedCount}</TableCell>
+                  <TableCell style={{ padding: "3px", fontWeight: "bold", whiteSpace: "nowrap", textAlign: "center" }}>{row.stringVoltage} V</TableCell>
+                  <TableCell style={{ padding: "3px", fontWeight: "bold", whiteSpace: "nowrap", textAlign: "center" }}>{row.instantaneousCurrent} A</TableCell>
+                  <TableCell style={{ padding: "3px", fontWeight: "bold", whiteSpace: "nowrap", textAlign: "center" }}>{row.ambientTemperature} °C</TableCell>
+                  <TableCell style={{ padding: "3px", fontWeight: "bold", whiteSpace: "nowrap", textAlign: "center" }}>{row.batteryRunHours}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -173,8 +174,22 @@ const PieChartComponent2 = ({ data1, handlePieClickCommu }) => {
   );
 
   return (
-    <Box display="flex" justifyContent="center" alignItems="center" flexDirection="column">
-      <Box display="flex" justifyContent="center" alignItems="center">
+    <Box
+      border={1}
+      borderColor="grey.300"
+      borderRadius={2}
+      padding="15px 20px 15px 18px"
+      boxShadow={3}
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      height="230px"
+      width="fit-content"
+    >
+      <Typography variant="h6" fontWeight="bold" gutterBottom>
+        Device Status
+      </Typography>
+      <Box display="flex" justifyContent="center" alignItems="center" mt={-3}>
         <PieChart width={CHART_SIZE} height={CHART_SIZE}>
           <defs>
             <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">

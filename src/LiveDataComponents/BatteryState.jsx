@@ -51,7 +51,7 @@ const Battery = ({ socValue, socState }) => {
       <Box
         sx={{
           position: "relative",
-          width: "30px",
+          width: "35px",
           height: "60px",
           borderTop: "1px solid #000",
           borderLeft: "1px solid #000",
@@ -79,8 +79,8 @@ const Battery = ({ socValue, socState }) => {
           }}
         >
           <Typography
-            variant="caption"
-            sx={{ color: "white", fontWeight: "bold" }}
+            variant="body"
+            sx={{ color: "white", fontWeight: "bold" ,fontSize:"8px"}}
           >
             {socValue}%
           </Typography>

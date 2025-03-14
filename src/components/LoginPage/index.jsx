@@ -7,17 +7,18 @@ import { AppContext } from "../../services/AppContext";
 import Logo from "../../assets/images/png/vajra.png";
 import MahaLogo from "../../assets/images/png/maha.png";
 import { AlignCenter } from "lucide-react";
-
+import { AppContext } from "../../services/AppContext";
 const LoginPage = () => {
   const [role, setRole] = useState("");
   const [roles, setRoles] = useState([]);
-  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [captchaInput, setCaptchaInput] = useState("");
   const [captchaText, setCaptchaText] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [validationMessages, setValidationMessages] = useState([]); // Store validation messages
   const captchaCanvasRef = useRef(null);
-  const { setIsAuthenticated, isAuthenticated, setUserRole } = useContext(AppContext);
+  const { setIsAuthenticated, isAuthenticated, setUserRole,username, setUsername } = useContext(AppContext);
 
   const fetchRoles = async () => {
     try {
@@ -27,7 +28,7 @@ const LoginPage = () => {
       setRoles(data || []);
     } catch (error) {
       console.error("Error fetching roles:", error);
-      alert("Failed to fetch roles. Please try again later.");
+      setValidationMessages(["Failed to fetch roles. Please try again later."]);
     }
   };
 
@@ -46,11 +47,11 @@ const LoginPage = () => {
     ctx.fillStyle = "#f0f0f0";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.font = "24px Arial"; // Reduced font size for compactness
+    ctx.font = "24px Arial";
     ctx.fillStyle = "#333";
     for (let i = 0; i < newCaptchaText.length; i++) {
       ctx.save();
-      ctx.translate(25 * i + 15, 35); // Adjusted spacing
+      ctx.translate(25 * i + 15, 35);
       ctx.rotate((Math.random() - 0.5) * 0.4);
       ctx.fillText(newCaptchaText[i], 0, 0);
       ctx.restore();
@@ -77,32 +78,37 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitted(true);
 
-    if (!role || !username || !password || !captchaInput) {
-      alert("Please fill in all fields, including the CAPTCHA.");
-      return;
-    }
+    const messages = [];
+    if (!role) messages.push("Please select a role.");
+    if (!username) messages.push("Please enter the username.");
+    if (!password) messages.push("Please enter the password.");
+    if (!captchaInput) messages.push("Please enter the CAPTCHA.");
 
-    if (captchaInput.toLowerCase() !== captchaText.toLowerCase()) {
-      alert("Invalid CAPTCHA. Please try again.");
+    if (captchaInput && captchaInput !== captchaText) {
+      messages.push("Invalid CAPTCHA. Please try again.");
       setCaptchaInput("");
       generateCaptcha();
-      return;
     }
 
+    setValidationMessages(messages);
+
+    if (messages.length > 0) return;
+
     try {
-      const data = await fetchLoginDetails(role, username, password);
+      const data = await fetchLoginDetails(role, username, password); // Placeholder function
       console.log("Login Response:", data);
 
       if (!data || Object.keys(data).length === 0) {
-        alert("Invalid credentials. Please try again.");
+        setValidationMessages(["Invalid credentials. Please try again."]);
       } else {
         setIsAuthenticated(true);
         setUserRole(role);
       }
     } catch (error) {
       console.error("Error during login:", error);
-      alert("An error occurred during login. Please try again.");
+      setValidationMessages(["An error occurred during login. Please try again."]);
     }
   };
 
@@ -121,19 +127,19 @@ const LoginPage = () => {
       zIndex: -1,
     },
     wrapper: {
-      width: "85%", // Reduced from 90%
-      maxWidth: "320px", // Reduced from 400px
-      padding: "20px", // Reduced from 30px
+      width: "85%",
+      maxWidth: "320px",
+      padding: "20px",
       margin: "auto",
       border: "1px solid rgba(255, 255, 255, 0.3)",
-      borderRadius: "10px", // Slightly smaller radius
+      borderRadius: "10px",
       textAlign: "center",
       backgroundColor: "rgba(255, 255, 255, 0.8)",
       backdropFilter: "blur(10px)",
       boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
       position: "absolute",
       top: "50%",
-      left: "50%",
+      left: "80%",
       transform: "translate(-50%, -50%)",
       zIndex: 1,
     },
@@ -143,40 +149,55 @@ const LoginPage = () => {
       left: 0,
       width: "100%",
       height: "80%",
-      
       backgroundImage: `url(${Watermark})`,
       backgroundRepeat: "no-repeat",
       backgroundPosition: "center",
       backgroundSize: "cover",
       opacity: 0.2,
       zIndex: -1,
-      paddingTop:1
+      paddingTop: 1,
     },
     form: {
       display: "flex",
       flexDirection: "column",
-      gap: "10px", // Reduced from 15px
+      gap: "10px",
     },
     inputBox: {
       textAlign: "left",
     },
     label: {
       display: "block",
-      marginBottom: "3px", // Reduced from 5px
-      fontSize: "12px", // Reduced from 14px
+      marginBottom: "3px",
+      fontSize: "12px",
       color: "#333",
       fontWeight: "bold",
     },
     input: {
       width: "100%",
-      padding: "8px", // Reduced from 10px
-      fontSize: "12px", // Reduced from 14px
+      padding: "8px",
+      fontSize: "12px",
       border: "1px solid #ccc",
       borderRadius: "4px",
       backgroundColor: "#fff",
       color: "#333",
       boxSizing: "border-box",
       outline: "none",
+    },
+    captchaInput: {
+      width: "100%",
+      padding: "8px", // Same as input to maintain box size
+      fontSize: "12px", // Same as input for typed text
+      border: "1px solid #ccc",
+      borderRadius: "4px",
+      backgroundColor: "#fff",
+      color: "#333",
+      boxSizing: "border-box",
+      outline: "none",
+      // Target placeholder specifically
+      "::placeholder": {
+        fontSize: "10px", // Smaller placeholder font
+        color: "#999", // Optional: lighter color for contrast
+      },
     },
     passwordContainer: {
       position: "relative",
@@ -185,17 +206,17 @@ const LoginPage = () => {
     },
     showPasswordButton: {
       position: "absolute",
-      right: "8px", // Adjusted for smaller input
+      right: "8px",
       background: "none",
       border: "none",
       cursor: "pointer",
-      fontSize: "16px", // Slightly smaller
+      fontSize: "16px",
       color: "#666",
       outline: "none",
     },
     button: {
-      padding: "10px", // Reduced from 12px
-      fontSize: "14px", // Reduced from 16px
+      padding: "10px",
+      fontSize: "14px",
       backgroundColor: "#007BFF",
       color: "white",
       border: "none",
@@ -205,45 +226,45 @@ const LoginPage = () => {
     },
     logoContainer: {
       position: "absolute",
-      top: "15px", // Slightly closer to top
+      top: "15px",
       width: "100%",
       display: "flex",
       justifyContent: "space-between",
-      padding: "0 15px", // Reduced from 20px
+      padding: "0 15px",
       zIndex: 2,
     },
     Logo: {
-      width: "100px", // Reduced from 120px
+      width: "100px",
       height: "auto",
     },
     MahaLogo: {
-      width: "100px", // Reduced from 120px
+      width: "100px",
       height: "auto",
     },
     quoteContainer: {
       position: "fixed",
-      bottom: "15px", // Closer to bottom
-      right: "15px", // Closer to right
-      textAlign: "right",
-      fontSize: "20px", // Reduced from 16px
+      bottom: "15px",
+      left: "15px",
+      textAlign: "center",
+      fontSize: "20px",
       fontStyle: "italic",
       fontWeight: "bold",
       color: "orange",
-      padding: "6px 10px", // Reduced padding
-      borderRadius: "6px", // Smaller radius
+      padding: "6px 10px",
+      borderRadius: "6px",
     },
     captchaContainer: {
-      marginTop: "10px", // Reduced from 15px
+      marginTop: "10px",
       display: "flex",
-      flexDirection: "row", // Changed to row for side-by-side layout
+      flexDirection: "row",
       alignItems: "center",
       gap: "10px",
     },
     captchaCanvas: {
       border: "1px solid #ccc",
       borderRadius: "4px",
-      width: "160px", // Reduced canvas width
-      height: "50px", // Reduced canvas height
+      width: "120px",
+      height: "50px",
     },
     reloadButton: {
       background: "none",
@@ -253,6 +274,15 @@ const LoginPage = () => {
       color: "#666",
       padding: "0",
       outline: "none",
+    },
+    validationContainer: { // New style for validation messages
+      textAlign: "center",
+      marginBottom: "10px",
+    },
+    validationMessage: {
+      color: "red",
+      fontSize: "12px",
+      marginBottom: "4px",
     },
   };
 
@@ -268,12 +298,21 @@ const LoginPage = () => {
       <div style={styles.wrapper}>
         <div style={styles.watermark}></div>
         <form onSubmit={handleSubmit} style={styles.form}>
+          {/* Validation Messages */}
+          {validationMessages.length > 0 && (
+            <div style={styles.validationContainer}>
+              {validationMessages.map((message, index) => (
+                <div key={index} style={styles.validationMessage}>
+                  {message}
+                </div>
+              ))}
+            </div>
+          )}
           <div style={styles.inputBox}>
             <label style={styles.label}>Role</label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              required
               style={styles.input}
             >
               <option value="" disabled>Select your role</option>
@@ -292,7 +331,6 @@ const LoginPage = () => {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              required
               style={styles.input}
             />
           </div>
@@ -303,8 +341,7 @@ const LoginPage = () => {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
-                style={{ ...styles.input, paddingRight: "30px" }} // Adjusted padding
+                style={{ ...styles.input, paddingRight: "30px" }}
               />
               <button
                 type="button"
@@ -312,15 +349,15 @@ const LoginPage = () => {
                 style={styles.showPasswordButton}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? "🙈" : "👁️"}
+                {showPassword ? "🙊" : "👀"}
               </button>
             </div>
           </div>
           <div style={styles.captchaContainer}>
             <canvas
               ref={captchaCanvasRef}
-              width="160" // Matches style
-              height="50" // Matches style
+              width="160"
+              height="50"
               style={styles.captchaCanvas}
             />
             <button
@@ -336,8 +373,7 @@ const LoginPage = () => {
               value={captchaInput}
               onChange={(e) => setCaptchaInput(e.target.value)}
               placeholder="Enter CAPTCHA"
-              required
-              style={styles.input}
+              style={styles.captchaInput} // Use new smaller style
             />
           </div>
           <button type="submit" style={styles.button}>
@@ -346,10 +382,19 @@ const LoginPage = () => {
         </form>
       </div>
       <div style={styles.quoteContainer}>
-      "Enhancing Battery Life with Smart Prediction & Fault Detection...!"
+        "Enhancing Battery Life with Smart Prediction & Fault Detection... !"
       </div>
     </div>
   );
+};
+
+// Placeholder fetchLoginDetails (replace with actual implementation)
+const fetchLoginDetails = async (role, username, password) => {
+  return fetch("http://122.175.45.16:51270/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ role, username, password }),
+  }).then((res) => res.json());
 };
 
 export default LoginPage;

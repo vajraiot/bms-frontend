@@ -81,7 +81,7 @@ const Bar = () => {
     instantaneousCurrent, 
     ambientTemperature, 
     batteryRunHours, 
-    bmsalarms,
+    bmsAlarmsDTO,
     serverTime
   } = device;
 
@@ -114,7 +114,7 @@ const Bar = () => {
         spacing={2}
         sx={{
           overflowY: "auto", // Enable scrolling
-          padding: "10px 10px 100px 10px", // Padding: top, right, bottom, left
+          padding: "0px 10px 150px 10px;", // Padding: top, right, bottom, left
           boxSizing: "border-box", // Ensure padding is included in width/height
           height: "calc(100vh - 64px)", // Adjust based on Topbar height (assuming 64px)
         }}
@@ -128,24 +128,20 @@ const Bar = () => {
 
         {/* CellsData and MapWithMarker */}
         <Grid item container spacing={1}>
-          <Grid item xs={7}>
-            <Paper elevation={8} sx={{ height: "200px", overflow: "auto" }}>
-              <CellsData
-                data={cellVoltageTemperatureData}
-                siteId={siteId}
-                serialNumber={serialNumber}
-                bmsalarms={bmsalarms}
-              />
-            </Paper>
-          </Grid>
           <Grid item xs={5}>
-            <Paper elevation={8}>
-              <MapWithMarker
-                locationName={area?.name}
-                latitude={latitude}
-                longitude={longitude}
-                vendorName={vendorName}
-                batteryAHCapacity={batteryAHCapacity}
+              <Paper elevation={8}>
+                <MapWithMarker
+                  locationName={area?.name}
+                  latitude={latitude}
+                  longitude={longitude}
+                  vendorName={vendorName}
+                  batteryAHCapacity={batteryAHCapacity}
+                />
+              </Paper>
+          </Grid>
+          <Grid item xs={7}>
+            <Paper elevation={8} sx={{ height: "200px", overflow: "hidden" }}>
+              <CellsData
               />
             </Paper>
           </Grid>
@@ -160,7 +156,7 @@ const Bar = () => {
             dod={dodLatestValueForEveryCycle}
             ambientTemperature={ambientTemperature}
             charger={charger}
-            bmsalarms={bmsalarms}
+            bmsalarms={bmsAlarmsDTO}
           />
         </Grid>
 
@@ -168,7 +164,7 @@ const Bar = () => {
         <Grid item container spacing={1}>
           <Grid item xs={5}>
             <Paper elevation={8}>
-              <Alerts charger={charger} bmsalarms={bmsalarms} />
+              <Alerts charger={charger} bmsalarms={bmsAlarmsDTO} />
             </Paper>
           </Grid>
           <Grid item xs={3.5}>

@@ -78,7 +78,7 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
       if (mounted && siteId && serialNumber) {
         const result = await handleSearch();
         if (result) {
-          navigate("/livemonitoring");
+          navigate("/livemonitoring", { state: { from: '/' } });
         }
       }
     };
@@ -104,6 +104,8 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
     const baseColumns = [
       { id: "siteId", label: "Substation ID" },
       { id: "serialNumber", label: "Serial Number" },
+      { id: "serverTime", label: "Server Date Time" },
+      // {id:
     ];
 
     switch (data.name) {
@@ -114,7 +116,7 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
         baseColumns.push({ id: "stringvoltage", label: "String Voltage Low" });
         break;
       case "Cell(V) Low":
-        baseColumns.push({ id: "cellVoltageLNH", label: "Cell Voltage Low" });
+        baseColumns.push({ id: "cellVoltageLN", label: "Cell Voltage Low" });
         break;
       case "SOC Low":
         baseColumns.push({ id: "socLN", label: "SOC Low" });
@@ -126,7 +128,7 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
         baseColumns.push({ id: "chargerTrip", label: "Charger Trip" });
         break;
       case "Cell(V) High":
-        baseColumns.push({ id: "cellVoltageLNH", label: "Cell Voltage High " });
+        baseColumns.push({ id: "cellVoltageNH", label: "Cell Voltage High " });
         break;
       case "String(A) High":
         baseColumns.push({ id: "instantaneousCurrent", label: "String Current High" });
@@ -252,43 +254,61 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
                 </TableRow>
               </TableHead>
               <TableBody>
-            {paginatedData?.map((item, index) => (
-              <TableRow
-                key={index}
-                onClick={() => handleRowClick(item)}
-                sx={{
-                  "&:nth-of-type(odd)": { backgroundColor: "#fafafa" },
-                  "&:hover": { backgroundColor: "#f0f0f0", cursor: "pointer" },
-                }}
-              >
-                {columns.map((column) => (
-                <TableCell key={column.id} 
-                style={column.id === 'siteId' ? { 
-                  color: "#1976d2", 
-                  textDecoration: "underline", 
+  {paginatedData?.map((item, index) => (
+    <TableRow
+      key={index}
+      onClick={() => handleRowClick(item)}
+      sx={{
+        "&:nth-of-type(odd)": { backgroundColor: "#fafafa" },
+        "&:hover": { backgroundColor: "#f0f0f0", cursor: "pointer" },
+      }}
+    >
+      {columns.map((column) => (
+        <TableCell
+          key={column.id}
+          style={
+            column.id === "siteId"
+              ? {
+                  color: "#1976d2",
+                  textDecoration: "underline",
                   cursor: "pointer",
-                  border: '1px solid #ccc',
-                  padding: '3px',
-                  fontWeight: 'bold',
+                  border: "1px solid #ccc",
+                  padding: "3px",
+                  fontWeight: "bold",
                   whiteSpace: "nowrap",
-                  textAlign: "center"
-                } : {}}
-                title={column.id === 'siteId' ? 'Double tap here' : undefined}
-              >
-                {column.id === 'dcVoltageOLN' || column.id === 'cellVoltageLNH'
-                  ? (item[column.id] === 0 ? 'Low' : item[column.id] === 1 ? 'Normal' : item[column.id] === 2 ? 'Over' : item[column.id])
-                  : typeof item[column.id] === 'boolean'
-                  ? item[column.id]
-                    ? 'Fail'
-                    : 'Normal'
-                  : item[column.id] !== undefined && item[column.id] !== null
-                  ? item[column.id]
-                  : 'No Data'}
-              </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
+                  textAlign: "center",
+                }
+              : {
+                  border: "1px solid #ccc",
+                  padding: "3px",
+                  whiteSpace: "nowrap",
+                  textAlign: "center",
+                }
+          }
+          title={column.id === "siteId" ? "Double tap here" : undefined}
+        >
+          {column.id === "serverTime" && item[column.id]
+            ? new Date(item[column.id]).toLocaleString() // Format serverTime as a readable date-time
+            : column.id === "dcVoltageOLN"
+            ? item[column.id] === 0
+              ? "Low"
+              : item[column.id] === 1
+              ? "Normal"
+              : item[column.id] === 2
+              ? "Over"
+              : item[column.id]
+            : typeof item[column.id] === "boolean"
+            ? item[column.id]
+              ? "Fail"
+              : "Normal"
+            : item[column.id] !== undefined && item[column.id] !== null
+            ? item[column.id]
+            : "No Data"}
+        </TableCell>
+      ))}
+    </TableRow>
+  ))}
+</TableBody>
             </Table>
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
@@ -336,10 +356,10 @@ const DataDialog = ({
 
   // Mapping of status to gradient IDs
   const statusGradients = {
-    "Most Critical Count": "mostcriticalGradient",
-    "Critical Count": "CriticalGradient",
-    "Major Count": "majorGradient",
-    "Minor Count": "minoralarmsGradient",
+    "Most Critical Alarm": "mostcriticalGradient",
+    "Critical Alarm": "CriticalGradient",
+    "Major Alarm": "majorGradient",
+    "Minor Alarm": "minoralarmsGradient",
   };
 
   // Determine the current gradient based on selected status
@@ -356,7 +376,7 @@ const DataDialog = ({
           case "String(V) Low":
             return detail.stringvoltage !== undefined;
           case "Cell(V) Low":
-            return detail.cellVoltageLNH !== undefined;
+            return detail.cellVoltageLN !== undefined;
           case "SOC Low":
             return detail.socLatestValueForEveryCycle !== undefined;
           case "Battery Condition":
@@ -364,7 +384,7 @@ const DataDialog = ({
           case "Charger Trip":
             return detail.chargerTrip !== undefined ;
           case "Cell(V) High":
-            return detail.cellVoltageLNH !== undefined ;
+            return detail.cellVoltageNH !== undefined ;
           case "String(A) High":
             return detail.instantaneousCurrent !== undefined;
           case "Battery Bank(Discharging)":
@@ -443,7 +463,7 @@ const DataDialog = ({
             marginBottom: "12px",
           }}
         >
-          Alarms for {selectedStatus}
+          {selectedStatus}
         </DialogTitle>
         <DialogContent style={{ padding: 5, margin: 0, paddingBottom:10 }}>
           {/* Define gradients */}

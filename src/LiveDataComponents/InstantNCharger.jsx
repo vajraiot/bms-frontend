@@ -1,7 +1,7 @@
 import React,{useContext} from 'react'
 import { tokens } from '../theme';
 
-import { Card, CardContent, Typography, Grid, Box, CircularProgress,useTheme,Paper } from '@mui/material';
+import { Typography, Grid, Box,Tooltip ,useTheme,Paper } from '@mui/material';
 import chargerIcon from '../enums/portable-charger.png';
 
 import PowerIcon from "@mui/icons-material/Power"; // Voltage icon
@@ -26,15 +26,15 @@ const InstantNCharger = () => {
     }=useContext(AppContext)
   const device = data[0];
   if (!device || !charger[0]) return <div></div>;
-const{instantaneousCurrent, stringvoltage,ambientTemperature,  bmsalarms,socLatestValueForEveryCycle}=device
+const{instantaneousCurrent, stringvoltage,ambientTemperature, bmsAlarmsDTO,socLatestValueForEveryCycle}=device
 
  const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const{acVoltage,acCurrent ,frequency ,energy}=charger[0];
   const {
-    stringVoltageLHN, 
+    stringVoltageLNH, 
     stringCurrentHN, ambientTemperatureHN, socLN// String Current
-  } = bmsalarms;
+  } = bmsAlarmsDTO;
 
       const [voltages, setVoltages] = React.useState({
         ac: {
@@ -134,7 +134,7 @@ const{instantaneousCurrent, stringvoltage,ambientTemperature,  bmsalarms,socLate
                   </Box>
                   <Box>
                     <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold" }}>
-                      Charger : {energy}kWh
+                      Charger Energy : {energy}kWh
                     </Typography>
                     <Box
                       sx={{
@@ -156,8 +156,8 @@ const{instantaneousCurrent, stringvoltage,ambientTemperature,  bmsalarms,socLate
               <Grid item xs={12} sm={6} md={2}>
                 <Paper elevation={8} sx={{ height: "150px",  display: "flex", flexDirection: "column", justifyContent: "space-between", p: 1 }}>
                   <Box>
-                    <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold" }}>
-                      Instantaneous Data
+                    <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold",textAlign:"center" }}>
+                      Instantaneous Info
                     </Typography>
                     <Grid container spacing={1} alignItems="center" justifyContent="center">
                       {/* Voltage Section */}
@@ -171,12 +171,14 @@ const{instantaneousCurrent, stringvoltage,ambientTemperature,  bmsalarms,socLate
                             pt: 2
                           }}
                         >
-                          <PowerIcon
-                            sx={{
-                              fontSize: "2rem",
-                              color: getColorForDCV(stringVoltageLHN)
-                            }}
-                          />
+                          <Tooltip title="String Voltage" arrow> {/* Add Tooltip for Voltage */}
+                            <PowerIcon
+                              sx={{
+                                fontSize: "2rem",
+                                color: getColorForDCV(stringVoltageLNH)
+                              }}
+                            />
+                          </Tooltip>
                           <Typography variant="h5" sx={{ mt: 1 }}>
                             {Idata.voltage.value} {Idata.voltage.unit}
                           </Typography>
@@ -194,12 +196,14 @@ const{instantaneousCurrent, stringvoltage,ambientTemperature,  bmsalarms,socLate
                             pt: 2
                           }}
                         >
-                          <BoltIcon
-                            sx={{
-                              fontSize: "2rem",
-                              color: getIconColor(stringCurrentHN)
-                            }}
-                          />
+                          <Tooltip title="String Current" arrow> {/* Add Tooltip for Current */}
+                            <BoltIcon
+                              sx={{
+                                fontSize: "2rem",
+                                color: getIconColor(stringCurrentHN)
+                              }}
+                            />
+                          </Tooltip>
                           <Typography variant="h5" sx={{ mt: 1 }}>
                             {Idata.current.value} {Idata.current.unit}
                           </Typography>
@@ -217,12 +221,14 @@ const{instantaneousCurrent, stringvoltage,ambientTemperature,  bmsalarms,socLate
                             pt: 2
                           }}
                         >
-                          <ThermostatIcon
-                            sx={{
-                              fontSize: "2rem",
-                              color: getIconColor(ambientTemperatureHN)
-                            }}
-                          />
+                          <Tooltip title="Ambient Temperature" arrow> {/* Add Tooltip for Temperature */}
+                            <ThermostatIcon
+                              sx={{
+                                fontSize: "2rem",
+                                color: getIconColor(ambientTemperatureHN)
+                              }}
+                            />
+                          </Tooltip>
                           <Typography variant="h5" sx={{ mt: 1 }}>
                             {Idata.temperature.value} {Idata.temperature.unit}
                           </Typography>

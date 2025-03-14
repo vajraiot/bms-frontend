@@ -20,7 +20,7 @@ export const AppProvider = ({ children }) => {
   const [liveTime,setLiveTime]=useState(null);
   const [mapMarkers, setMapMarkers] = useState([]);
   const [userRole, setUserRole] = useState("");
- 
+  const [username, setUsername] = useState("");
 
 
   // Fetch site options on load
@@ -65,15 +65,15 @@ export const AppProvider = ({ children }) => {
         // Fetch manufacturer details
         const manufacturerDetails = await fetchManufacturerDetails(siteId, serialNumber);
         const deviceResponse = await fetchDeviceDetails(siteId, serialNumber);
-        const { chargerMonitoringData, deviceData, packetDateTime } = deviceResponse;
-        if (deviceResponse && deviceData && manufacturerDetails && packetDateTime) {
-          setData(deviceData); // Store device data
+        const { chargerMonitoringDTO, deviceDataDTO, packetDateTime } = deviceResponse;
+        if (deviceDataDTO.length>0) {
+          setData(deviceDataDTO); // Store device data
           setMdata(manufacturerDetails);
           setLiveTime(packetDateTime);
         }
-        if (deviceResponse && chargerMonitoringData) {
+        if (deviceResponse && chargerMonitoringDTO) {
           // Handle device response if needed
-          setCharger(chargerMonitoringData); // Store charger data
+          setCharger(chargerMonitoringDTO); // Store charger data
         }
         const selectedSite = siteOptions.find((site) => site.siteId === siteId);
         setLocation(selectedSite)
@@ -87,13 +87,18 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  const handleLogout = () => {
+    // Show confirmation dialog
+    setIsAuthenticated(false); 
+  };
+
   const contextValue = {
     siteOptions,handleSearch,
     serialNumberOptions,
     siteId,
     serialNumber,
     setSiteId: handleSiteIdChange,
-    setSerialNumber,
+    setSerialNumber,handleLogout,
     data,
     setData,
     Mdata,
@@ -102,7 +107,7 @@ export const AppProvider = ({ children }) => {
     startDate,
     setStartDate,
     endDate,
-    setEndDate,
+    setEndDate,username, setUsername,
     year,
     setYear,
     month,userRole, setUserRole,

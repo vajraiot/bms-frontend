@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Box, Typography, useTheme, IconButton, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import CloseIcon from "@mui/icons-material/Close"; // Import Close Icon
@@ -7,44 +7,45 @@ import LineGraph from "./CellsGraph/LineGraph";
 import CellTable from "./CellsGraph/CellTable";
 import FullCellLayout from "./CellsGraph/Fullcelllayout"; // Import the FullCellLayout component
 import { tokens } from "../theme";
+import { AppContext } from "../services/AppContext";
 
-const CellsData = ({ data, siteId, serialNumber, bmsalarms }) => {
+const CellsData = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-
+  const { data, serialNumber, siteId } = useContext(AppContext);
+  const device = data[0];
+  const { cellVoltageTemperatureData, bmsAlarmsDTO } = device;
   const [activeView, setActiveView] = useState("Pictorial");
-  const [isFullscreen, setIsFullscreen] = useState(false); // State to manage fullscreen mode
-  const [isDialogOpen, setIsDialogOpen] = useState(false); // State to manage dialog visibility
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const viewComponents = {
     Pictorial: (
       <Pictorial
-        cellDataList={data}
+        cellDataList={cellVoltageTemperatureData}
         serialNumber={serialNumber}
         siteId={siteId}
-        chargingStatus={bmsalarms.bankCycleDC}
+        chargingStatus={bmsAlarmsDTO?.bankDischargeCycle}
       />
     ),
-    Graphical: <LineGraph data={data} />,
-    Tabular: <CellTable data={data} />,
+    Graphical: <LineGraph data={cellVoltageTemperatureData} />,
+    Tabular: <CellTable data={cellVoltageTemperatureData} />,
   };
 
   const toggleFullscreen = () => {
-    setIsDialogOpen(true); // Open the dialog when fullscreen icon is clicked
+    setIsDialogOpen(true);
   };
 
   const closeDialog = () => {
-    setIsDialogOpen(false); // Close the dialog
+    setIsDialogOpen(false);
   };
 
   return (
     <Box
       sx={{
-        
-        overflowY: "auto",
-        overflowX: "hidden",
+        height: "100%", // Take full height of the parent (Paper)
         display: "flex",
         flexDirection: "column",
+        overflow: "hidden", // Prevent scrolling in the parent
       }}
     >
       {/* Topbar */}
@@ -57,12 +58,12 @@ const CellsData = ({ data, siteId, serialNumber, bmsalarms }) => {
         borderRadius="4px"
         padding="1px"
         sx={{
-          backgroundColor: colors.primary[500], // Add background color
+          backgroundColor: colors.primary[500],
           position: "sticky",
           top: 0,
           zIndex: 10,
-          boxShadow: `0px 2px 4px ${colors.grey[500]}`, // Add a subtle shadow
-          transition: "background-color 0.3s ease-in-out", // Smooth transition for background
+          boxShadow: `0px 2px 4px ${colors.grey[500]}`,
+          transition: "background-color 0.3s ease-in-out",
         }}
       >
         {["Pictorial", "Graphical", "Tabular"].map((text, index) => (
@@ -74,11 +75,11 @@ const CellsData = ({ data, siteId, serialNumber, bmsalarms }) => {
             onClick={() => setActiveView(text)}
             sx={{
               cursor: "pointer",
-              padding: "6px 12px", // Add padding for better click area
-              borderRadius: "4px", // Rounded corners for each item
+              padding: "6px 12px",
+              borderRadius: "4px",
               "&:hover": {
-                backgroundColor: colors.primary[600], // Hover background color
-                color: "black", // Hover text color
+                backgroundColor: colors.primary[600],
+                color: "black",
                 transform: "scale(1.05)",
                 transition: "all 0.3s ease-in-out",
               },
@@ -87,11 +88,8 @@ const CellsData = ({ data, siteId, serialNumber, bmsalarms }) => {
             <Typography
               variant="subtitle1"
               sx={{
-                color:
-                  activeView === text
-                    ? colors.greenAccent[500]
-                    : "black",
-                fontWeight: activeView === text ? "bold" : "normal", // Bold text for active view
+                color: activeView === text ? colors.greenAccent[500] : "black",
+                fontWeight: activeView === text ? "bold" : "normal",
               }}
             >
               {text}
@@ -105,8 +103,8 @@ const CellsData = ({ data, siteId, serialNumber, bmsalarms }) => {
           sx={{
             ml: 2,
             "&:hover": {
-              backgroundColor: colors.primary[600], // Hover background for the button
-              color: colors.greenAccent[500], // Hover icon color
+              backgroundColor: colors.primary[600],
+              color: colors.greenAccent[500],
               transform: "scale(1.1)",
               transition: "all 0.3s ease-in-out",
             },
@@ -116,12 +114,20 @@ const CellsData = ({ data, siteId, serialNumber, bmsalarms }) => {
           <FullscreenIcon />
         </IconButton>
       </Box>
-      {/* Dynamic Component Rendering */}
-      <Box mt={2}>{viewComponents[activeView]}</Box>
+
+      {/* Active View */}
+      <Box
+        sx={{
+          flexGrow: 1,
+          overflowY: "auto", // Enable scrolling for the active view
+          mt: "10px",
+        }}
+      >
+        {viewComponents[activeView]}
+      </Box>
 
       {/* Fullscreen Dialog */}
       <Dialog open={isDialogOpen} onClose={closeDialog} maxWidth="lg" fullWidth>
-        {/* Close Button at the top-right */}
         <IconButton
           onClick={closeDialog}
           color="secondary"
@@ -131,28 +137,23 @@ const CellsData = ({ data, siteId, serialNumber, bmsalarms }) => {
             right: 8,
             backgroundColor: colors.redAccent[500],
             borderRadius: "50%",
-            padding: "4px", // Reduce padding for smaller button
+            padding: "4px",
             "&:hover": {
               backgroundColor: colors.redAccent[700],
             },
             transition: "background-color 0.3s ease",
           }}
         >
-          <CloseIcon sx={{ color: "white", fontSize: "1.2rem" }} /> {/* Reduced size */}
+          <CloseIcon sx={{ color: "white", fontSize: "1.2rem" }} />
         </IconButton>
-
-        {/* <DialogTitle sx={{ textAlign: 'center' }}>Full Cell Layout</DialogTitle> */}
         <DialogContent>
           <FullCellLayout
             cellDataList={data}
             serialNumber={serialNumber}
             siteId={siteId}
-            chargingStatus={bmsalarms.bankCycleDC}
+            chargingStatus={bmsAlarmsDTO?.bankDischargeCycle}
           />
         </DialogContent>
-        <DialogActions>
-          {/* The Close button here is already handled in the top-right corner */}
-        </DialogActions>
       </Dialog>
     </Box>
   );

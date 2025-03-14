@@ -44,3 +44,39 @@ body,
 .css-qpy9kw {
   width: 55px;
 }
+
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Allows the layout to grow beyond viewport */
+}
+
+.header {
+  width: 100%;
+}
+
+.main-container {
+  display: flex;
+  flex: 1; /* Grows to fill available space, but respects footer */
+  overflow: hidden; /* Prevents sidebar/content from spilling out */
+
+}
+
+.sidebar {
+  width: 250px; /* Explicit width for sidebar */
+  background-color: #f4f4f4;
+  flex-shrink: 0; /* Prevents sidebar from shrinking */
+}
+
+.content {
+  flex: 1; /* Takes remaining horizontal space */
+  overflow-y: hidden;
+  padding-bottom: 30px;
+}
+
+.footer {
+  width: 100%;
+  padding: 20px; /* Optional: internal spacing */
+  background-color: #ddd; /* For visibility during testing */
+}

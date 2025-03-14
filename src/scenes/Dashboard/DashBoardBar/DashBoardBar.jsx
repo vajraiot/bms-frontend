@@ -1,4 +1,4 @@
-import { Box, TextField, Autocomplete } from "@mui/material";
+import { Box, TextField, Autocomplete, Typography, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { AppContext } from "../../../services/AppContext";
 import {
@@ -7,8 +7,8 @@ import {
   fetchAreasDetails,
   fetchMapBySite,
   fetchMapByState,
-  fetchMapByCircle, // Import the new function
-  fetchMapByArea,   // Import the new function
+  fetchMapByCircle,
+  fetchMapByArea,
 } from "../../../services/apiService";
 
 const DashBoardBar = () => {
@@ -28,11 +28,23 @@ const DashBoardBar = () => {
   const [state, setState] = useState("");
   const [circle, setCircle] = useState("");
   const [area, setArea] = useState("");
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false); // State for error dialog
+
+  const clearOptions = () => {
+    setSiteId("");
+    setSerialNumber("");
+    setState("");
+    setCircle("");
+    setArea("");
+    setMapMarkers([]); // Clear markers on the map
+  };
 
   // Fetch all states, circles, and areas on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setSiteId("");
+        setSerialNumber("");
         const statesData = await fetchStatesDetails();
         const circlesData = await fetchCirclesDetails();
         const areasData = await fetchAreasDetails();
@@ -61,18 +73,35 @@ const DashBoardBar = () => {
       console.log("Map Data for State:", mapData); // Debugging: Log API response
 
       if (mapData && mapData.length > 0) {
-        const updatedMarkers = mapData.map((site) => ({
-          lat: site.latitude,
-          lng: site.longitude,
-          name: site.area || "Unnamed Site",
-          vendor: site.vendorName,
-          statusType: site.statusType,
-        }));
-        console.log("Updated Markers for State:", updatedMarkers); // Debugging: Log updated markers
-        setMapMarkers(updatedMarkers);
+        const updatedMarkers = mapData
+          .filter((site) => site.latitude && site.longitude) // Filter out invalid markers
+          .map((site) => ({
+            lat: site.latitude,
+            lng: site.longitude,
+            name: site.area || "Unnamed site",
+            vendor: site.vendorName,
+            statusType: site.statusType,
+            siteId: site.siteId,
+            serialNumber: site.serialNumber || "N/A",
+          }));
+
+        if (updatedMarkers.length > 0) {
+          console.log("Updated Markers for State:", updatedMarkers); // Debugging: Log updated markers
+          setMapMarkers(updatedMarkers);
+        } else {
+          console.log("No valid map markers found for the selected state.");
+          setMapMarkers([]); // Clear markers if no valid data is found
+        }
+      } else {
+        console.log("No map data found for the selected state.");
+        setMapMarkers([]); // Clear markers if no data is returned
       }
     } catch (error) {
       console.error("Error fetching map data for state: ", error);
+      if (error.response && error.response.status === 500) {
+        setErrorDialogOpen(true); // Show error dialog
+        setMapMarkers([]); // Clear markers
+      }
     }
   };
 
@@ -85,18 +114,35 @@ const DashBoardBar = () => {
       console.log("Map Data for Circle:", mapData); // Debugging: Log API response
 
       if (mapData && mapData.length > 0) {
-        const updatedMarkers = mapData.map((site) => ({
-          lat: site.latitude,
-          lng: site.longitude,
-          name: site.area || "Unnamed Site",
-          vendor: site.vendorName,
-          statusType: site.statusType,
-        }));
-        console.log("Updated Markers for Circle:", updatedMarkers); // Debugging: Log updated markers
-        setMapMarkers(updatedMarkers);
+        const updatedMarkers = mapData
+          .filter((site) => site.latitude && site.longitude) // Filter out invalid markers
+          .map((site) => ({
+            lat: site.latitude,
+            lng: site.longitude,
+            name: site.area || "Unnamed site",
+            vendor: site.vendorName,
+            statusType: site.statusType,
+            siteId: site.siteId,
+            serialNumber: site.serialNumber || "N/A",
+          }));
+
+        if (updatedMarkers.length > 0) {
+          console.log("Updated Markers for Circle:", updatedMarkers); // Debugging: Log updated markers
+          setMapMarkers(updatedMarkers);
+        } else {
+          console.log("No valid map markers found for the selected circle.");
+          setMapMarkers([]); // Clear markers if no valid data is found
+        }
+      } else {
+        console.log("No map data found for the selected circle.");
+        setMapMarkers([]); // Clear markers if no data is returned
       }
     } catch (error) {
       console.error("Error fetching map data for circle: ", error);
+      if (error.response && error.response.status === 500) {
+        setErrorDialogOpen(true); // Show error dialog
+        setMapMarkers([]); // Clear markers
+      }
     }
   };
 
@@ -109,18 +155,35 @@ const DashBoardBar = () => {
       console.log("Map Data for Area:", mapData); // Debugging: Log API response
 
       if (mapData && mapData.length > 0) {
-        const updatedMarkers = mapData.map((site) => ({
-          lat: site.latitude,
-          lng: site.longitude,
-          name: site.area || "Unnamed Site",
-          vendor: site.vendorName,
-          statusType: site.statusType,
-        }));
-        console.log("Updated Markers for Area:", updatedMarkers); // Debugging: Log updated markers
-        setMapMarkers(updatedMarkers);
+        const updatedMarkers = mapData
+          .filter((site) => site.latitude && site.longitude) // Filter out invalid markers
+          .map((site) => ({
+            lat: site.latitude,
+            lng: site.longitude,
+            name: site.area || "Unnamed Site",
+            vendor: site.vendorName,
+            statusType: statusType,
+            siteId: site.siteId,
+            serialNumber: site.serialNumber || "N/A",
+          }));
+
+        if (updatedMarkers.length > 0) {
+          console.log("Updated Markers for Area:", updatedMarkers); // Debugging: Log updated markers
+          setMapMarkers(updatedMarkers);
+        } else {
+          console.log("No valid map markers found for the selected area.");
+          setMapMarkers([]); // Clear markers if no valid data is found
+        }
+      } else {
+        console.log("No map data found for the selected area.");
+        setMapMarkers([]); // Clear markers if no data is returned
       }
     } catch (error) {
       console.error("Error fetching map data for area: ", error);
+      if (error.response && error.response.status === 500) {
+        setErrorDialogOpen(true); // Show error dialog
+        setMapMarkers([]); // Clear markers
+      }
     }
   };
 
@@ -139,7 +202,8 @@ const DashBoardBar = () => {
   return (
     <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" p={1} gap={2}>
       <Box display="grid" gridTemplateColumns="repeat(5, 1fr)" gap={2}>
-      <Autocomplete
+        {/* State */}
+        <Autocomplete
           disablePortal
           options={stateOptions.map((state) => state.name)}
           value={state}
@@ -199,7 +263,6 @@ const DashBoardBar = () => {
         />
 
         {/* SubStation ID */}
-        
         <Autocomplete
           disablePortal
           options={siteOptions.map((site) => site.siteId)}
@@ -211,23 +274,35 @@ const DashBoardBar = () => {
               console.log("Map Data:", mapData); // Debugging: Log API response
 
               if (mapData) {
-                const { latitude, longitude, area, vendorName, statusType } = mapData;
+                const { latitude, longitude, area, vendorName, statusType,serialNumber } = mapData;
                 if (latitude && longitude) {
                   const updatedMarkers = [
                     {
                       lat: latitude,
                       lng: longitude,
-                      name: area || "Unnamed Site",
+                      name: area || "Unnamed site",
                       vendor: vendorName,
                       statusType: statusType,
+                      siteId: newValue,
+                      serialNumber: serialNumber || "N/A",
                     },
                   ];
                   console.log("Updated Markers:", updatedMarkers); // Debugging: Log updated markers
                   setMapMarkers(updatedMarkers);
+                } else {
+                  console.log("No valid map markers found for the selected site.");
+                  setMapMarkers([]); // Clear markers if no valid data is found
                 }
+              } else {
+                console.log("No map data found for the selected site.");
+                setMapMarkers([]); // Clear markers if no data is returned
               }
             } catch (error) {
               console.error("Error fetching map data: ", error);
+              if (error.response && error.response.status === 500) {
+                setErrorDialogOpen(true); // Show error dialog
+                setMapMarkers([]); // Clear markers
+              }
             }
           }}
           renderOption={(props, option) =>
@@ -256,51 +331,17 @@ const DashBoardBar = () => {
 
         {/* Serial Number */}
         <Autocomplete
-  disablePortal
-  // Remove disableClearable or set it to false
-  options={serialNumberOptions}
-  value={serialNumber}
-  onChange={(event, newValue) => setSerialNumber(newValue)}
-  renderOption={(props, option) =>
-    renderHighlightedOption(props, option, serialNumber)
-  }
-  renderInput={(params) => (
-    <TextField
-      {...params}
-      label="Serial Number"
-      InputLabelProps={{
-        sx: {
-          fontWeight: "bold",
-        },
-      }}
-      sx={{
-        "& .MuiInputBase-root": {
-          fontWeight: "bold",
-          height: "35px",
-          marginTop: "5px",
-        },
-      }}
-    />
-  )}
-  sx={{ width: "150px" }}
-/>
-
-        {/* State */}
-       
-        {/* Area */}
-        {/* <Autocomplete
           disablePortal
-          disableClearable
-          options={areaOptions.map((area) => area.name)}
-          value={area}
-          onChange={handleAreaChange}
+          options={serialNumberOptions}
+          value={serialNumber}
+          onChange={(event, newValue) => setSerialNumber(newValue)}
           renderOption={(props, option) =>
-            renderHighlightedOption(props, option, area)
+            renderHighlightedOption(props, option, serialNumber)
           }
           renderInput={(params) => (
             <TextField
               {...params}
-              label="Area"
+              label="Serial Number"
               InputLabelProps={{
                 sx: {
                   fontWeight: "bold",
@@ -310,14 +351,39 @@ const DashBoardBar = () => {
                 "& .MuiInputBase-root": {
                   fontWeight: "bold",
                   height: "35px",
-                  marginTop: '5px',
+                  marginTop: "5px",
                 },
               }}
             />
           )}
           sx={{ width: "150px" }}
-        /> */}
+        />
+
+        {/* Clear Button */}
+        <Tooltip title="Clear">
+          <Box onClick={clearOptions}>
+            <Typography variant="body1" sx={{ marginTop: "8px", fontSize: 20, cursor: "pointer" }}> 🔄</Typography>
+          </Box>
+        </Tooltip>
       </Box>
+
+      {/* Error Dialog */}
+      <Dialog
+        open={errorDialogOpen}
+        onClose={() => setErrorDialogOpen(false)}
+      >
+        <DialogTitle>Error</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            No location found for the selected criteria.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setErrorDialogOpen(false)} color="primary">
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

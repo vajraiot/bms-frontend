@@ -14,7 +14,8 @@ import {
   Tooltip,
   CircularProgress,
   useTheme,
-  IconButton,
+  IconButton,TableFooter,
+  TablePagination,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import axios from 'axios';
@@ -25,34 +26,40 @@ import { tokens } from "../../theme";
 const BASE_URL = "http://122.175.45.16:51270";
 
 const TicketTable = () => {
-  const [siteId, setSiteId] = useState('CHARAN4048');
+  const [siteId, setSiteId] = useState('');
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [rowsPerPage, setRowsPerPage] = useState(20); // Changed initial value to 5
   const [tickets, setTickets] = useState([]);
-  const [totalPages, setTotalPages] = useState(0);
-  const [errors, setErrors] = useState({ startDate: false, endDate: false }); // Add error state
+  const [totalRecords, setTotalRecords] = useState(0); // Changed from totalPages to totalRecords
+  const [errors, setErrors] = useState({ startDate: false, endDate: false });
 
   const { siteOptions } = useContext(AppContext);
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
-  // Fetch tickets whenever `page` or `rowsPerPage` changes
+  const clearOptions = () => {
+    setSiteId('');
+    setStartDate(null);
+    setEndDate(null);
+    handleFetchTickets();
+  };
+
   const last7daysTickets = async (currentPage) => {
     try {
-      const response = await axios.get(`${BASE_URL}/latest7days?page=${currentPage}&size=${rowsPerPage}`);
-      setTickets(response.data.content); // Use `.content` for paginated data
-      setTotalPages(response.data.totalElements); // Set the total number of records
+      const response = await axios.get(
+        `${BASE_URL}/latest7days?page=${currentPage}&size=${rowsPerPage}`
+      );
+      setTickets(response.data.content);
+      setTotalRecords(response.data.totalElements);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error('Error fetching data:', error);
     }
   };
 
   const TimeFormat = (dateString) => {
-    if (dateString == null) {
-      return "";
-    }
+    if (dateString == null) return '';
     const utcDate = new Date(dateString);
     const year = utcDate.getFullYear();
     const month = String(utcDate.getMonth() + 1).padStart(2, '0');
@@ -60,15 +67,14 @@ const TicketTable = () => {
     const hours = String(utcDate.getHours()).padStart(2, '0');
     const minutes = String(utcDate.getMinutes()).padStart(2, '0');
     const seconds = String(utcDate.getSeconds()).padStart(2, '0');
-    const milliseconds = String(utcDate.getMilliseconds()).padStart(3, '0');
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`;
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   };
 
   const fetchTickets = async (currentPage) => {
     if (!startDate || !endDate) {
-      console.error("Start date or end date is missing");
-      setErrors({ startDate: !startDate, endDate: !endDate }); // Set errors if dates are missing
-      return; // Prevent the API call if dates are missing
+      console.error('Start date or end date is missing');
+      setErrors({ startDate: !startDate, endDate: !endDate });
+      return;
     }
 
     const formatDate = (date) => {
@@ -78,35 +84,33 @@ const TicketTable = () => {
       return `${year}-${month}-${day}`;
     };
 
-    const formattedStartDate = formatDate(new Date(startDate.split("%")[0]));
-    const formattedEndDate = formatDate(new Date(endDate.split("%")[0]));
+    const formattedStartDate = formatDate(new Date(startDate.split('%')[0]));
+    const formattedEndDate = formatDate(new Date(endDate.split('%')[0]));
 
     const url = `${BASE_URL}/tickets?siteId=${siteId}&start=${formattedStartDate}T00:00:00&end=${formattedEndDate}T23:59:59&page=${currentPage}&size=${rowsPerPage}`;
 
     try {
       setTickets([]);
-      setTotalPages(0);
+      setTotalRecords(0);
       const response = await axios.get(url);
-      setTickets(response.data.content); // Use `.content` for paginated data
-      setTotalPages(response.data.totalElements); // Set the total number of records
+      setTickets(response.data.content);
+      setTotalRecords(response.data.totalElements);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error('Error fetching data:', error);
     }
   };
 
   const handleFetchTickets = () => {
-    // Only fetch tickets if startDate and endDate are selected
     if (startDate && endDate) {
-      fetchTickets(page); // Call fetchTickets with the current page value
+      fetchTickets(page);
     } else {
       last7daysTickets(page);
     }
   };
 
-  // Call fetchTickets on initial load with the correct page value
   useEffect(() => {
-    handleFetchTickets(); // Use the `page` state to fetch tickets initially
-  }, []); // Empty dependency array ensures this runs once on component mount
+    handleFetchTickets();
+  }, [page, rowsPerPage]); // Added rowsPerPage to dependencies
 
   const [hoverData, setHoverData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -116,14 +120,11 @@ const TicketTable = () => {
     setLoading(true);
     try {
       const response = await axios.get(`${BASE_URL}/api/getCoordinates`, {
-        params: {
-          siteId,
-          marginMinutes: 15,
-        },
+        params: { siteId, marginMinutes: 15 },
       });
       setHoverData(response.data);
     } catch (error) {
-      console.error("Failed to fetch coordinates:", error);
+      console.error('Failed to fetch coordinates:', error);
       setHoverData(null);
     } finally {
       setLoading(false);
@@ -131,10 +132,7 @@ const TicketTable = () => {
   };
 
   const renderHoverContent = () => {
-    if (loading) {
-      return <CircularProgress size={20} />;
-    }
-
+    if (loading) return <CircularProgress size={20} />;
     if (!hoverData) {
       return (
         <Typography variant="body2" color="textSecondary">
@@ -142,16 +140,15 @@ const TicketTable = () => {
         </Typography>
       );
     }
-
     return (
       <Box
         sx={{
-          textAlign: "left",
+          textAlign: 'left',
           maxWidth: 200,
-          p: 1, // Adds padding inside the box
-          border: "1px solid #ddd", // Border around the content
-          borderRadius: "8px", // Rounded corners
-          boxShadow: "0px 2px 4px rgba(0,0,0,0.1)", // Adds subtle shadow
+          p: 1,
+          border: '1px solid #ddd',
+          borderRadius: '8px',
+          boxShadow: '0px 2px 4px rgba(0,0,0,0.1)',
         }}
       >
         <Typography variant="h6">
@@ -167,202 +164,162 @@ const TicketTable = () => {
           <strong>Vendor:</strong> {hoverData.vendorName}
         </Typography>
         <Typography variant="h6">
-          <strong>Status:</strong>{" "}
-          {hoverData.statusType === 0 ? "Inactive" : "Active"}
+          <strong>Status:</strong>{' '}
+          {hoverData.statusType === 0 ? 'Inactive' : 'Active'}
         </Typography>
       </Box>
     );
   };
 
-  const CustomPagination = ({ totalPages, currentPage }) => {
-    const handlePrevious = () => {
-      const newPage = currentPage - 1;
-      if (newPage >= 0) {
-        setPage(0);
-        setPage(newPage);
-        if (startDate && endDate) {
-          fetchTickets(newPage);
-        } else {
-          last7daysTickets(newPage);
-        }
-      }
-    };
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
 
-    const handleNext = () => {
-      const newPage = currentPage + 1;
-      if (newPage < totalPages) {
-        setPage(0);
-        setPage(newPage);
-        if (startDate && endDate) {
-          fetchTickets(newPage);
-        } else {
-          last7daysTickets(newPage);
-        }
-      }
-    };
-
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        mt={2}
-        sx={{
-          ml: '700px',
-          padding: '10px',
-          borderRadius: '8px',
-          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-          position: 'sticky',
-          bottom: '10px',
-          zIndex: 1000,
-        }}
-      >
-        <Button
-          onClick={handlePrevious}
-          disabled={currentPage === 0}
-          sx={{
-            marginRight: 1,
-            background: 'linear-gradient(to bottom, #d82b27, #f09819)',
-            color: 'white', // Set text color to white
-            '&:hover': {
-              backgroundColor: '#a1221f', // Optional: Darken background on hover
-            },
-          }}
-        >
-          Previous
-        </Button>
-        <Typography
-          variant="body1"
-          mx={2}
-          sx={{ fontWeight: 'bold', color: 'black' }}
-        >
-          Page {currentPage + 1} of {totalPages}
-        </Typography>
-        <Button
-          onClick={handleNext}
-          disabled={currentPage + 1 >= totalPages}
-          sx={{
-            marginRight: 1,
-            background: 'linear-gradient(to bottom, #d82b27, #f09819)',
-            color: 'white', // Set text color to white
-            '&:hover': {
-              backgroundColor: '#a1221f', // Optional: Darken background on hover
-            },
-          }}
-        >
-          Next
-        </Button>
-      </Box>
-    );
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Reset to first page when rows per page changes
   };
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="center" p={2}>
-      <Box display="flex" gap={2} mb={2} >
-        
+    <Box
+    sx={{
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: '100vh', // Ensure the Box takes full viewport height
+      padding: 2,
+    }}
+  >
+    {/* Header Section */}
+    <Box display="flex" gap={2} mb={2}>
       <Autocomplete
-  freeSolo
-  options={siteOptions.map((site) => site.siteId)}
-  value={siteId}
-  onChange={(event, newValue) => setSiteId(newValue)}
-  renderInput={(params) => (
-    <TextField
-      {...params}
-      label="Substation ID"
-      sx={{
-        width: 150,
-        height: 30,
-        mt: 0.6, // Moves the box slightly down
-        "& .MuiInputBase-root": { height: 35 },
-      }}
-    />
-  )}
-/>
-
-
-        {/* Start Date */}
-        <TextField
-          label="Start Date"
-          type="date"
-          value={startDate?.split("%")[0] || ""}
-          onChange={(e) => {
-            const updatedDate = e.target.value + "%2000:00:00";
-            setStartDate(updatedDate);
-            setErrors((prev) => ({ ...prev, startDate: false })); // Clear error when date is selected
-          }}
-          fullWidth
-          error={errors.startDate}
-          helperText={errors.startDate ? "Please select Start Date" : ""}
-          sx={{
-            width: 200,
-            "& .MuiInputBase-root": {
-              fontWeight: "bold",
-              height: "35px",
-              marginTop: "5px",
-            },
-            "& .MuiInputLabel-root": {
-              fontWeight: "bold",
-            },
-          }}
-          InputLabelProps={{
-            shrink: true,
-          }}
-        />
-
-        {/* End Date */}
-        <TextField
-          label="End Date"
-          type="date"
-          value={endDate?.split("%")[0] || ""}
-          onChange={(e) => {
-            setEndDate(e.target.value + "%2023:59:59");
-            setErrors((prev) => ({ ...prev, endDate: false })); // Clear error when date is selected
-          }}
-          fullWidth
-          error={errors.endDate}
-          helperText={errors.endDate ? "Please select End Date" : ""}
-          sx={{
-            width: 200,
-            "& .MuiInputBase-root": {
-              fontWeight: "bold",
-              height: "35px",
-              marginTop: "5px",
-            },
-            "& .MuiInputLabel-root": {
-              fontWeight: "bold",
-            },
-          }}
-          InputLabelProps={{
-            shrink: true,
-          }}
-        />
-
-        <IconButton onClick={handleFetchTickets}>
-          <SearchIcon />
-        </IconButton>
+        freeSolo
+        options={siteOptions.map((site) => site.siteId)}
+        value={siteId}
+        onChange={(event, newValue) => setSiteId(newValue || '')}
+        filterOptions={(options, { inputValue }) => {
+          if (!inputValue) return [];
+          if (/^[a-zA-Z]$/.test(inputValue)) return options;
+          if (/^\d$/.test(inputValue)) {
+            return options.filter((option) => option.includes(inputValue));
+          }
+          return options.filter((option) =>
+            option.toLowerCase().includes(inputValue.toLowerCase())
+          );
+        }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Substation ID"
+            sx={{
+              width: 200,
+              height: 30,
+              mt: 0.6,
+              fontWeight: 'bold',
+              '& .MuiInputLabel-root': { fontWeight: 'bold' },
+              '& .MuiInputBase-root': { height: 35 },
+            }}
+          />
+        )}
+      />
+  
+      <TextField
+        label="Start Date"
+        type="date"
+        value={startDate?.split('%')[0] || ''}
+        onChange={(e) => {
+          const updatedDate = e.target.value + '%2000:00:00';
+          setStartDate(updatedDate);
+          setErrors((prev) => ({ ...prev, startDate: false }));
+        }}
+        fullWidth
+        error={errors.startDate}
+        helperText={errors.startDate ? 'Please select Start Date' : ''}
+        sx={{
+          width: 200,
+          '& .MuiInputBase-root': {
+            fontWeight: 'bold',
+            height: '35px',
+            marginTop: '5px',
+          },
+          '& .MuiInputLabel-root': { fontWeight: 'bold' },
+        }}
+        InputLabelProps={{ shrink: true }}
+      />
+  
+      <TextField
+        label="End Date"
+        type="date"
+        value={endDate?.split('%')[0] || ''}
+        onChange={(e) => {
+          setEndDate(e.target.value + '%2023:59:59');
+          setErrors((prev) => ({ ...prev, endDate: false }));
+        }}
+        fullWidth
+        error={errors.endDate}
+        helperText={errors.endDate ? 'Please select End Date' : ''}
+        sx={{
+          width: 200,
+          '& .MuiInputBase-root': {
+            fontWeight: 'bold',
+            height: '35px',
+            marginTop: '5px',
+          },
+          '& .MuiInputLabel-root': { fontWeight: 'bold' },
+        }}
+        InputLabelProps={{ shrink: true }}
+      />
+  
+      <IconButton onClick={handleFetchTickets}>
+        <SearchIcon />
+      </IconButton>
+      <Box onClick={clearOptions}>
+        <Typography variant="body1" sx={{ marginTop: '8px', fontSize: 20, cursor: 'pointer' }}>
+          🔄
+        </Typography>
       </Box>
-
+    </Box>
+  
+    {/* Table Section */}
+    <Box
+      sx={{
+        flex: 1, // Takes remaining space between header and footer
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden', // Prevent overflow from parent
+      }}
+    >
       <TableContainer
         component={Paper}
         sx={{
-          maxHeight: 390,
-          border: "1px solid black", // Set border width and color
-          borderRadius: "8px",
-          marginTop: "0px",
+          border: '1px solid black',
+          borderRadius: '8px 8px 0 0', // Round top corners only
+          flex: 1, // Take up remaining space
+          overflowY: 'auto', // Enable scrolling
+          maxHeight: '60vh', // Set a fixed height for scrolling
         }}
       >
-        <Table stickyHeader>
+        <Table stickyHeader aria-label="sticky table">
           <TableHead>
-            <TableRow sx={{ height: "30px" }}> {/* Decrease row height */}
-              {["ID", "Alarm Status", "Raise Time", "Close Time", "Status", "Substation ID", "Serial Number"].map((header) => (
+            <TableRow sx={{ height: '30px' }}>
+              {[
+    
+                'Substation ID',
+                'Serial Number',
+                'Alarm Name',
+                'Raise Time',
+                'Close Time',
+                'Status',
+              ].map((header) => (
                 <TableCell
                   key={header}
                   sx={{
-                    fontSize: 14,
-                    fontFamily: "Source Sans Pro",
+                    fontWeight: "bold",
                     background: "linear-gradient(to bottom, #d82b27, #f09819) !important",
-                    color: "white",
-                    padding: "6px", // Reduce padding to decrease row size
+                    color: "#ffffff",
+                    padding: '3px',
+                    minWidth: "150px",
+                    whiteSpace: "nowrap",
+                    textAlign: "center"
                   }}
                 >
                   {header}
@@ -372,19 +329,15 @@ const TicketTable = () => {
           </TableHead>
           <TableBody>
             {tickets.map((ticket) => (
-              <TableRow key={ticket.id} sx={{ height: "30px" }}> {/* Reduce row height */}
-                <TableCell sx={{ fontSize: 14, fontFamily: "Source Sans Pro", padding: "6px" }}>{ticket.id}</TableCell>
-                <TableCell sx={{ fontSize: 14, fontFamily: "Source Sans Pro", padding: "6px" }}>{ticket.message}</TableCell>
-                <TableCell sx={{ fontSize: 14, fontFamily: "Source Sans Pro", padding: "6px" }}>{TimeFormat(ticket.raiseTime)}</TableCell>
-                <TableCell sx={{ fontSize: 14, fontFamily: "Source Sans Pro", padding: "6px" }}>{TimeFormat(ticket.closeTime)}</TableCell>
-                <TableCell sx={{ fontSize: 14, fontFamily: "Source Sans Pro", padding: "6px" }}>{ticket.status}</TableCell>
-                <TableCell sx={{ fontSize: 14, fontFamily: "Source Sans Pro", padding: "6px" }}>
+              <TableRow key={ticket.id} sx={{ height: '30px' }}>
+                <TableCell sx={{ fontSize: 14, fontFamily: 'Source Sans Pro', padding: '6px' ,textAlign:"center"}}>
                   <Tooltip title={renderHoverContent()} arrow interactive>
                     <span
                       style={{
-                        color: "#1976d2",
-                        textDecoration: "underline",
-                        cursor: "pointer",
+                        color: '#1976d2',
+                        textDecoration: 'underline',
+                        cursor: 'pointer',
+                        
                       }}
                       onClick={() => handleFetchCoordinates(ticket.siteId)}
                     >
@@ -392,19 +345,61 @@ const TicketTable = () => {
                     </span>
                   </Tooltip>
                 </TableCell>
-                <TableCell sx={{ fontSize: 14, fontFamily: "Source Sans Pro", padding: "6px" }}>{ticket.serialNumber}</TableCell>
+                <TableCell sx={{ fontSize: 14, fontFamily: 'Source Sans Pro', padding: '6px' ,textAlign:"center"}}>
+                  {ticket.serialNumber}
+                </TableCell>
+                <TableCell sx={{ fontSize: 14, fontFamily: 'Source Sans Pro', padding: '6px' ,textAlign:"center"}}>
+                  {ticket.message}
+                </TableCell>
+                <TableCell sx={{ fontSize: 14, fontFamily: 'Source Sans Pro', padding: '6px' ,textAlign:"center"}}>
+                  {TimeFormat(ticket.raiseTime)}
+                </TableCell>
+                <TableCell sx={{ fontSize: 14, fontFamily: 'Source Sans Pro', padding: '6px',textAlign:"center" }}>
+                  {TimeFormat(ticket.closeTime)}
+                </TableCell>
+                <TableCell sx={{ fontSize: 14, fontFamily: 'Source Sans Pro', padding: '6px' ,textAlign:"center"}}>
+                  {ticket.status}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
-
-      <CustomPagination
-        sx={{ mt: "30px" }}
-        totalPages={Math.ceil(totalPages / rowsPerPage)}
-        currentPage={page}
+  
+      {/* Footer Section */}
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 20, 50]}
+        count={totalRecords}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        sx={{
+          '& .MuiTablePagination-toolbar': {
+            background: 'linear-gradient(to bottom, #d82b27, #f09819)',
+            color: 'white',
+            borderRadius: '0 0 8px 8px',
+            padding: '8px',
+          },
+          '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+            fontWeight: 'bold',
+            color: 'white',
+          },
+          '& .MuiTablePagination-actions': {
+            color: 'white',
+          },
+          '& .MuiIconButton-root': {
+            color: 'white',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            },
+          },
+          border: '1px solid black',
+          borderTop: 'none',
+        }}
       />
     </Box>
+  </Box>
   );
 };
 

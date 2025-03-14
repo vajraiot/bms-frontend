@@ -18,7 +18,7 @@ import EventOutlinedIcon from "@mui/icons-material/EventOutlined";
 import maha from "../../assets/images/MSEDCLlogo-removebg-preview.png"
 const rolesPermissions = {
   SUPERADMIN: ['Dashboard', 'Live Data', 'Analytics', "RealTimeView","Alarm","DayWise","Monthly",'Issue Tracking', 'Site Details', 'Users'],
-  ENGINEER: ['Dashboard', 'Live Data', 'Analytics',"RealTimeView","Alarm","DayWise","Monthly" ,'Issue Tracking','Users'],
+  ENGINEER: ['Dashboard', 'Live Data', 'Analytics',"RealTimeView","Alarm","DayWise","Monthly" ,'Issue Tracking'],
   SITE_ENGINEER: ['Dashboard', 'Live Data', 'Analytics',"RealTimeView","Alarm","DayWise","Monthly", 'Issue Tracking', 'Site Details'],
   USER: ['Dashboard', 'Live Data', 'Analytics',"RealTimeView","Alarm","DayWise","Monthly", 'Issue Tracking']
 };
@@ -63,7 +63,8 @@ const Sidebar = () => {
           minWidth: isCollapsed ? "60px" : "20px",
           transition: "all 0.3s ease",
           fontFamily: "'Montserrat', sans-serif",
-          height:"79vh",
+          height:"85vh",
+          flexGrow:1
 
         },
         "& .pro-sidebar-inner": {

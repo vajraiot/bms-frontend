@@ -40,7 +40,7 @@ const Header = () => {
       backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${BMS})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
-      padding: '20px',
+      padding: '10px',
       position: 'relative',
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
     }}

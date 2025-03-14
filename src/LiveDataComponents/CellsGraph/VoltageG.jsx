@@ -17,7 +17,6 @@ const VoltageG = ({ data }) => {
     <Box sx={{ height: '200px', width: '100%', marginBottom: '50px'}}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={filteredData}>
-          {/* <CartesianGrid strokeDasharray="3 3" /> */}
           <XAxis 
             dataKey="cellNumber" 
             tick={{ fill: 'black' }} 

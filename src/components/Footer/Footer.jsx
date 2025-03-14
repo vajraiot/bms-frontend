@@ -1,30 +1,27 @@
 import React, { useContext } from "react";
 import { Box, Typography, Link } from "@mui/material";
 import { ColorModeContext } from "../../theme"; // Import the ColorModeContext
+import { mt } from "date-fns/locale";
 
 const Footer = () => {
   const colorMode = useContext(ColorModeContext); // Access the colorMode from context
 
   return (
     <Box
-      className="footer"
-      style={{
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: "#000",
-        color: "#fff",
-        textAlign: "center",
-        justifyContent: "center",
-        padding: "4px 0",
-        display: "flex",
-        width: "100%",
-        alignItems: "center",
-        flexDirection: "row",
-        marginLeft:"100px",
-        gap: "20px",
-      }}
+    className="footer"
+    style={{
+      backgroundColor: "#000",
+      color: "#fff",
+      textAlign: "center",
+      padding: "4px 0",
+      display: "flex",
+      width: "100%",
+      alignItems: "center",
+      flexDirection: "row",
+      gap: "20px",
+      justifyContent: "center",
+      // Removed position: absolute, bottom: 0, left: 0, right: 0, marginLeft
+    }}
     >
       <Box style={{ display: "flex", gap: "10px", alignItems: "center" }}>
         {/* Facebook Icon */}
