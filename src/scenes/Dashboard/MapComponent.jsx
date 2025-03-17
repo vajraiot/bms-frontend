@@ -55,101 +55,99 @@ const MapComponent = ({ mapMarkers = [], selectedStatus }) => {
   return (
     <>
     <style>{hideDefaultCloseButton}</style>
-      <APIProvider apiKey="AIzaSyDRsvO4B8wU4AtMjhgRkjRx0YVdrfwouN4">
-      <Map
-        defaultCenter={{ lat: 17.4065, lng: 78.4772 }}
-        zoom={7}// Lower value = more zoomed out (e.g., 5 or 6)
-        mapId="57f9f0203fe55f5e"
-        style={{ height: '470px', width: '100%' }}
-        >
-          <MapBounds markers={markers} /> {/* Handle dynamic bounds */}
-          {markers.map((marker, index) => {
-            const markerIconUrl = getMarkerIcon(marker.statusType);
+    <APIProvider apiKey="AIzaSyDRsvO4B8wU4AtMjhgRkjRx0YVdrfwouN4">
+  <Map
+    mapId="6ff7b6f4b0371642" // Satellite view with labels
+    mapTypeId="hybrid" // Explicitly set the map type to Satellite
+    style={{ height: '470px', width: '100%' }}
+  >
+    <MapBounds markers={markers} /> {/* Handle dynamic bounds */}
+    {markers.map((marker, index) => {
+      const markerIconUrl = getMarkerIcon(marker.statusType);
 
-            const infoWindowStyle = {
-              fontSize: '14px',
-              fontFamily: 'Arial, sans-serif',
-              color: '#333',
-              minWidth: "150px", 
-              padding: "1px", //
-              margin: '0', // Remove margin
-            };
+      const infoWindowStyle = {
+        fontSize: '14px',
+        fontFamily: 'Arial, sans-serif',
+        color: '#333',
+        minWidth: "150px",
+        padding: "1px",
+        margin: '0',
+      };
 
-            const closeButtonStyle = {
-              position: 'fixed',
-              top: "1px", // Adjusted for better fit
-              right: "5px", // Adjusted for better fit
-              cursor: 'pointer',
-              fontSize: '8px',
-              fontWeight: 'bold',
-              width: '20px',
-              height: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-end'
-            };
+      const closeButtonStyle = {
+        position: 'fixed',
+        top: "1px",
+        right: "5px",
+        cursor: 'pointer',
+        fontSize: '8px',
+        fontWeight: 'bold',
+        width: '20px',
+        height: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end'
+      };
 
-            const titleStyle = {
-              fontSize: '15px',
-              fontWeight: 'bold',
-              marginBottom: '8px',
-              color: '#2c3e50',
-              backgroundColor: '#FFC107', // Yellow background
-              textAlign: 'center', // Center the title
-              padding: '5px', // Add some padding
-              borderRadius: '4px', // Optional: Add border radius
-            };
+      const titleStyle = {
+        fontSize: '15px',
+        fontWeight: 'bold',
+        marginBottom: '8px',
+        color: '#2c3e50',
+        backgroundColor: '#FFC107',
+        textAlign: 'center',
+        padding: '5px',
+        borderRadius: '4px',
+      };
 
-            const contentStyle = {
-              display: 'flex',
-              fontSize: '10px',
-              fontWeight: '200',
-              flexDirection: 'column',
-              gap: '5px', // Add gap between items
-            };
+      const contentStyle = {
+        display: 'flex',
+        fontSize: '10px',
+        fontWeight: '200',
+        flexDirection: 'column',
+        gap: '5px',
+      };
 
-            return (
-              <React.Fragment key={index}>
-                <AdvancedMarker
-                  position={{ lat: parseFloat(marker.lat), lng: parseFloat(marker.lng) }}
-                  onClick={() => handleMarkerClick(marker)}
-                >
-                  <img
-                    src={markerIconUrl}
-                    alt="Marker"
-                    style={{ width: '18px', height: '30px' }} // Adjust size to match the marker
-                  />
-                </AdvancedMarker>
+      return (
+        <React.Fragment key={index}>
+          <AdvancedMarker
+            position={{ lat: parseFloat(marker.lat), lng: parseFloat(marker.lng) }}
+            onClick={() => handleMarkerClick(marker)}
+          >
+            <img
+              src={markerIconUrl}
+              alt="Marker"
+              style={{ width: '18px', height: '30px' }}
+            />
+          </AdvancedMarker>
 
-                {selectedMarker === marker && (
-                  
-                <InfoWindow
-                position={{ lat: parseFloat(marker.lat), lng: parseFloat(marker.lng) }}
-                pixelOffset={[0, -10]}
-                onCloseClick={handleCloseInfoWindow}
-              >
-                <div style={infoWindowStyle} onClick={handleCloseInfoWindow}>
-                  <CloseIcon style={closeButtonStyle} onClick={handleCloseInfoWindow} />
-                  <div style={titleStyle}>{marker.name}</div>
-                  <div style={contentStyle}>
-                    <span>
-                      🔹 <strong>Sub-Station ID:</strong> {marker.siteId}
-                    </span>
-                    <span>
-                      🔹 <strong>Customer:</strong> {marker.vendor || "N/A"}
-                    </span>
-                    <span>
-                      🔹 <strong>SerialNum:</strong> {marker.serialNumber || "N/A"}
-                    </span>
-                  </div>
+          {selectedMarker === marker && (
+            <InfoWindow
+              position={{ lat: parseFloat(marker.lat), lng: parseFloat(marker.lng) }}
+              pixelOffset={[0, -10]}
+              onCloseClick={handleCloseInfoWindow}
+            >
+              <div style={infoWindowStyle} onClick={handleCloseInfoWindow}>
+                <CloseIcon style={closeButtonStyle} onClick={handleCloseInfoWindow} />
+                <div style={titleStyle}>{marker.name}</div>
+                <div style={contentStyle}>
+                  <span>
+                    🔹 <strong>Sub-Station ID:</strong> {marker.siteId}
+                  </span>
+                  <span>
+                    🔹 <strong>Customer:</strong> {marker.vendor || "N/A"}
+                  </span>
+                  <span>
+                    🔹 <strong>SerialNum:</strong> {marker.serialNumber || "N/A"}
+                  </span>
                 </div>
-              </InfoWindow>
-                )}
-              </React.Fragment>
-            );
-          })}
-        </Map>
-      </APIProvider>
+              </div>
+            </InfoWindow>
+          )}
+        </React.Fragment>
+      );
+    })}
+  </Map>
+</APIProvider>
     </>
   );
   

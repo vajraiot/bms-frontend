@@ -10,10 +10,10 @@ import {
   fetchMapByCircle,
   fetchMapByArea,
 } from "../../../services/apiService";
+import { setOptions } from "highcharts";
 
 const DashBoardBar = () => {
   const {
-    siteOptions,
     serialNumberOptions,
     siteId,
     serialNumber,
@@ -29,13 +29,16 @@ const DashBoardBar = () => {
   const [circle, setCircle] = useState("");
   const [area, setArea] = useState("");
   const [errorDialogOpen, setErrorDialogOpen] = useState(false); // State for error dialog
-
+  const [siteOptions, setSiteOptions] = useState([]);
   const clearOptions = () => {
     setSiteId("");
     setSerialNumber("");
     setState("");
     setCircle("");
     setArea("");
+    setSiteOptions([]);
+    setCircleOptions([]);
+    setStateOptions([]);
     setMapMarkers([]); // Clear markers on the map
   };
 
@@ -46,32 +49,25 @@ const DashBoardBar = () => {
         setSiteId("");
         setSerialNumber("");
         const statesData = await fetchStatesDetails();
-        const circlesData = await fetchCirclesDetails();
-        const areasData = await fetchAreasDetails();
-
-        console.log("States Data:", statesData); // Debugging: Log the API response
-        console.log("Circles Data:", circlesData); // Debugging: Log the API response
-        console.log("Areas Data:", areasData); // Debugging: Log the API response
-
         setStateOptions(statesData);
-        setCircleOptions(circlesData);
-        setAreaOptions(areasData);
+
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
     fetchData();
-  }, []);
+  }, [circleOptions,siteOptions]);
 
   // Handle state selection
   const handleStateChange = async (event, newValue) => {
     setState(newValue);
-
     try {
       const mapData = await fetchMapByState(newValue);
-      console.log("Map Data for State:", mapData); // Debugging: Log API response
-
+      setCircleOptions([]);
+      const circles = mapData.map((site) => site.circle);
+      const uniqueCircles = [...new Set(circles)];
+      setCircleOptions(uniqueCircles);
       if (mapData && mapData.length > 0) {
         const updatedMarkers = mapData
           .filter((site) => site.latitude && site.longitude) // Filter out invalid markers
@@ -84,12 +80,9 @@ const DashBoardBar = () => {
             siteId: site.siteId,
             serialNumber: site.serialNumber || "N/A",
           }));
-
         if (updatedMarkers.length > 0) {
-          console.log("Updated Markers for State:", updatedMarkers); // Debugging: Log updated markers
           setMapMarkers(updatedMarkers);
         } else {
-          console.log("No valid map markers found for the selected state.");
           setMapMarkers([]); // Clear markers if no valid data is found
         }
       } else {
@@ -111,8 +104,9 @@ const DashBoardBar = () => {
 
     try {
       const mapData = await fetchMapByCircle(newValue);
-      console.log("Map Data for Circle:", mapData); // Debugging: Log API response
-
+      setOptions([]);
+      const siteOptions = mapData.map((site) => site.siteId);
+      setSiteOptions(siteOptions);
       if (mapData && mapData.length > 0) {
         const updatedMarkers = mapData
           .filter((site) => site.latitude && site.longitude) // Filter out invalid markers
@@ -235,7 +229,7 @@ const DashBoardBar = () => {
         {/* Circle */}
         <Autocomplete
           disablePortal
-          options={circleOptions.map((circle) => circle.name)}
+          options={circleOptions}
           value={circle}
           onChange={handleCircleChange}
           renderOption={(props, option) =>
@@ -265,7 +259,7 @@ const DashBoardBar = () => {
         {/* SubStation ID */}
         <Autocomplete
           disablePortal
-          options={siteOptions.map((site) => site.siteId)}
+          options={siteOptions}
           value={siteId}
           onChange={async (event, newValue) => {
             setSiteId(newValue);
@@ -362,7 +356,7 @@ const DashBoardBar = () => {
         {/* Clear Button */}
         <Tooltip title="Clear">
           <Box onClick={clearOptions}>
-            <Typography variant="body1" sx={{ marginTop: "8px", fontSize: 20, cursor: "pointer" }}> 🔄</Typography>
+            <Typography variant="body1" sx={{ marginTop: "12px", fontSize: 15, cursor: "pointer" }}> ❌</Typography>
           </Box>
         </Tooltip>
       </Box>

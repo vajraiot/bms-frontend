@@ -273,8 +273,8 @@ const TicketTable = () => {
         <SearchIcon />
       </IconButton>
       <Box onClick={clearOptions}>
-        <Typography variant="body1" sx={{ marginTop: '8px', fontSize: 20, cursor: 'pointer' }}>
-          🔄
+        <Typography variant="body1" sx={{ marginTop: '8px', fontSize: 15, cursor: 'pointer' }}>
+        ❌
         </Typography>
       </Box>
     </Box>

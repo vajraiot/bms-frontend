@@ -1,6 +1,19 @@
 import React, { useState, useEffect, useContext } from 'react';
 import {fetchStatesDetails, fetchCirclesDetails, fetchAreasDetails, fetchSiteDetailsBatteryandChargerdetails, updateSiteLocation, addSiteLocation, deleteSite } from '../../../services/apiService';
-import { Grid, Typography, TextField, Button,Box ,Autocomplete, FormControl, MenuItem } from '@mui/material';
+import {
+  Grid,
+  Typography,
+  TextField,
+  Button,
+  Box,
+  Autocomplete,
+  FormControl,Snackbar, Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+} from '@mui/material';
 import SearchAndAddButtons from '../SearchAndAddButtons/index';
 import { AppContext } from "../../../services/AppContext";
 import { toast } from 'react-toastify';
@@ -34,18 +47,19 @@ const columnMappingsPart2 = {
 };
 
 const columnMappingsPart3 = {
-  individualCellVoltage: 'Individual Cell Voltage',
+  // individualCellVoltage: 'Individual Cell Voltage',
   highVoltage: 'High Voltage',
   lowVoltage: 'Low Voltage',
   batteryAboutToDie: 'Battery About To Die',
   openBattery: 'Open Battery',
   highTemperature: 'High Temperature',
-  lowTemperature: 'Low Temperature',
-  notCommnVoltage: 'Not Communicating Voltage',
-  notCommnTemperature: 'Not Communicating Temperature',
+  // lowTemperature: 'Low Temperature',
+  // notCommnVoltage: 'Not Communicating Voltage',
+  // notCommnTemperature: 'Not Communicating Temperature',
 };
 
 const SiteLocation = () => {
+  const [openNoDataDialog, setOpenNoDataDialog] = useState(false);
   const [siteDetails, setSiteDetails] = useState([]);
   const [formData, setFormData] = useState({});
   const [stateOptions, setStateOptions] = useState([]); // Options for state
@@ -67,6 +81,9 @@ const SiteLocation = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -112,7 +129,7 @@ const SiteLocation = () => {
     setCircle(newValue); // Set the selected circle
     setArea(""); // Clear previous area selection
 
-    
+   
   };
   const handleSearchChange = (e) => {
     const { name, value } = e.target;
@@ -128,14 +145,15 @@ const SiteLocation = () => {
         console.error('SiteId or SerialNumber is empty!');
         return;
       }
-      console.log('Fetching details for siteId:', siteId, 'and serialNumber:', serialNumber);
   
       const response = await fetchSiteDetailsBatteryandChargerdetails(siteId, serialNumber);
   
-      if (response && response.data) {
+      // Check if the response has a 400 status code
+      if (response?.status === 400) {
+        setOpenNoDataDialog(true); // Open the "No Data" dialog
+        setFormData({}); // Clear form data
+      } else if (response?.data) {
         const siteData = response.data;
-        console.log('Fetched site data:', siteData);
-  
         const combinedData = {
           state: siteData.state || '',
           circle: siteData.circle || '',
@@ -146,7 +164,7 @@ const SiteLocation = () => {
           batteryAHCapacity: siteData.batteryAHCapacity || '',
           siteId: siteData.siteId || '',
           serialNumber: siteData.manufacturerDTO?.serialNumber || 'N/A',
-          firstUsedDate:siteData.manufacturerDTO?.firstUsedDate||'',
+          firstUsedDate: siteData.manufacturerDTO?.firstUsedDate || '',
           batterySerialNumber: siteData.manufacturerDTO?.batterySerialNumber || 'N/A',
           batteryBankType: siteData.manufacturerDTO?.batteryBankType || 'N/A',
           ahCapacity: siteData.manufacturerDTO?.ahCapacity || 'N/A',
@@ -161,17 +179,23 @@ const SiteLocation = () => {
           lowTemperature: siteData.manufacturerDTO?.lowTemperature || 'N/A',
           notCommnVoltage: siteData.manufacturerDTO?.notCommnVoltage || 'N/A',
           notCommnTemperature: siteData.manufacturerDTO?.notCommnTemperature || 'N/A',
-          
         };
-  
-        console.log('Combined form data:', combinedData);
         setFormData(combinedData);
-      } else {
-        console.log('No data found for the given siteId and serialNumber.');
       }
     } catch (error) {
       console.error('Error fetching site details:', error);
+  
+      // Handle 400 status code from the error response
+      if (error.response?.status === 400) {
+        setOpenNoDataDialog(true); // Open the "No Data" dialog
+        setFormData({}); // Clear form data
+      }
     }
+  };
+
+  // Close the "No Data" dialog
+  const handleCloseNoDataDialog = () => {
+    setOpenNoDataDialog(false);
   };
   
   
@@ -192,8 +216,6 @@ const SiteLocation = () => {
  
   const handleUpdate = async () => {
     try {
-      console.log('Form Data before API call:', formData);
-
       const combinedData = {
         state: formData?.state || '',
         circle: formData?.circle || '',
@@ -220,30 +242,31 @@ const SiteLocation = () => {
           lowTemperature: formData?.lowTemperature || 'N/A',
           notCommnVoltage: formData?.notCommnVoltage || 'N/A',
           notCommnTemperature: formData?.notCommnTemperature || 'N/A',
-        }
+        },
       };
-  
-      console.log('Payload being sent to addSiteLocation API:', combinedData);
-        //const updatedData = { ...formData }; // Use formData as-is
-    
-        const response = await axios.put(`${BASE_URL}/api/updateSiteLocationToSiteId`, combinedData);
-         // Pass siteId and payload
-        alert('Site details updated successfully!');
-        setIsEditing(false);
-    } catch (error) {
-        console.error('Error updating site details:', error);
 
-        // Log error response if available
-        if (error.response) {
-            console.error('Error response:', error.response.data);
-            alert(`Failed to update site details: ${error.response.data.message}`);
-        } else if (error.message) {
-            alert(`Failed to update site details: ${error.message}`);
-        } else {
-            alert('Failed to update site details. An unexpected error occurred.');
-        }
+      const response = await axios.put(`${BASE_URL}/api/updateSiteLocationToSiteId`, combinedData);
+
+      // Show success Snackbar
+      setSnackbarMessage('Updated successfully!');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+
+      setIsEditing(false); // Exit edit mode
+    } catch (error) {
+      console.error('Error updating site details:', error);
+
+      // Show error Snackbar
+      setSnackbarMessage('Failed to update site details.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
     }
-};
+  };
+
+  // Handle Snackbar close
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
 
 
 
@@ -713,6 +736,11 @@ const renderFormFields = (columns) => {
     </LocalizationProvider>
   );
 };
+const handleClear = () => {
+  setSiteId(''); // Clear Substation ID
+  setSerialNumber(''); // Clear Serial Number
+  setFormData({}); // Clear form data
+};
 return (
   <div style={{ padding: '20px', fontSize: '18px' }}> {/* Set the base font size here */}
     <SearchAndAddButtons
@@ -724,61 +752,139 @@ return (
       handleAdd={handleAdd}
       isAdding={isAdding}
       handleDeleteSite={handleDeleteSite}
+      handleClear={handleClear}
     />
     <Box 
-      sx={{ 
-        marginTop: 1, 
-        overflowY: 'auto', 
-        maxHeight: 'calc(100vh - 200px)',  // Adjust this value as needed
-      }}
-    >
-      <Typography variant="h5"  sx={{ 
-    marginTop: '20px', 
-    fontSize: '15px', 
-    fontWeight: '800',
-    background: 'linear-gradient(to bottom, #d82b27, #f09819)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent'
-  }}>
-        Site Location
-      </Typography>
-      {renderFormFields(columnMappingsPart1)}
+            sx={{ 
+              marginTop: 1, 
+              overflowY: 'auto', 
+              maxHeight: 'calc(100vh - 200px)',  // Adjust this value as needed
+            }}
+          >
+            <Typography variant="h5"  sx={{ 
+          marginTop: '20px', 
+          fontSize: '15px', 
+          fontWeight: '800',
+          background: 'linear-gradient(to bottom, #d82b27, #f09819)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent'
+        }}>
+                  Site Location
+                </Typography>
+                {renderFormFields(columnMappingsPart1)}
 
-      <Typography variant="h5"sx={{ 
-    marginTop: '20px', 
-    fontSize: '15px', 
-    fontWeight: '800',
-    background: 'linear-gradient(to bottom, #d82b27, #f09819)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent'
-  }}>
-        Manufacturer Details
-      </Typography>
-      {renderFormFields(columnMappingsPart2)}
+                <Typography variant="h5"sx={{ 
+              marginTop: '20px', 
+              fontSize: '15px', 
+              fontWeight: '800',
+              background: 'linear-gradient(to bottom, #d82b27, #f09819)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}>
+              Manufacturer Details
+            </Typography>
+            {renderFormFields(columnMappingsPart2)}
 
-      <Typography variant="h5" sx={{ 
-    marginTop: '20px', 
-    fontSize: '15px', 
-    fontWeight: '800',
-    background: 'linear-gradient(to bottom, #d82b27, #f09819)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent'
-  }}>
-        Threshold Values
-      </Typography>
-      {renderFormFields(columnMappingsPart3)}
+            <Typography variant="h5" sx={{ 
+          marginTop: '20px', 
+          fontSize: '15px', 
+          fontWeight: '800',
+          background: 'linear-gradient(to bottom, #d82b27, #f09819)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent'
+          }}>
+            Threshold Values
+          </Typography>
+          {renderFormFields(columnMappingsPart3)}
 
-      {(isEditing || isAdding) && (
-        <Button
-          variant="contained"
-          color="#d82b27"
-          onClick={isAdding ? handleAddSite : handleUpdate}
-          sx={{ marginTop: '20px', fontSize: '13px',background:'#d82b27' ,color:'#ffff'}}  // Adjust button font size
+          {(isEditing || isAdding) && (
+            <Button
+              variant="contained"
+              color="#d82b27"
+              onClick={isAdding ? handleAddSite : handleUpdate}
+              sx={{ marginTop: '20px', fontSize: '13px',background:'#d82b27' ,color:'#ffff'}}  // Adjust button font size
+            >
+              {isAdding ? 'Add Site' : 'Save Changes'}
+            </Button>
+          )}
+        </Box>
+        <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+        <Dialog
+          open={openNoDataDialog}
+          onClose={handleCloseNoDataDialog}
+          aria-labelledby="no-data-dialog-title"
+          aria-describedby="no-data-dialog-description"
+          sx={{
+            '& .MuiDialog-paper': {
+              borderRadius: '12px', // Rounded corners
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)', // Subtle shadow
+              width: '400px', // Fixed width
+              maxWidth: '90vw', // Responsive max width
+              backgroundColor: '#f5f5f5', // Light background color
+            },
+          }}
         >
-          {isAdding ? 'Add Site' : 'Save Changes'}
-        </Button>
-      )}
-    </Box>
+          <DialogTitle
+            id="no-data-dialog-title"
+            sx={{
+              backgroundColor: '#d82b27', // Red background for the title
+              color: '#fff', // White text color
+              fontWeight: 'bold', // Bold text
+              fontSize: '1.25rem', // Larger font size
+              padding: '12px 24px', // Padding
+              borderBottom: '1px solid rgba(255, 255, 255, 0.2)', // Subtle border
+            }}
+          >
+            No Data Available
+          </DialogTitle>
+          <DialogContent
+            sx={{
+              padding: '20px 24px', // Padding
+            }}
+          >
+            <DialogContentText
+              id="no-data-dialog-description"
+              sx={{
+                color: '#333', // Dark text color
+                fontSize: '1rem', // Standard font size
+                lineHeight: '1.5', // Improved readability
+              }}
+            >
+              No data found for the selected Substation ID and Serial Number.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions
+            sx={{
+              padding: '10px 24px', // Padding
+              borderTop: '1px solid #e0e0e0', // Subtle border
+              backgroundColor: '#fafafa', // Light background for actions
+            }}
+          >
+            <Button
+              onClick={handleCloseNoDataDialog}
+              sx={{
+                color: '#757575', // Gray text color
+                textTransform: 'none', // Disable uppercase transformation
+                fontWeight: 'bold', // Bold text
+                padding: '6px 16px', // Padding
+                '&:hover': {
+                  backgroundColor: '#f0f0f0', // Light hover background
+                },
+              }}
+            >
+              OK
+            </Button>
+          </DialogActions>
+        </Dialog>
   </div>
 );
 

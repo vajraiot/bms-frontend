@@ -187,7 +187,17 @@ const Topbar = ({ liveTime="", vendorName, locationName = "" }) => {
         }}
       >
         <Typography variant="body2">
-          {convertOwlDatetimeToCustomDate(liveTime)}
+          {liveTime
+            ? new Date(liveTime).toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                second: 'numeric',
+                hour12: false
+              })
+            : "No time available"}
         </Typography>
       </Box>
     </Grid>

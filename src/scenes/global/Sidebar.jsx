@@ -62,7 +62,7 @@ const Sidebar = () => {
           width: isCollapsed ? "60px" : "180px", // Reduced overall width
           minWidth: isCollapsed ? "60px" : "20px",
           transition: "all 0.3s ease",
-          fontFamily: "'Montserrat', sans-serif",
+
           height:"85vh",
           flexGrow:1
 

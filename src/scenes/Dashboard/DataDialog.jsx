@@ -50,7 +50,7 @@ const CustomTick = (props) => {
 
 // Table Dialog to display data in table format
 const TableDialog = ({ open, handleClose, data, alarmType }) => {
-  const { setSiteId, setSerialNumber, handleSearch,siteId,serialNumber } = useContext(AppContext);
+  const { setSiteId, setSerialNumber, handleSearch, siteId, serialNumber } = useContext(AppContext);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [clickedItem, setClickedItem] = useState(null);
@@ -70,7 +70,6 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
     page * rowsPerPage + rowsPerPage
   );
 
-  // useEffect to trigger handleSearch and navigation after siteId and serialNumber are set
   useEffect(() => {
     let mounted = true;
 
@@ -78,15 +77,13 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
       if (mounted && siteId && serialNumber) {
         const result = await handleSearch();
         if (result) {
-          navigate("/livemonitoring", { state: { from: '/' } });
+          navigate("/livemonitoring", { state: { from: "/" } });
         }
       }
     };
 
-    // Trigger only if a row was clicked and both siteId and serialNumber are set
     if (clickedItem && siteId === clickedItem.siteId && serialNumber === clickedItem.serialNumber) {
       performSearchAndNavigate();
-      // Reset clickedItem to prevent re-triggering
       setClickedItem(null);
     }
 
@@ -96,110 +93,27 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
   }, [siteId, serialNumber, handleSearch, navigate, clickedItem]);
 
   const handleRowClick = (item) => {
-    setSiteId(item.siteId); // Update siteId in context
-    setSerialNumber(item.serialNumber); // Update serialNumber in context
-    setClickedItem(item); // Set local state to track the clicked row
+    setSiteId(item.siteId);
+    setSerialNumber(item.serialNumber);
+    setClickedItem(item);
   };
+
   const getTableColumns = () => {
     const baseColumns = [
       { id: "siteId", label: "Substation ID" },
       { id: "serialNumber", label: "Serial Number" },
       { id: "serverTime", label: "Server Date Time" },
-      // {id:
+      {
+        id: "value",
+        label: data.name,
+        render: (item) =>
+          typeof item.value === "boolean"
+            ? !item.value // Reverse the boolean
+              ? "Normal"
+              : "Fail"
+            : `${item.value}${item.units ? " " + item.units : ""}`,
+      },
     ];
-
-    switch (data.name) {
-      case "String(V) High":
-        baseColumns.push({ id: "stringvoltage", label: "String Voltage High" });
-        break;
-      case "String(V) Low":
-        baseColumns.push({ id: "stringvoltage", label: "String Voltage Low" });
-        break;
-      case "Cell(V) Low":
-        baseColumns.push({ id: "cellVoltageLN", label: "Cell Voltage Low" });
-        break;
-      case "SOC Low":
-        baseColumns.push({ id: "socLN", label: "SOC Low" });
-        break;
-      case "Battery Condition":
-        baseColumns.push({ id: "batteryCondition", label: "Battery Condition" });
-        break;
-      case "Charger Trip":
-        baseColumns.push({ id: "chargerTrip", label: "Charger Trip" });
-        break;
-      case "Cell(V) High":
-        baseColumns.push({ id: "cellVoltageNH", label: "Cell Voltage High " });
-        break;
-      case "String(A) High":
-        baseColumns.push({ id: "instantaneousCurrent", label: "String Current High" });
-        break;
-      case "String Commu":
-        baseColumns.push({ id: "stringCommunication", label: "String Communication" });
-        break;
-      case "Input Mains Fail":
-        baseColumns.push({ id: "inputMains", label: "Input Mains" });
-        break;
-      case "Input Phase Fail":
-        baseColumns.push({ id: "inputPhase", label: "Input Phase" });
-        break;
-      case "Rectifier Fuse Fail":
-        baseColumns.push({ id: "rectifierFuse", label: "Rectifier Fuse" });
-        break;
-      case "Filter Fuse Fail":
-        baseColumns.push({ id: "filterFuse", label: "Filter Fuse" });
-        break;
-      case "Output MCCB Fail":
-        baseColumns.push({ id: "outputMccb", label: "Output MCCB" });
-        break;
-      case "Input Fuse Fail":
-        baseColumns.push({ id: "inputFuse", label: "Input Fuse" });
-        break;
-      case "Output Fuse Fail":
-        baseColumns.push({ id: "outputFuse", label: "Input Fuse" });
-        break;
-      case "AC(V) ULN":
-        baseColumns.push({ id: "acVoltageULN", label: "AC Voltage Low" });
-        break;
-      case "Ambient (°C) High":
-        baseColumns.push({ id: "ambientTemperature", label: "Ambient Temperature High" });
-        break;
-      case "Cell Comm Fail":
-        baseColumns.push({ id: "cellCommunication", label: "Cell Communication" });
-        break;
-      case "DC Over Voltage":
-        baseColumns.push({ id: "dcVoltageOLN", label: "DC Voltage High" });
-        break;
-      case "DC Under Voltage":
-        baseColumns.push({ id: "dcVoltageOLN", label: "DC Voltage Low" });
-        break;
-      case "Battery Bank(Discharging)":
-        baseColumns.push({ id: "bankDischargeCycle", label: "Battery Bank(Discharging)" });
-        break;
-      case "AC(V) High":
-        baseColumns.push({ id: "acVoltage", label: "AC Voltage High" });
-        break;
-      case "AC Under Voltage":
-        baseColumns.push({ id: "acVoltage", label: "AC Voltage Low" });
-        break;
-      case "Buzzer Alarm":
-        baseColumns.push({ id: "buzzer", label: "Buzzer" });
-        break;
-      case "Charger Load":
-        baseColumns.push({ id: "chargerLoad", label: "Charger Load" });
-        break;
-      case "Alarm Supply Fuse Fail":
-        baseColumns.push({ id: "alarmSupplyFuse", label: "Alarm Supply Fuse" });
-        break;
-      case "Test Push Button":
-        baseColumns.push({ id: "testPushButton", label: "Test Push Button" });
-        break;
-      case "Reset Push Button":
-        baseColumns.push({ id: "resetPushButton", label: "Reset Push Button" });
-        break;
-      default:
-        // No additional columns for unknown alarm types
-        break;
-    }
 
     return baseColumns;
   };
@@ -217,114 +131,113 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
           textAlign: "center",
         }}
       >
-         {data.name} - {alarmType}
+        {data.name} - {alarmType}
       </DialogTitle>
       <DialogContent>
-        <Typography variant="body1">
-          <TableContainer
-            component={Paper}
-            sx={{
-              marginTop: 1,
-              overflowX: "auto",
-              border: "1px solid black",
-              borderRadius: "8px",
-              paddingBottom: 3,
-              height: "300px",
-            }}
-          >
-            <Table aria-label="simple table">
-              <TableHead sx={{ backgroundColor: "#d82b27", color: "#ffffff" }}>
-                <TableRow>
+        <TableContainer
+          component={Paper}
+          sx={{
+            marginTop: 1,
+            overflowX: "auto",
+            border: "1px solid black",
+            borderRadius: "8px",
+            paddingBottom: 3,
+            height: "300px",
+          }}
+        >
+          <Table aria-label="simple table">
+            <TableHead sx={{ backgroundColor: "#d82b27", color: "#ffffff" }}>
+              <TableRow>
+                {columns.map((column) => (
+                  <TableCell
+                    key={column.id}
+                    sx={{
+                      border: "1px solid #ccc",
+                      padding: "3px",
+                      fontWeight: "bold",
+                      color: "#ffffff",
+                      whiteSpace: "nowrap",
+                      textAlign: "center",
+                    }}
+                  >
+                    {column.label}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {paginatedData?.map((item, index) => (
+                <TableRow
+                  key={index}
+                  onClick={() => handleRowClick(item)}
+                  sx={{
+                    "&:nth-of-type(odd)": { backgroundColor: "#fafafa" },
+                    "&:hover": { backgroundColor: "#f0f0f0", cursor: "pointer" },
+                  }}
+                >
                   {columns.map((column) => (
                     <TableCell
                       key={column.id}
-                      sx={{
-                        border: "1px solid #ccc",
-                        padding: "3px",
-                        fontWeight: "bold",
-                        color: "#ffffff",
-                        whiteSpace: "nowrap",
-                        textAlign:"center"
-                        
-                      }}
+                      style={
+                        column.id === "siteId"
+                          ? {
+                              color: "#1976d2",
+                              textDecoration: "underline",
+                              cursor: "pointer",
+                              border: "1px solid #ccc",
+                              padding: "3px",
+                              fontWeight: "bold",
+                              whiteSpace: "nowrap",
+                              textAlign: "center",
+                            }
+                          : {
+                              border: "1px solid #ccc",
+                              padding: "3px",
+                              whiteSpace: "nowrap",
+                              textAlign: "center",
+                            }
+                      }
+                      title={column.id === "siteId" ? "Double tap here" : undefined}
                     >
-                      {column.label}
+                      {column.id === "serverTime" && item[column.id]
+                        ? new Date(item[column.id]).toLocaleString("en-GB", {
+                            day: "numeric",
+                            month: "numeric",
+                            year: "numeric",
+                            hour: "numeric",
+                            minute: "numeric",
+                            second: "numeric",
+                            hour12: true,
+                          })
+                        : column.render
+                        ? column.render(item) // Use render for value column
+                        : typeof item[column.id] === "boolean"
+                        ? !item[column.id] // Reverse boolean for other columns
+                          ? "True"
+                          : "False"
+                        : item[column.id] !== undefined && item[column.id] !== null
+                        ? item[column.id]
+                        : "No Data"}
                     </TableCell>
                   ))}
                 </TableRow>
-              </TableHead>
-              <TableBody>
-  {paginatedData?.map((item, index) => (
-    <TableRow
-      key={index}
-      onClick={() => handleRowClick(item)}
-      sx={{
-        "&:nth-of-type(odd)": { backgroundColor: "#fafafa" },
-        "&:hover": { backgroundColor: "#f0f0f0", cursor: "pointer" },
-      }}
-    >
-      {columns.map((column) => (
-        <TableCell
-          key={column.id}
-          style={
-            column.id === "siteId"
-              ? {
-                  color: "#1976d2",
-                  textDecoration: "underline",
-                  cursor: "pointer",
-                  border: "1px solid #ccc",
-                  padding: "3px",
-                  fontWeight: "bold",
-                  whiteSpace: "nowrap",
-                  textAlign: "center",
-                }
-              : {
-                  border: "1px solid #ccc",
-                  padding: "3px",
-                  whiteSpace: "nowrap",
-                  textAlign: "center",
-                }
-          }
-          title={column.id === "siteId" ? "Double tap here" : undefined}
-        >
-          {column.id === "serverTime" && item[column.id]
-            ? new Date(item[column.id]).toLocaleString() // Format serverTime as a readable date-time
-            : column.id === "dcVoltageOLN"
-            ? item[column.id] === 0
-              ? "Low"
-              : item[column.id] === 1
-              ? "Normal"
-              : item[column.id] === 2
-              ? "Over"
-              : item[column.id]
-            : typeof item[column.id] === "boolean"
-            ? item[column.id]
-              ? "Fail"
-              : "Normal"
-            : item[column.id] !== undefined && item[column.id] !== null
-            ? item[column.id]
-            : "No Data"}
-        </TableCell>
-      ))}
-    </TableRow>
-  ))}
-</TableBody>
-            </Table>
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={data.details?.length || 0}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              sx={{
-                borderTop: "1px solid #ccc",
-                backgroundColor: "#f5f5f5",
-              }}
-            />
-          </TableContainer>
-        </Typography>
+              ))}
+            </TableBody>
+          </Table>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={data.details?.length || 0}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            sx={{
+              borderTop: "1px solid #ccc",
+              backgroundColor: "#f5f5f5",
+            }}
+          />
+        </TableContainer>
       </DialogContent>
       <DialogActions>
         <Button
@@ -343,7 +256,6 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
     </Dialog>
   );
 };
-
 const DataDialog = ({
   openDialog,
   handleCloseDialog,
@@ -368,79 +280,308 @@ const DataDialog = ({
   const handleBarClick = (data) => {
     const filteredData = barChartData.find((item) => item.name === data.name);
     if (filteredData) {
-      // Filter details based on the selected alarm type
-      const filteredDetails = filteredData.details.filter((detail) => {
-        switch (data.name) {
-          case "String(V) High":
-            return detail.stringvoltage !== undefined;
-          case "String(V) Low":
-            return detail.stringvoltage !== undefined;
-          case "Cell(V) Low":
-            return detail.cellVoltageLN !== undefined;
-          case "SOC Low":
-            return detail.socLatestValueForEveryCycle !== undefined;
-          case "Battery Condition":
-            return detail.batteryCondition !== undefined;
-          case "Charger Trip":
-            return detail.chargerTrip !== undefined ;
-          case "Cell(V) High":
-            return detail.cellVoltageNH !== undefined ;
-          case "String(A) High":
-            return detail.instantaneousCurrent !== undefined;
-          case "Battery Bank(Discharging)":
-              return detail.bankDischargeCycle!== undefined ;
-          case "String Commu":
-            return detail.bmsSedCommunication !== undefined ;
-          case "Input Mains Fail":
-            return detail.inputMains !== undefined
-          case "Input Phase Fail":
-            return detail.inputPhase !== undefined;
-          case "Rectifier Fuse Fail":
-            return detail.rectifierFuse !== undefined;
-          case "Filter Fuse Fail":
-            return detail.filterFuse !== undefined;
-          case "Output Fuse Fail":
-              return detail.outputFuse !== undefined;
-          case "Output MCCB Fail":
-            return detail.outputMccb !== undefined;
-          case "Input Fuse Fail":
-            return detail.inputFuse !== undefined;
-          case "AC Under Voltage":
-            return detail.acVoltage !== undefined;
-          case "AC(V) High":
-            return detail.acVoltage !== undefined;
-          case "Ambient (°C) High":
-            return detail.ambientTemperature !== undefined;
-          case "Cell Comm Fail":
-            return detail.cellCommunication !== undefined;
-          case "DC Under Voltage":
-            return detail.dcVoltageOLN !== undefined;
-          case "DC Over Voltage":
-            return detail.dcVoltageOLN !== undefined;
-          case "Buzzer Alarm":
-            return detail.buzzer !== undefined;
-          case "Charger Load":
-            return detail.chargerLoad !== undefined;
-          case "Alarm Supply Fuse Fail":
-            return detail.alarmSupplyFuse !== undefined;
-          case "Test Push Button":
-            return detail.testPushButton !== undefined;
-          case "Reset Push Button":
-            return detail.resetPushButton !== undefined;
-          default:
-            return true; // Show all rows if no specific alarm type is selected
-        }
-      });
-
+      const filteredDetails = filteredData.details
+        .map((detail) => {
+          switch (data.name) {
+            case "String(V) High":
+            case "String(V) Low":
+              if (detail.stringvoltage !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.stringvoltage,
+                  units: "V",
+                };
+              }
+              break;
+            case "Cell(V) Low":
+              if (detail.cellVoltageLN !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.cellVoltageLN,
+                  units: "V",
+                };
+              }
+              break;
+            case "Cell(V) High":
+              if (detail.cellVoltageNH !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.cellVoltageNH,
+                  units: "V",
+                };
+              }
+              break;
+            case "SOC Low":
+              if (detail.socLatestValueForEveryCycle !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.socLatestValueForEveryCycle,
+                  units: "%",
+                };
+              }
+              break;
+            case "Battery Condition":
+              if (detail.batteryCondition !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.batteryCondition,
+                  units: "",
+                };
+              }
+              break;
+            case "Charger Trip":
+              if (detail.chargerTrip !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.chargerTrip,
+                  units: "",
+                };
+              }
+              break;
+            case "String(A) High":
+              if (detail.instantaneousCurrent !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.instantaneousCurrent,
+                  units: "A",
+                };
+              }
+              break;
+            case "Battery Bank(Discharging)":
+              if (detail.bankDischargeCycle !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.bankDischargeCycle,
+                  units: "",
+                };
+              }
+              break;
+            case "String Commu":
+              if (detail.bmsSedCommunication !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.bmsSedCommunication,
+                  units: "",
+                };
+              }
+              break;
+            case "Input Mains Fail":
+              if (detail.inputMains !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.inputMains,
+                  units: "",
+                };
+              }
+              break;
+            case "Input Phase Fail":
+              if (detail.inputPhase !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.inputPhase,
+                  units: "",
+                };
+              }
+              break;
+            case "Rectifier Fuse Fail":
+              if (detail.rectifierFuse !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.rectifierFuse,
+                  units: "",
+                };
+              }
+              break;
+            case "Filter Fuse Fail":
+              if (detail.filterFuse !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.filterFuse,
+                  units: "",
+                };
+              }
+              break;
+            case "Output Fuse Fail":
+              if (detail.outputFuse !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.outputFuse,
+                  units: "",
+                };
+              }
+              break;
+            case "Output MCCB Fail":
+              if (detail.outputMccb !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.outputMccb,
+                  units: "",
+                };
+              }
+              break;
+            case "Input Fuse Fail":
+              if (detail.inputFuse !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.inputFuse,
+                  units: "",
+                };
+              }
+              break;
+            case "AC Under Voltage":
+            case "AC(V) High":
+              if (detail.acVoltage !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.acVoltage,
+                  units: "V",
+                };
+              }
+              break;
+            case "Ambient (°C) High":
+              if (detail.ambientTemperature !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.ambientTemperature,
+                  units: "°C",
+                };
+              }
+              break;
+            case "Cell Comm Fail":
+              if (detail.cellCommunication !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.cellCommunication,
+                  units: "",
+                };
+              }
+              break;
+            case "DC Under Voltage":
+            case "DC Over Voltage":
+              if (detail.dcVoltageOLN !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.dcVoltageOLN,
+                  units: "V",
+                };
+              }
+              break;
+            case "Buzzer Alarm":
+              if (detail.buzzer !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.buzzer,
+                  units: "",
+                };
+              }
+              break;
+            case "Charger Load":
+              if (detail.chargerLoad !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.chargerLoad,
+                  units: "",
+                };
+              }
+              break;
+            case "Alarm Supply Fuse Fail":
+              if (detail.alarmSupplyFuse !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.alarmSupplyFuse,
+                  units: "",
+                };
+              }
+              break;
+            case "Test Push Button":
+              if (detail.testPushButton !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.testPushButton,
+                  units: "",
+                };
+              }
+              break;
+            case "Reset Push Button":
+              if (detail.resetPushButton !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.resetPushButton,
+                  units: "",
+                };
+              }
+              break;
+            default:
+              return {
+                siteId: detail.siteId,
+                serialNumber: detail.serialNumber,
+                serverTime: detail.serverTime,
+                value: detail, // Keep entire detail object as fallback
+                units: "",
+              };
+          }
+          return null; // Filter out non-matching cases
+        })
+        .filter((item) => item !== null);
+  
       setTableData({
         name: data.name,
-        details: filteredDetails, // Use the filtered details
+        details: filteredDetails,
       });
-      setAlarmType(selectedStatus); // Set the alarm type
+      setAlarmType(selectedStatus);
       setOpenTableDialog(true);
     }
   };
-
   return (
     <>
       <Dialog

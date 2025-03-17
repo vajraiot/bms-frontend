@@ -1,12 +1,36 @@
 import React, { useContext, useState } from 'react';
-import { Grid, IconButton, Tooltip, TextField, Autocomplete, Box, Typography, Snackbar, Alert, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
-import { AppContext } from "../../../services/AppContext";
+import {
+  Grid,
+  IconButton,
+  Tooltip,
+  TextField,
+  Autocomplete,
+  Box,
+  Typography,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Button,
+} from '@mui/material';
+import { AppContext } from '../../../services/AppContext';
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-const SearchAndAddButtons = ({ handleGetDetails, handleEdit, isEditing, handleAdd, isAdding, handleDeleteSite }) => {
+const SearchAndAddButtons = ({
+  handleGetDetails,
+  handleEdit,
+  isEditing,
+  handleAdd,
+  isAdding,
+  handleDeleteSite,
+  handleClear
+}) => {
   const {
     siteOptions,
     serialNumberOptions,
@@ -14,7 +38,7 @@ const SearchAndAddButtons = ({ handleGetDetails, handleEdit, isEditing, handleAd
     serialNumber,
     setSiteId,
     setSerialNumber,
-    setData
+    setData,
   } = useContext(AppContext);
 
   const [message, setMessage] = useState(''); // Generic message state
@@ -22,10 +46,10 @@ const SearchAndAddButtons = ({ handleGetDetails, handleEdit, isEditing, handleAd
   const [severity, setSeverity] = useState('error'); // 'error' or 'success'
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
-  const clearOptions = () => {
-    setSiteId("");
-    setSerialNumber("");
-  };
+  // const clearOptions = () => {
+  //   setSiteId('');
+  //   setSerialNumber('');
+  // };
 
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
@@ -52,13 +76,10 @@ const SearchAndAddButtons = ({ handleGetDetails, handleEdit, isEditing, handleAd
     if (checkSelection('edit')) {
       try {
         await handleEdit(); // Assuming handleEdit is async and resolves on success
-        setMessage('Updated successfully');
-        setSeverity('success');
-        setOpenSnackbar(true);
       } catch (error) {
-        setMessage('Failed to update');
-        setSeverity('error');
-        setOpenSnackbar(true);
+        setMessage('Failed to update'); // Set error message
+        setSeverity('error'); // Set severity to 'error'
+        setOpenSnackbar(true); // Open the Snackbar
       }
     }
   };
@@ -72,13 +93,13 @@ const SearchAndAddButtons = ({ handleGetDetails, handleEdit, isEditing, handleAd
   const handleConfirmDelete = async () => {
     try {
       await handleDeleteSite(); // Assuming handleDeleteSite is async and resolves on success
-      setMessage('Deleted successfully');
-      setSeverity('success');
-      setOpenSnackbar(true);
+      setMessage('Deleted successfully'); // Set success message
+      setSeverity('success'); // Set severity to 'success'
+      setOpenSnackbar(true); // Open the Snackbar
     } catch (error) {
-      setMessage('Failed to delete');
-      setSeverity('error');
-      setOpenSnackbar(true);
+      setMessage('Failed to delete'); // Set error message
+      setSeverity('error'); // Set severity to 'error'
+      setOpenSnackbar(true); // Open the Snackbar
     }
     setOpenDeleteDialog(false);
   };
@@ -112,19 +133,19 @@ const SearchAndAddButtons = ({ handleGetDetails, handleEdit, isEditing, handleAd
                 {...params}
                 label="SubStation ID"
                 InputLabelProps={{
-                  sx: { fontWeight: "bold" },
+                  sx: { fontWeight: 'bold' },
                 }}
                 fullWidth
                 sx={{
-                  "& .MuiInputBase-root": {
-                    fontWeight: "bold",
-                    height: "35px",
-                    marginTop: '5px'
+                  '& .MuiInputBase-root': {
+                    fontWeight: 'bold',
+                    height: '35px',
+                    marginTop: '5px',
                   },
                 }}
               />
             )}
-            sx={{ width: "150px" }}
+            sx={{ width: '150px' }}
           />
 
           <Autocomplete
@@ -137,23 +158,25 @@ const SearchAndAddButtons = ({ handleGetDetails, handleEdit, isEditing, handleAd
                 {...params}
                 label="Serial Number"
                 InputLabelProps={{
-                  sx: { fontWeight: "bold" },
+                  sx: { fontWeight: 'bold' },
                 }}
                 fullWidth
                 sx={{
-                  "& .MuiInputBase-root": {
-                    fontWeight: "bold",
-                    height: "35px",
-                    marginTop: '5px'
+                  '& .MuiInputBase-root': {
+                    fontWeight: 'bold',
+                    height: '35px',
+                    marginTop: '5px',
                   },
                 }}
               />
             )}
-            sx={{ width: "150px" }}
+            sx={{ width: '150px' }}
           />
           <Tooltip title="Clear">
-            <Box onClick={clearOptions} sx={{ cursor: "pointer" }}>
-              <Typography variant="body1" sx={{ marginTop: "8px", fontSize: 20 }}>🔄</Typography>
+            <Box onClick={handleClear} sx={{ cursor: 'pointer' }}>
+              <Typography variant="body1" sx={{ marginTop: '8px', fontSize: 15 }}>
+              ❌
+              </Typography>
             </Box>
           </Tooltip>
           <Tooltip title="Search Details">
@@ -161,36 +184,46 @@ const SearchAndAddButtons = ({ handleGetDetails, handleEdit, isEditing, handleAd
               color="secondary"
               onClick={handleSearchClick}
               sx={{
-                "&:hover": { backgroundColor: "rgba(63, 81, 181, 0.1)" },
+                '&:hover': { backgroundColor: 'rgba(63, 81, 181, 0.1)' },
               }}
             >
-              <SearchIcon sx={{ marginTop: "8px", fontSize: 20 }}/>
+              <SearchIcon sx={{ marginTop: '8px', fontSize: 20 }} />
             </IconButton>
           </Tooltip>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={6} display="flex" justifyContent="flex-start" alignItems="center" gap={2} sx={{ pr: 4 }}>
-          <Tooltip title={isEditing ? "Cancel Edit" : "Edit"}>
+        <Grid
+          item
+          xs={12}
+          sm={6}
+          md={6}
+          display="flex"
+          justifyContent="flex-start"
+          alignItems="center"
+          gap={2}
+          sx={{ pr: 4 }}
+        >
+          <Tooltip title={isEditing ? 'Cancel Edit' : 'Edit'}>
             <IconButton
               color="secondary"
               onClick={handleEditClick}
               sx={{
-                "&:hover": { backgroundColor: "rgba(76, 175, 80, 0.1)" },
+                '&:hover': { backgroundColor: 'rgba(76, 175, 80, 0.1)' },
               }}
             >
-              <EditIcon sx={{ marginTop: "8px", fontSize: 20 }} />
+              <EditIcon sx={{ marginTop: '8px', fontSize: 20 }} />
             </IconButton>
           </Tooltip>
 
-          <Tooltip title={isAdding ? "Cancel Add" : "Add"}>
+          <Tooltip title={isAdding ? 'Cancel Add' : 'Add'}>
             <IconButton
               color="secondary"
               onClick={handleAdd}
               sx={{
-                "&:hover": { backgroundColor: "rgba(255, 193, 7, 0.1)" },
+                '&:hover': { backgroundColor: 'rgba(255, 193, 7, 0.1)' },
               }}
             >
-              <AddIcon sx={{ marginTop: "8px", fontSize: 20 }}/>
+              <AddIcon sx={{ marginTop: '8px', fontSize: 20 }} />
             </IconButton>
           </Tooltip>
 
@@ -199,10 +232,10 @@ const SearchAndAddButtons = ({ handleGetDetails, handleEdit, isEditing, handleAd
               color="error"
               onClick={handleDeleteClick}
               sx={{
-                "&:hover": { backgroundColor: "rgba(244, 67, 54, 0.1)" },
+                '&:hover': { backgroundColor: 'rgba(244, 67, 54, 0.1)' },
               }}
             >
-              <DeleteIcon sx={{ marginTop: "8px", fontSize: 20 }} />
+              <DeleteIcon sx={{ marginTop: '8px', fontSize: 20 }} />
             </IconButton>
           </Tooltip>
         </Grid>
@@ -250,7 +283,8 @@ const SearchAndAddButtons = ({ handleGetDetails, handleEdit, isEditing, handleAd
               lineHeight: '1.5',
             }}
           >
-            Are you sure you want to delete the site with Substation ID <strong>"{siteId}"</strong> and Serial Number <strong>"{serialNumber}"</strong>? This action cannot be undone.
+            Are you sure you want to delete the site with Substation ID{' '}
+            <strong>"{siteId}"</strong> and Serial Number <strong>"{serialNumber}"</strong>?
           </DialogContentText>
         </DialogContent>
         <DialogActions
