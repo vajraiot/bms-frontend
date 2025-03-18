@@ -6,7 +6,7 @@ import {tokens} from "../theme"
 import PowerIcon from "@mui/icons-material/Power"; 
 import { AlertTriangle, BatteryFull ,Power,BatteryLow,BatteryMedium ,CirclePower,Activity} from 'lucide-react';
 import fuse from '.././enums/electronic-fuse.png'
-import { ChargerTrip, StringCurrent, ACVoltage, DCVoltage, Buzzer,AnimatedFuseIcon, ChargerLoadIcon, StringCommunicationIcon } from '.././enums/ThresholdValues'
+import { ChargerTrip, StringCurrent, ACVoltage, DCVoltage, Buzzer,AnimatedFuseIcon,ACVoltageIcon,ChargerLoadIcon, StringCommunicationIcon } from '.././enums/ThresholdValues'
 import trip from '.././assets/images/png/fuse-box.png'
 import mccb from '.././assets/images/png/circuit-breaker.png'
 import acNV from '.././assets/images/png/ac-voltage.png'
@@ -32,7 +32,7 @@ import {
   BatteryChargingFull as DCVoltage,
   NotificationsActive as Buzzer
 } from '@mui/icons-material';
-import {Charging,Discharging,FuseIcon} from '../enums/ThresholdValues'
+import {ChargingV,DischargingV,FuseIcon} from '../enums/ThresholdValues'
 import { AppContext } from "../services/AppContext";
 const Alerts = () => {
   const { data, charger } = useContext(AppContext);
@@ -75,11 +75,11 @@ const Alerts = () => {
     if (key === "acVoltageULN") {
         switch (bit) {
             case 0:
-                return { status: "Low", severity: "low", IconComponent:()=> <img src={acLV} style={{width:23}}></img> };
+                return { status: "Low", severity: "low", IconComponent:()=> <ACVoltageIcon size={25} color="orange" strokeWidth={1.5}  /> };
             case 1:
-                return { status: "Normal", severity: "medium", IconComponent: ()=> <img src={acNV} style={{width:23}}></img>};
+                return { status: "Normal", severity: "medium", IconComponent: ()=> <ACVoltageIcon size={25} color="rgb(50, 149, 56)" strokeWidth={1.5} />};
             case 2:
-                return { status: "High", severity: "high", IconComponent: ()=> <img src={acHV} style={{width:23}}></img> };
+                return { status: "High", severity: "high", IconComponent: ()=> <ACVoltageIcon size={25} color="rgb(183, 28, 28)" strokeWidth={1.5}  />};
             default:
                 return { status: "Unknown", severity: "medium", IconComponent: ()=> <img src={acNV} style={{width:23}}></img> };
         }
@@ -147,7 +147,7 @@ const Alerts = () => {
         ({ status, severity, IconComponent } = getSeverityFromBit(bitValue, key));
     } 
       if (key === "bankDischargeCycle") {
-        IconComponent = combinedData[key] ? Discharging : Charging;
+        IconComponent = combinedData[key] ? DischargingV : ChargingV;
         severity =combinedData[key] ? "medium":"medium"
       } 
       if (key === "batteryCondition") {
@@ -164,9 +164,9 @@ const Alerts = () => {
       ) {
         IconComponent = () =>
           combinedData[key] ? (
-           <AnimatedFuseIcon size={25} color="#ffff" strokeWidth={1.5} isBroken={true} />
+           <AnimatedFuseIcon size={25} color="rgb(183, 28, 28)" strokeWidth={1.5} isBroken={true} />
           ) : (
-            <AnimatedFuseIcon size={25} color="#ffff" strokeWidth={1.5} isBroken={false} />
+            <AnimatedFuseIcon size={25} color="rgb(50, 149, 56)" strokeWidth={1.5} isBroken={false} />
           );
       }
       
@@ -207,53 +207,86 @@ const Alerts = () => {
         Alarms Info
       </Typography>
       <Grid
-        container
-        spacing={1}
-        justifyContent="center"
-        alignItems="center"
-        sx={{ padding: "15px 8px 20px 8px", width: "100%" }}
+  container
+  spacing={1}
+  justifyContent="center"
+  alignItems="center"
+  gap={1}
+  sx={{ padding: "15px 2px 20px 8px", width: "100%" }}
+>
+  {alerts.map((alert) => (
+    <Grid item xs={12} sm={6} md={4} lg={2} key={alert.id}>
+      <Card
+        style={{
+          ...getSeverityStyles(alert.severity),
+          border: "1px solid #ccc",
+          borderRadius: 8,
+          transition: "transform 0.3s ease",
+          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+          cursor: "pointer",
+          minWidth: 100,
+          height: 45,
+          display: 'flex',           // Add flex display
+          flexDirection: 'row',      // Horizontal layout
+          overflow: 'hidden',        // Prevent content overflow
+        }}
+        onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
+        onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
       >
-        {alerts.map((alert) => (
-          <Grid item xs={12} sm={6} md={4} lg={2} key={alert.id}>
-            <Card
-              style={{
-                ...getSeverityStyles(alert.severity),
-                borderRadius: 8,
-                transition: "transform 0.3s ease",
-                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                cursor: "pointer",
-                minWidth: 60,
-                height: 50,
-              }}
-              onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
-              onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
-            >
-              <CardContent style={{ textAlign: "center", padding: 3 }}>
-                <div>
-                  {alert.IconComponent ? (
-                    <alert.IconComponent />
-                  ) : (
-                    <>
-                      {alert.severity === "high" && (
-                        <AlertTriangle size={20} style={{ color: "#B71C1C" }} />
-                      )}
-                      {alert.severity === "medium" && (
-                        <AlertTriangle size={20} style={{ color: "#F57F17" }} />
-                      )}
-                      {alert.severity === "low" && (
-                        <AlertTriangle size={20} style={{ color: "#0D47A1" }} />
-                      )}
-                    </>
-                  )}
-                </div>
-                <Typography variant="body2" sx={{ fontSize: 9, fontWeight: "bold" }}>
-                  {alert.details}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+        {/* Icon Section */}
+        <Box
+          sx={{
+            width: '30%',            // Icon takes 30% of width
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 1,
+            backgroundColor: '#ffff', // Transparent background
+          }}
+        >
+          {alert.IconComponent ? (
+            <alert.IconComponent />
+          ) : (
+            <>
+              {alert.severity === "high" && (
+                <AlertTriangle size={20} style={{ color: "#B71C1C" }} />
+              )}
+              {alert.severity === "medium" && (
+                <AlertTriangle size={20} style={{ color: "#F57F17" }} />
+              )}
+              {alert.severity === "low" && (
+                <AlertTriangle size={20} style={{ color: "#0D47A1" }} />
+              )}
+            </>
+          )}
+        </Box>
+        
+        {/* Text Section */}
+        <Box
+          sx={{
+            width: '70%',            // Text takes 70% of width
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 1,
+          }}
+        >
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              fontSize: 9, 
+              fontWeight: "bold",
+              textAlign: 'center',
+              wordBreak: 'break-word',  // Handle long words
+            }}
+          >
+            {alert.details}
+          </Typography>
+        </Box>
+      </Card>
+    </Grid>
+  ))}
+</Grid>
     </Box>
   );
 };

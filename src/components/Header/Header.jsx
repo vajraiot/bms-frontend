@@ -76,7 +76,7 @@ const Header = () => {
         alignItems: 'center',
       }}
     >
-      <Tooltip title="User Menu" arrow>
+      <Tooltip title="Sign Out" arrow>
         <IconButton
           onClick={handleMenuOpen}
           sx={{

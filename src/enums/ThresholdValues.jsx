@@ -44,99 +44,233 @@ export const Charging = () => {
     </svg>
   );
 };
+export const ChargingV = () => {
+  return (
+    <svg viewBox="0 0 60 100" style={{ width: "3rem" }}>
+      <g transform="translate(10,10) scale(0.8)">
+        {/* Outer rectangle (vertical orientation) */}
+        <rect x="0" y="0" width="60" height="100" rx="8" fill="none" stroke="#2E7D32" strokeWidth="3">
+          <animate attributeName="stroke-opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite" />
+        </rect>
+
+        {/* Terminal (moved to the top) */}
+        <rect x="20" y="-8" width="20" height="8" fill="none" stroke="#2E7D32" strokeWidth="3">
+          <animate attributeName="stroke-opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite" />
+        </rect>
+
+        {/* Inner rectangle (vertical orientation, reverse animation) */}
+        <rect x="5" y="85" width="50" height="20" rx="6" fill="#4CAF50">
+          <animate
+            attributeName="height"
+            values="20;70;20"
+            dur="3s"
+            repeatCount="indefinite"
+          />
+          <animate
+            attributeName="y"
+            values="85;35;85"
+            dur="3s"
+            repeatCount="indefinite"
+          />
+        </rect>
+      </g>
+    </svg>
+  );
+};
 export const AnimatedFuseIcon = ({
   size = 40,
-  color ,
+  color = "currentColor",
   strokeWidth = 1.5,
   isBroken = false,
 }) => {
   return (
     <svg
-    width={size}
-    height={size}
-    viewBox="0 0 20 20" // Adjusted viewBox to remove extra space
-    fill="none"
-    stroke={color}
-    strokeWidth={strokeWidth}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    {/* Outer casing */}
-    <rect x="2" y="6" width="16" height="8" rx="2" /> {/* Adjusted coordinates */}
-
-    {/* End terminals */}
-    <line x1="0" y1="10" x2="2" y2="10" /> {/* Adjusted coordinates */}
-    <line x1="18" y1="10" x2="20" y2="10" /> {/* Adjusted coordinates */}
-
-    {/* Static parts */}
-    <path d="M5 10h2" /> {/* Adjusted coordinates */}
-    <path d="M13 10h2" /> {/* Adjusted coordinates */}
-
-    {/* Broken fuse animation */}
-    {isBroken ? (
-      <g>
-        {/* Left part of broken wire */}
-        <path d="M7 10L9 9"> {/* Adjusted coordinates */}
-          <animate
-            attributeName="d"
-            values="M7 10L9 9;M7 10L9 9.5;M7 10L9 9"
-            dur="0.5s"
-            repeatCount="indefinite"
-          />
-        </path>
-
-        {/* Right part of broken wire */}
-        <path d="M11 11L13 10"> {/* Adjusted coordinates */}
-          <animate
-            attributeName="d"
-            values="M11 11L13 10;M11 10.5L13 10;M11 11L13 10"
-            dur="0.5s"
-            repeatCount="indefinite"
-          />
-        </path>
-
-        {/* Spark effect */}
-        <circle cx="10" cy="10" r="0.5"> {/* Adjusted coordinates */}
-          <animate
-            attributeName="r"
-            values="0.5;1;0.5"
-            dur="0.3s"
-            repeatCount="indefinite"
-          />
-          <animate
-            attributeName="opacity"
-            values="1;0;1"
-            dur="0.3s"
-            repeatCount="indefinite"
-          />
-        </circle>
-
-        {/* Additional spark lines */}
+      width={size}
+      height={size * 2.4}
+      viewBox="0 0 100 240"
+      fill="none"
+      stroke={color}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* Top cap */}
+      <path
+        d="M20,0 H80 Q100,0 100,20 V40 Q100,50 90,50 H10 Q0,50 0,40 V20 Q0,0 20,0 Z"
+        fill={color}
+        stroke="none"
+      />
+      
+      {/* Bottom cap */}
+      <path
+        d="M20,190 H80 Q100,190 100,210 V220 Q100,240 80,240 H20 Q0,240 0,220 V210 Q0,190 20,190 Z"
+        fill={color}
+        stroke="none"
+      />
+      
+      {/* Left side */}
+      <rect x="10" y="50" width="10" height="140" fill={color} stroke="none" />
+      
+      {/* Right side */}
+      <rect x="80" y="50" width="10" height="140" fill={color} stroke="none" />
+      
+      {/* Inner white space in caps */}
+      <rect x="20" y="15" width="60" height="25" fill="white" stroke="none" />
+      <rect x="20" y="200" width="60" height="25" fill="white" stroke="none" />
+      
+      {/* Conditional rendering based on isBroken prop */}
+      {isBroken ? (
         <g>
-          <path d="M9.5 9.5L10.5 10.5"> {/* Adjusted coordinates */}
+          {/* Top portion of broken wire - with clear separation */}
+          <path 
+            d="M40,50 C60,85 30,105 40,105" 
+            fill="none" 
+            stroke={color} 
+            strokeWidth={8}
+          >
+            <animate
+              attributeName="d"
+              values="M40,50 C60,85 30,105 40,105;M40,50 C60,85 30,105 38,103;M40,50 C60,85 30,105 40,105"
+              dur="0.5s"
+              repeatCount="indefinite"
+            />
+          </path>
+          
+          {/* Bottom portion of broken wire - with clear separation */}
+          <path 
+            d="M60,135 C70,160 40,190 40,190" 
+            fill="none" 
+            stroke={color} 
+            strokeWidth={8}
+          >
+            <animate
+              attributeName="d"
+              values="M60,135 C70,160 40,190 40,190;M62,137 C70,160 40,190 40,190;M60,135 C70,160 40,190 40,190"
+              dur="0.5s"
+              repeatCount="indefinite"
+            />
+          </path>
+          
+          {/* Enhanced spark effect */}
+          <circle cx="50" cy="120" r="8" fill="white" stroke={color} strokeWidth={1}>
+            <animate
+              attributeName="r"
+              values="8;12;8"
+              dur="0.3s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="opacity"
+              values="1;0.7;1"
+              dur="0.3s"
+              repeatCount="indefinite"
+            />
+          </circle>
+          
+          {/* Enhanced spark lines */}
+          <path d="M42,112 L58,128" stroke={color} strokeWidth={2.5}>
             <animate
               attributeName="opacity"
               values="1;0;1"
+              dur="0.4s"
+              repeatCount="indefinite"
+            />
+          </path>
+          <path d="M58,112 L42,128" stroke={color} strokeWidth={2.5}>
+            <animate
+              attributeName="opacity"
+              values="1;0;1"
+              dur="0.4s"
+              repeatCount="indefinite"
+            />
+          </path>
+          
+          {/* Additional spark details */}
+          <path d="M44,120 L56,120" stroke={color} strokeWidth={2}>
+            <animate
+              attributeName="opacity"
+              values="0;1;0"
               dur="0.3s"
               repeatCount="indefinite"
             />
           </path>
-          <path d="M10.5 9.5L9.5 10.5"> {/* Adjusted coordinates */}
+          <path d="M50,114 L50,126" stroke={color} strokeWidth={2}>
             <animate
               attributeName="opacity"
-              values="1;0;1"
+              values="0;1;0"
               dur="0.3s"
               repeatCount="indefinite"
+              begin="0.15s"
             />
           </path>
         </g>
-      </g>
-    ) : (
-      // Normal unbroken wire
-      <path d="M7 10C7 10 8 8 10 8S13 10 13 10" /> )}
-    <path d="M6 6v-1" /> {/* Adjusted coordinates */}
-    <path d="M14 6v-1" /> {/* Adjusted coordinates */}
-  </svg>
+      ) : (
+        // Intact wire
+        <path 
+          d="M40,50 C60,85 30,120 50,155 C70,190 40,190 40,190" 
+          fill="none" 
+          stroke={color} 
+          strokeWidth={8} 
+        />
+      )}
+    </svg>
+  );
+};
+export const ACVoltageIcon = ({
+  size = 50,
+  // width={50} ,height={200}
+  color = "#3DD598",
+  bgColor = "#E4FFF0",
+  strokeWidth = 6,
+  isActive = true,
+}) => {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      fill="none"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* Top terminal - increased height */}
+      <rect x="45" y="0" width="10" height="25" rx="5" fill={color} />
+      
+      {/* Bottom terminal - increased height */}
+      <rect x="45" y="75" width="10" height="25" rx="5" fill={color} />
+      
+      {/* Main circular body - increased radius */}
+      <circle cx="50" cy="50" r="40" fill={bgColor} />
+      
+      {/* AC sine wave - adjusted for larger size */}
+      {isActive ? (
+        <path 
+          d="M30,50 Q45,20 50,50 T70,50"
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+        >
+          <animate 
+            attributeName="d" 
+            values="M30,50 Q45,20 50,50 T70,50;
+                    M30,50 Q45,80 50,50 T70,50;
+                    M30,50 Q45,20 50,50 T70,50" 
+            dur="1s" 
+            repeatCount="indefinite" 
+          />
+        </path>
+      ) : (
+        <path 
+          d="M30,50 L70,50"
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray="4 4"
+        />
+      )}
+    </svg>
   );
 };
 export const Discharging = () => {
@@ -156,7 +290,28 @@ export const Discharging = () => {
     </svg>
   );
 };
+export const DischargingV = () => {
+  return (
+    <svg viewBox="0 0 60 100" style={{ width: "3rem" }}>
+      <g transform="translate(10,10) scale(0.8)">
+        {/* Outer rectangle (vertical orientation) */}
+        <rect x="0" y="0" width="60" height="100" rx="8" fill="none" stroke="#C62828" strokeWidth="3">
+          <animate attributeName="stroke-opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite" />
+        </rect>
 
+        {/* Terminal (vertical orientation) */}
+        <rect x="20" y="100" width="20" height="8" fill="none" stroke="#C62828" strokeWidth="3">
+          <animate attributeName="stroke-opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite" />
+        </rect>
+
+        {/* Inner rectangle (vertical orientation) */}
+        <rect x="5" y="5" width="50" height="70" rx="6" fill="#FF5252">
+          <animate attributeName="height" values="70;30;70" dur="3s" repeatCount="indefinite" />
+        </rect>
+      </g>
+    </svg>
+  );
+};
 
 export const CommunicationFailed = () => {
   return (
@@ -469,7 +624,7 @@ export const ChargerLoadIcon = ({ color = "#1B5E20", fillColor, size = 3 }) => {
 };
 
 export const StringCommunicationIcon = ({
-  size = 23,
+  size = 40,
   color = "#1B5E20",
   strokeWidth = 1.5,
 }) => {
@@ -484,23 +639,23 @@ export const StringCommunicationIcon = ({
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      {/* First Battery Cell */}
-      <rect x="3" y="8" width="4" height="8" rx="0.5" />
-      <line x1="5" y1="6" x2="5" y2="8" />
-      <line x1="5" y1="16" x2="5" y2="18" />
+      {/* First Battery Cell (Top) */}
+      <rect x="8" y="3" width="8" height="4" rx="0.5" />
+      <line x1="12" y1="2" x2="12" y2="3" />
+      <line x1="12" y1="7" x2="12" y2="8" />
 
-      {/* Second Battery Cell */}
-      <rect x="10" y="8" width="4" height="8" rx="0.5" />
-      <line x1="12" y1="6" x2="12" y2="8" />
-      <line x1="12" y1="16" x2="12" y2="18" />
+      {/* Second Battery Cell (Middle) */}
+      <rect x="8" y="10" width="8" height="4" rx="0.5" />
+      <line x1="12" y1="9" x2="12" y2="10" />
+      <line x1="12" y1="14" x2="12" y2="15" />
 
-      {/* Third Battery Cell */}
-      <rect x="17" y="8" width="4" height="8" rx="0.5" />
-      <line x1="19" y1="6" x2="19" y2="8" />
-      <line x1="19" y1="16" x2="19" y2="18" />
+      {/* Third Battery Cell (Bottom) */}
+      <rect x="8" y="17" width="8" height="4" rx="0.5" />
+      <line x1="12" y1="16" x2="12" y2="17" />
+      <line x1="12" y1="21" x2="12" y2="22" />
 
-      {/* Communication Lines */}
-      <path d="M7 12 h3">
+      {/* Communication Lines (Vertical) */}
+      <path d="M12 7 v3">
         <animate
           attributeName="stroke-dasharray"
           values="0,6;6,0"
@@ -509,7 +664,7 @@ export const StringCommunicationIcon = ({
         />
       </path>
 
-      <path d="M14 12 h3">
+      <path d="M12 14 v3">
         <animate
           attributeName="stroke-dasharray"
           values="0,6;6,0"
@@ -518,8 +673,8 @@ export const StringCommunicationIcon = ({
         />
       </path>
 
-      {/* Data Signal Indicators */}
-      <circle cx="8.5" cy="12" r="0.4" fill={color}>
+      {/* Data Signal Indicators (Vertical) */}
+      <circle cx="12" cy="8.5" r="0.4" fill={color}>
         <animate
           attributeName="opacity"
           values="0;1;0"
@@ -528,7 +683,7 @@ export const StringCommunicationIcon = ({
         />
       </circle>
 
-      <circle cx="15.5" cy="12" r="0.4" fill={color}>
+      <circle cx="12" cy="15.5" r="0.4" fill={color}>
         <animate
           attributeName="opacity"
           values="0;1;0"

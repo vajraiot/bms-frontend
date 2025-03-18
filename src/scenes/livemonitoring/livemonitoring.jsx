@@ -162,12 +162,12 @@ const Bar = () => {
 
         {/* Alerts, ManufacturerDetails, and Cumulative */}
         <Grid item container spacing={1}>
-          <Grid item xs={5}>
+          <Grid item xs={6}>
             <Paper elevation={8}>
               <Alerts charger={charger} bmsalarms={bmsAlarmsDTO} />
             </Paper>
           </Grid>
-          <Grid item xs={3.5}>
+          <Grid item xs={2.5}>
             <Grid container direction="column" spacing={1}>
               <Grid item xs={4}>
                 <Paper elevation={8}>
@@ -193,7 +193,7 @@ const Bar = () => {
               </Grid>
             </Grid>
           </Grid>
-          <Grid item xs={3.5}>
+          <Grid item xs={3}>
             <Grid container direction="column" spacing={1}>
               <Grid item xs={4}>
                 <Paper elevation={8}>

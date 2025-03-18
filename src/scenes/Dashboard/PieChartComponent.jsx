@@ -5,7 +5,7 @@ import { Box, Typography } from '@mui/material';
 const PieChartComponent = ({ data2 = [], handlePieClick }) => {
   const outerRadius = 80;
   const innerRadius = 25;
-  const chartSize = 230;
+  const chartSize = 220;
 
   const isDataValid = Array.isArray(data2) && data2.length > 0 && !data2.every((entry) => entry.value === 0);
 
@@ -14,7 +14,7 @@ const PieChartComponent = ({ data2 = [], handlePieClick }) => {
       border={1}
       borderColor="grey.300"
       borderRadius={2}
-      padding="1px 20px 15px 23px"
+      padding="1px 25px 15px 25px"
       boxShadow={3}
       display="flex"
       flexDirection="column"
