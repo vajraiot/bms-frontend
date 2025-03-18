@@ -16,10 +16,9 @@ const Dashboard = () => {
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [selectedcategory, setSelectedcategory] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
-  const { data = [],mapMarkers, setMapMarkers } = useContext(AppContext);
+  const { data = [],mapMarkers, setMapMarkers, marginMinutes} = useContext(AppContext);
   const [data1, setData1] = useState([]);
   const [data2, setData2] = useState([]);
-  const [marginMinutes, setMarginMinutes] = useState(20);
   // const [mapMarkers, setMapMarkers] = useState([]);
   const [columns, setColumns] = useState([]);
   const [rows, setRows] = useState([]);
@@ -52,17 +51,45 @@ const Dashboard = () => {
 
           const MostCriticalConditions = item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO;
           const ChargerMonitoringMostCritical = item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO;
-          
-          if (MostCriticalConditions || ChargerMonitoringMostCritical) {
-            if (MostCriticalConditions?.stringVoltageLNH === 0) MostCriticalCount++;      // String Voltage Low
-            if (MostCriticalConditions?.cellVoltageLN === true) MostCriticalCount++;        // Cell Voltage Low
-            if (MostCriticalConditions?.socLN === true) MostCriticalCount++;              // SOC Low
-            // if (MostCriticalConditions?.batteryCondition === true) MostCriticalCount++;   // Battery Open
-            if (ChargerMonitoringMostCritical?.chargerTrip === true) MostCriticalCount++;    // Charger Trip
+          const Thresholdmostcritical = item?.siteLocationDTO?.manufacturerDTO;
+
+          // Get the cell voltage data
+          const cellVoltageData = item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData;
+
+          // Parse thresholds
+          const batteryAboutToDieThreshold = parseFloat(Thresholdmostcritical?.batteryAboutToDie);
+          const openBatteryThreshold = parseFloat(Thresholdmostcritical?.openBattery);
+          const lowVoltageThreshold = parseFloat(Thresholdmostcritical?.lowVoltage);
+
+          // Check if the battery is "about to die" based on cell voltage
+          if (cellVoltageData && !isNaN(batteryAboutToDieThreshold) && !isNaN(openBatteryThreshold) && !isNaN(lowVoltageThreshold)) {
+              const isBatteryAboutToDie = cellVoltageData.some(cell => 
+                  cell.cellVoltage <= batteryAboutToDieThreshold &&
+                  cell.cellVoltage > openBatteryThreshold &&
+                  cell.cellVoltage < lowVoltageThreshold
+              );
+
+              if (isBatteryAboutToDie) {
+                  MostCriticalCount++; // Increment if any cell voltage meets the "about to die" condition
+              }
           }
-          
+
+          // Check if the battery is "open" based on cell voltage
+          if (cellVoltageData && !isNaN(openBatteryThreshold)) {
+              const isOpenBattery = cellVoltageData.some(cell => cell.cellVoltage <= openBatteryThreshold);
+
+              if (isOpenBattery) {
+                  MostCriticalCount++; // Increment if any cell voltage meets the "open battery" condition
+              }
+          }
+
+          if (MostCriticalConditions || ChargerMonitoringMostCritical) {
+              if (MostCriticalConditions?.stringVoltageLNH === 0) MostCriticalCount++;      // String Voltage Low
+              if (MostCriticalConditions?.cellVoltageLN === true) MostCriticalCount++;     // Cell Voltage Low
+              if (MostCriticalConditions?.socLN === true) MostCriticalCount++;            // SOC Low
+              if (ChargerMonitoringMostCritical?.chargerTrip === true) MostCriticalCount++; // Charger Trip
+          }
           console.log(MostCriticalCount);
-          
 
           const CriticalConditions = item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO;
           const ChargerMonitoringCritical = item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO;
@@ -200,6 +227,7 @@ const Dashboard = () => {
       return response.filter((item) => {
         const bmsAlarms = item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO;
         const chargerMonitoring = item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO || {};
+        const Threshold = item?.siteLocationDTO?.manufacturerDTO||{};
         return conditions(bmsAlarms, chargerMonitoring);
       });
     };
@@ -221,26 +249,26 @@ const Dashboard = () => {
           acVoltage:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.acVoltage,
           inputMains:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.inputMains,
           batteryCondition:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.batteryCondition,
-          chargerTrip:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerTrip?.chargerTrip,
+          chargerTrip:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.chargerTrip,
           inputPhase:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.inputPhase,
           rectifierFuse:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.rectifierFuse,
           filterFuse:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.filterFuse,
           outputFuse:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.outputFuse,
-          dcVoltageOLN:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.dcVoltageOLN,
+          // dcVoltageOLN:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.,
           outputMccb:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.outputMccb,
           chargerLoad:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.chargerLoad,
           inputFuse:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.inputFuse,
           alarmSupplyFuse:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.alarmSupplyFuse,
           testPushButton:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.testPushButton,
           resetPushButton:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.resetPushButton,
-          cellVoltageLN:item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.cellVoltageLN,
-          cellVoltageNH:item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.cellVoltageNH,
+          cellVoltage:item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.[0]?.cellVoltage,
+          // cellVoltageNH:item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.cellVoltage,
           bankDischargeCycle:item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.bankDischargeCycle ,
           bmsSedCommunication:item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.bmsSedCommunication ,
           cellCommunication:item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.cellCommunication ,
           buzzer:item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.buzzer ,
-        
-
+          // openBattery:item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.cellVoltage,
+          // batteryAboutToDie:item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.cellVoltage
 
         }));
       console.log("item", filteredData);
@@ -254,11 +282,12 @@ const Dashboard = () => {
       // Define conditions and chart data generation logic for each case
       switch (data.name) {
         case 'Most Critical Alarm':
-          filteredData = filterData(response, (bmsAlarms, chargerMonitoring) => (
+          filteredData = filterData(response, (bmsAlarms, chargerMonitoring,Threshold) => (
             bmsAlarms?.stringVoltageLNH === 0 || // String Voltage Low
             bmsAlarms?.cellVoltageLN === true|| // Cell Voltage Low
             bmsAlarms?.socLN === true || // SOC Low
-            bmsAlarms?.batteryCondition === true || // Battery Open
+            Threshold?.openBattery||
+            Threshold?.batteryAboutToDie||
             chargerMonitoring?.chargerTrip === true
           ));
   
@@ -266,7 +295,8 @@ const Dashboard = () => {
             generateChartData(filteredData, "String(V) Low", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.stringVoltageLNH === 0),
             generateChartData(filteredData, "Cell(V) Low", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.cellVoltageLN=== true),
             generateChartData(filteredData, "SOC Low", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.socLN === true),
-            // generateChartData(filteredData, "Battery Open", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.batteryCondition === true),
+            generateChartData(filteredData, "Battery Open", (item) => item?.siteLocationDTO?.manufacturerDTO?.openBattery),
+            generateChartData(filteredData, "Battery AboutToDie", (item) => item?.siteLocationDTO?.manufacturerDTO?.batteryAboutToDie),
             generateChartData(filteredData, "Charger Trip", (item) => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.chargerTrip === true),
           ];
           break;
@@ -446,7 +476,7 @@ const Dashboard = () => {
     <Box className="dashboard-container" sx={{ padding: 1 ,
         
       boxShadow: '0px 0px 10px rgba(0,0,0,0.1)'  }}>
-       <DashBoardBar onSearch={handleSearch} />
+       <DashBoardBar onSearch={handleSearch} mapMarkers={mapMarkers} setMapMarkers={setMapMarkers} />
       <Grid container spacing={3}>
         {/* Left Side - Map */}
         <Grid item xs={12} md={7}>

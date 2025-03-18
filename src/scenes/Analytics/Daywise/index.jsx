@@ -6,6 +6,7 @@ import excelIcon from "../../../assets/images/png/ExcellTrans100_98.png";
 import ReportsBar from "../ReportsBar/ReportsBar";
 import ChargingGraph from "./ChargingGraph";
 import AhGraph from "./AhGraph";
+import { formatToTime } from "../../../services/AppContext";
 import * as XLSX from "xlsx";
 import {
   Table,
@@ -75,14 +76,7 @@ const DayWise = () => {
   const formatData = (data) => {
     if (!Array.isArray(data) || data.length === 0) return [];
 
-    const formatToTime = (seconds) => {
-      const hrs = Math.floor(seconds / 3600);
-      const mins = Math.floor((seconds % 3600) / 60);
-      const secs = seconds % 60;
-      return `${hrs.toString().padStart(2, "0")}:${mins
-        .toString()
-        .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-    };
+    
 
     const formatToTwoDecimals = (value) =>
       value !== null && value !== undefined

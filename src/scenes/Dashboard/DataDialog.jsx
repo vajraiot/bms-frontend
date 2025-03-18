@@ -295,24 +295,35 @@ const DataDialog = ({
                 };
               }
               break;
+              case "DC Over Voltage":
+                case "DC Under Voltage":
+                  if (detail.stringvoltage !== undefined) {
+                    return {
+                      siteId: detail.siteId,
+                      serialNumber: detail.serialNumber,
+                      serverTime: detail.serverTime,
+                      value: detail.stringvoltage,
+                      units: "V",
+                    };
+                  }
             case "Cell(V) Low":
-              if (detail.cellVoltageLN !== undefined) {
+              if (detail.cellVoltage !== undefined) {
                 return {
                   siteId: detail.siteId,
                   serialNumber: detail.serialNumber,
                   serverTime: detail.serverTime,
-                  value: detail.cellVoltageLN,
+                  value: detail.cellVoltage,
                   units: "V",
                 };
               }
               break;
             case "Cell(V) High":
-              if (detail.cellVoltageNH !== undefined) {
+              if (detail.cellVoltage !== undefined) {
                 return {
                   siteId: detail.siteId,
                   serialNumber: detail.serialNumber,
                   serverTime: detail.serverTime,
-                  value: detail.cellVoltageNH,
+                  value: detail.cellVoltage,
                   units: "V",
                 };
               }
@@ -479,10 +490,32 @@ const DataDialog = ({
                   serialNumber: detail.serialNumber,
                   serverTime: detail.serverTime,
                   value: detail.ambientTemperature,
-                  units: "°C",
+                  units: "",
                 };
               }
               break;
+              case "Battery Open":
+                if (detail.cellVoltage !== undefined) {
+                  return {
+                    siteId: detail.siteId,
+                    serialNumber: detail.serialNumber,
+                    serverTime: detail.serverTime,
+                    value: detail.cellVoltage,
+                    units: "V",
+                  };
+                }
+                break;
+                case "Battery AboutToDie":
+                  if (detail.cellVoltage !== undefined) {
+                    return {
+                      siteId: detail.siteId,
+                      serialNumber: detail.serialNumber,
+                      serverTime: detail.serverTime,
+                      value: detail.cellVoltage,
+                      units: "V",
+                    };
+                  }
+                  break;
             case "Cell Comm Fail":
               if (detail.cellCommunication !== undefined) {
                 return {
@@ -494,18 +527,7 @@ const DataDialog = ({
                 };
               }
               break;
-            case "DC Under Voltage":
-            case "DC Over Voltage":
-              if (detail.dcVoltageOLN !== undefined) {
-                return {
-                  siteId: detail.siteId,
-                  serialNumber: detail.serialNumber,
-                  serverTime: detail.serverTime,
-                  value: detail.dcVoltageOLN,
-                  units: "V",
-                };
-              }
-              break;
+           
             case "Buzzer Alarm":
               if (detail.buzzer !== undefined) {
                 return {

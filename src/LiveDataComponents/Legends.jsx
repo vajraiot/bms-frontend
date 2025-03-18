@@ -23,28 +23,34 @@ const {
     return
   }
 
-    const highTempThreshold = parseFloat(HighTemperature) ;
-    const highVoltThreshold = parseFloat(HighVoltage) ;
-    const lowVoltThreshold = parseFloat(LowVoltage) ;
-
-    const highTemperatureCount = cellVoltageTemperatureData.filter(
-        ({ cellTemperature }) => cellTemperature > highTempThreshold
-    ).length;
-
-    const communicatingCount = cellVoltageTemperatureData.filter(
-        ({ cellVoltage, cellTemperature }) => 
-            cellVoltage !== 65.535 && cellTemperature !== 65535
-    ).length;
-
-    const nonCommunicatingCount = cellVoltageTemperatureData.length - communicatingCount;
-
-    const highVoltageCount = cellVoltageTemperatureData.filter(
-        ({ cellVoltage }) => cellVoltage > highVoltThreshold
-    ).length;
-
-    const lowVoltageCount = cellVoltageTemperatureData.filter(
-        ({ cellVoltage }) => cellVoltage < lowVoltThreshold
-    ).length;
+  const highTempThreshold = parseFloat(HighTemperature);
+  const highVoltThreshold = parseFloat(HighVoltage);
+  const lowVoltThreshold = parseFloat(LowVoltage);
+  
+  // Helper function to check if a cell is communicating
+  const isCommunicating = (cell) => 
+    cell.cellVoltage !== 65.535 && cell.cellTemperature !== 65535;
+  
+  // Count cells with high temperature
+  const highTemperatureCount = cellVoltageTemperatureData.filter(
+    (cell) => cell.cellTemperature !== 65535 && cell.cellTemperature > highTempThreshold
+  ).length;
+  
+  // Count communicating cells
+  const communicatingCount = cellVoltageTemperatureData.filter(isCommunicating).length;
+  
+  // Count non-communicating cells
+  const nonCommunicatingCount = cellVoltageTemperatureData.length - communicatingCount;
+  
+  // Count cells with high voltage
+  const highVoltageCount = cellVoltageTemperatureData.filter(
+    (cell) => cell.cellVoltage !== 65.535 && cell.cellVoltage > highVoltThreshold
+  ).length;
+  
+  // Count cells with low voltage
+  const lowVoltageCount = cellVoltageTemperatureData.filter(
+    (cell) => cell.cellVoltage < lowVoltThreshold
+  ).length;
     return (
         <Box display="flex" flexDirection="column" gap="0px">
             <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold" ,textAlign:"center"}} >

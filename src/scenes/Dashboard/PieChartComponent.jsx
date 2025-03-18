@@ -14,18 +14,18 @@ const PieChartComponent = ({ data2 = [], handlePieClick }) => {
       border={1}
       borderColor="grey.300"
       borderRadius={2}
-      padding="15px 20px 15px 23px"
+      padding="1px 20px 15px 23px"
       boxShadow={3}
       display="flex"
       flexDirection="column"
       alignItems="center"
-      height="230px"
+      height="240px"
       width="fit-content"
     >
-      <Typography variant="h6" fontWeight="bold" gutterBottom>
+      <Typography variant="h5" fontWeight="bold" gutterBottom>
         BMS Alarms Overview
       </Typography>
-      <Box display="flex" justifyContent="center" alignItems="center" mt={-4}> {/* Adjusted margin-top to move content up */}
+      <Box display="flex" justifyContent="center" alignItems="center" mt={-1}> {/* Adjusted margin-top to move content up */}
         {isDataValid ? (
           <PieChart width={chartSize} height={chartSize}>
             <defs>

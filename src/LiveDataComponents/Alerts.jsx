@@ -164,9 +164,9 @@ const Alerts = () => {
       ) {
         IconComponent = () =>
           combinedData[key] ? (
-           <AnimatedFuseIcon size={25} color="#B71C1C" strokeWidth={1.5} isBroken={true} />
+           <AnimatedFuseIcon size={25} color="#ffff" strokeWidth={1.5} isBroken={true} />
           ) : (
-            <AnimatedFuseIcon size={25} color="#1B5E20" strokeWidth={1.5} isBroken={false} />
+            <AnimatedFuseIcon size={25} color="#ffff" strokeWidth={1.5} isBroken={false} />
           );
       }
       
@@ -183,11 +183,11 @@ const Alerts = () => {
   const getSeverityStyles = (severity) => {
     switch (severity) {
       case "high":
-        return { backgroundColor: "#FFCDD2", color: "#B71C1C" };
+        return { backgroundColor: "rgb(183, 28, 28)", color: "#ffff" };
       case "medium":
-        return { backgroundColor: "#C8E6C9", color: "#1B5E20" };
+        return { backgroundColor: "rgb(27, 94, 32)", color: "#ffff" };
       case "low":
-        return { backgroundColor: "#FFF3E0", color: "#FFAE42" };
+        return { backgroundColor: "orange", color: "#ffff" };
       default:
         return { backgroundColor: "#ECEFF1", color: "#455A64" };
     }
@@ -223,7 +223,7 @@ const Alerts = () => {
                 boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
                 cursor: "pointer",
                 minWidth: 60,
-                height: 60,
+                height: 50,
               }}
               onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
               onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}

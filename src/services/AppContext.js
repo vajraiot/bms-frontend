@@ -21,10 +21,12 @@ export const AppProvider = ({ children }) => {
   const [mapMarkers, setMapMarkers] = useState([]);
   const [userRole, setUserRole] = useState("");
   const [username, setUsername] = useState("");
+  const [marginMinutes, setMarginMinutes] = useState(15);
 
 
   // Fetch site options on load
   useEffect(() => {
+    
     const fetchOptions = async () => {
       try {
         const data = await fetchAllSiteIds();
@@ -110,7 +112,7 @@ export const AppProvider = ({ children }) => {
     setEndDate,username, setUsername,
     year,
     setYear,
-    month,userRole, setUserRole,
+    month,userRole, setUserRole,marginMinutes, setMarginMinutes,
     setMonth,isAuthenticated, setIsAuthenticated,charger,setCharger,liveTime,setLiveTime,mapMarkers, setMapMarkers
 
   
@@ -118,4 +120,13 @@ export const AppProvider = ({ children }) => {
 
   return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
 };
-
+export 
+const formatToTime = (seconds) => {
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  return `${hrs.toString().padStart(2, "0")}:${mins
+    .toString()
+    .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+};
+ 

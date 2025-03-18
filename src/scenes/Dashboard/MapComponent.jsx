@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from '@vis.gl/react-google-maps';
 import CloseIcon from '@mui/icons-material/Close';
+
 const MapComponent = ({ mapMarkers = [], selectedStatus }) => {
   const [selectedMarker, setSelectedMarker] = useState(null);
 
@@ -46,113 +47,132 @@ const MapComponent = ({ mapMarkers = [], selectedStatus }) => {
   const handleCloseInfoWindow = () => {
     setSelectedMarker(null);
   };
+
   const hideDefaultCloseButton = `
-  .gm-style-iw button.gm-ui-hover-effect {
-    display: none !important;
-  }
-`
+    .gm-style-iw button.gm-ui-hover-effect {
+      display: none !important;
+    }
+  `;
 
   return (
     <>
-    <style>{hideDefaultCloseButton}</style>
-    <APIProvider apiKey="AIzaSyDRsvO4B8wU4AtMjhgRkjRx0YVdrfwouN4">
-  <Map
-    mapId="6ff7b6f4b0371642" // Satellite view with labels
-    mapTypeId="hybrid" // Explicitly set the map type to Satellite
-    style={{ height: '470px', width: '100%' }}
-  >
-    <MapBounds markers={markers} /> {/* Handle dynamic bounds */}
-    {markers.map((marker, index) => {
-      const markerIconUrl = getMarkerIcon(marker.statusType);
-
-      const infoWindowStyle = {
-        fontSize: '14px',
-        fontFamily: 'Arial, sans-serif',
-        color: '#333',
-        minWidth: "150px",
-        padding: "1px",
-        margin: '0',
-      };
-
-      const closeButtonStyle = {
-        position: 'fixed',
-        top: "1px",
-        right: "5px",
-        cursor: 'pointer',
-        fontSize: '8px',
-        fontWeight: 'bold',
-        width: '20px',
-        height: '20px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'flex-end'
-      };
-
-      const titleStyle = {
-        fontSize: '15px',
-        fontWeight: 'bold',
-        marginBottom: '8px',
-        color: '#2c3e50',
-        backgroundColor: '#FFC107',
-        textAlign: 'center',
-        padding: '5px',
-        borderRadius: '4px',
-      };
-
-      const contentStyle = {
-        display: 'flex',
-        fontSize: '10px',
-        fontWeight: '200',
-        flexDirection: 'column',
-        gap: '5px',
-      };
-
-      return (
-        <React.Fragment key={index}>
-          <AdvancedMarker
-            position={{ lat: parseFloat(marker.lat), lng: parseFloat(marker.lng) }}
-            onClick={() => handleMarkerClick(marker)}
+      <style>{hideDefaultCloseButton}</style>
+      <APIProvider apiKey="AIzaSyDRsvO4B8wU4AtMjhgRkjRx0YVdrfwouN4">
+        <div style={{ boxShadow: '0px 0px 15px rgba(0, 0, 0, 0.7)', borderRadius: '8px', overflow: 'hidden' }}>
+          <Map
+            mapId="6ff7b6f4b0371642" // Satellite view with labels
+            mapTypeId="hybrid" // Explicitly set the map type to Satellite
+            style={{ height: '470px', width: '100%' }}
           >
-            <img
-              src={markerIconUrl}
-              alt="Marker"
-              style={{ width: '18px', height: '30px' }}
-            />
-          </AdvancedMarker>
+            <MapBounds markers={markers} /> {/* Handle dynamic bounds */}
+            {markers.map((marker, index) => {
+              const markerIconUrl = getMarkerIcon(marker.statusType);
 
-          {selectedMarker === marker && (
-            <InfoWindow
-              position={{ lat: parseFloat(marker.lat), lng: parseFloat(marker.lng) }}
-              pixelOffset={[0, -10]}
-              onCloseClick={handleCloseInfoWindow}
-            >
-              <div style={infoWindowStyle} onClick={handleCloseInfoWindow}>
+              const infoWindowStyle = {
+                fontSize: '14px',
+                fontFamily: 'Arial, sans-serif',
+                color: '#333',
+                minWidth: '150px',
+                padding: '1px',
+                margin: '0',
+              };
+
+              const closeButtonStyle = {
+                position: 'fixed',
+                top: '1px',
+                right: '5px',
+                cursor: 'pointer',
+                fontSize: '8px',
+                fontWeight: 'bold',
+                width: '20px',
+                height: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+              };
+
+              const titleStyle = {
+                fontSize: '15px',
+                fontWeight: 'bold',
+                marginBottom: '8px',
+                color: '#2c3e50',
+                backgroundColor: '#FFC107',
+                textAlign: 'center',
+                padding: '5px',
+                borderRadius: '4px',
+              };
+
+              const contentStyle = {
+                display: 'flex',
+                fontSize: '10px',
+                fontWeight: '200',
+                flexDirection: 'column',
+                gap: '5px',
+              };
+
+              const rowStyle = {
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              };
+
+              return (
+                <React.Fragment key={index}>
+                  <AdvancedMarker
+                    position={{ lat: parseFloat(marker.lat), lng: parseFloat(marker.lng) }}
+                    onClick={() => handleMarkerClick(marker)}
+                  >
+                    <img
+                      src={markerIconUrl}
+                      alt="Marker"
+                      style={{ width: '18px', height: '30px' }}
+                    />
+                  </AdvancedMarker>
+
+                  {selectedMarker === marker && (
+                    <InfoWindow
+                      position={{ lat: parseFloat(marker.lat), lng: parseFloat(marker.lng) }}
+                      pixelOffset={[0, -10]}
+                      onCloseClick={handleCloseInfoWindow}
+                    >
+                      <div style={infoWindowStyle}>
                 <CloseIcon style={closeButtonStyle} onClick={handleCloseInfoWindow} />
                 <div style={titleStyle}>{marker.name}</div>
                 <div style={contentStyle}>
                   <span>
-                    🔹 <strong>Sub-Station ID:</strong> {marker.siteId}
+
+                    <div style={{display:"flex"}}>
+                    <div> <strong style={{width: "85px", display: "inline-block"}}>🔹Sub-Station ID </strong></div>
+                       <div ><strong>:</strong></div>
+                       <div style={{ color: "#000f89",fontWeight:"bold"}}>{marker.siteId}</div>
+                      </div>
                   </span>
                   <span>
-                    🔹 <strong>Customer:</strong> {marker.vendor || "N/A"}
+                  <div style={{display:"flex"}}>
+                  <div> <strong style={{width: "85px", display: "inline-block"}}>🔹Customer </strong></div>
+                  <div ><strong>:</strong></div>
+                  <div style={{ color: "#000f89",fontWeight:"bold"}}>{marker.vendor || "N/A"}</div>
+                    </div>
                   </span>
                   <span>
-                    🔹 <strong>SerialNum:</strong> {marker.serialNumber || "N/A"}
+                  <div style={{display:"flex"}}>
+                  <div> <strong style={{width: "85px", display: "inline-block"}}>🔹SerialNum</strong></div>
+                  <div ><strong>:</strong></div>
+                  <div style={{ color: "#000f89",fontWeight:"bold"}}> {marker.serialNumber || "N/A"}</div>
+                    </div>
                   </span>
                 </div>
               </div>
-            </InfoWindow>
-          )}
-        </React.Fragment>
-      );
-    })}
-  </Map>
-</APIProvider>
+                    </InfoWindow>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </Map>
+        </div>
+      </APIProvider>
     </>
   );
-  
 };
-
-
 
 export default MapComponent;

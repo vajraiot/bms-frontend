@@ -42,7 +42,7 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
 
   // Determine the status based on cell data and thresholds
   const determineStatus = () => {
-    const { cellVoltage, cellTemperature,cellSpecificgravity } = cellData;
+    const { cellVoltage, cellTemperature} = cellData;
     const {
       LowVoltage,
       BatteryAboutToDie,
@@ -56,7 +56,7 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
       if (cellVoltage === 65.535 || cellTemperature === 65535) {
         return "Communication Failed";
       }
-      if(bmsAlarmsDTO.cellVoltageHN){
+      if(bmsAlarmsDTO.cellTemperatureHN){
       if (cellTemperature >= parseFloat(HighTemperature)) {
         return "High Temperature";
       }
@@ -64,7 +64,7 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
       if (cellVoltage <= parseFloat(OpenBattery)) {
         return "Open Battery";
       }
-      if (cellVoltage <= parseFloat(BatteryAboutToDie) ){
+      if (cellVoltage <= parseFloat(BatteryAboutToDie) && cellVoltage > parseFloat(OpenBattery)) {
         return "UT to Die";
       }
       if(bmsAlarmsDTO.cellVoltageLN){
@@ -72,7 +72,7 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
         return "Low Voltage";
       }}
       // 2. Voltage Conditions
-      if(bmsAlarmsDTO.cellVoltageHN){
+      if(bmsAlarmsDTO.cellVoltageNH){
       if (cellVoltage >= parseFloat(HighVoltage)) {
         return "High Voltage";
       }}
@@ -286,31 +286,3 @@ const FullScreenOverlay = ({ open, onClose, children }) => {
     </Box>
   );
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

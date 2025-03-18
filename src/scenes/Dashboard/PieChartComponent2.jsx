@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
+import { formatToTime } from "../../services/AppContext";
 import {
   Box, Typography, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, TablePagination, Paper, Button, Dialog,
@@ -126,7 +127,7 @@ const PieChartComponent2 = ({ data1, handlePieClickCommu }) => {
                         color: "#1976d2",
                         textDecoration: "underline",
                         cursor: "pointer",
-                        border: "1px solid #ccc",
+                        border: "2px solid #ccc",
                         padding: "3px",
                         fontWeight: "bold",
                         whiteSpace: "nowrap",
@@ -145,7 +146,7 @@ const PieChartComponent2 = ({ data1, handlePieClickCommu }) => {
                   <TableCell style={{ padding: "3px", fontWeight: "bold", whiteSpace: "nowrap", textAlign: "center" }}>{row.stringVoltage} V</TableCell>
                   <TableCell style={{ padding: "3px", fontWeight: "bold", whiteSpace: "nowrap", textAlign: "center" }}>{row.instantaneousCurrent} A</TableCell>
                   <TableCell style={{ padding: "3px", fontWeight: "bold", whiteSpace: "nowrap", textAlign: "center" }}>{row.ambientTemperature} °C</TableCell>
-                  <TableCell style={{ padding: "3px", fontWeight: "bold", whiteSpace: "nowrap", textAlign: "center" }}>{row.batteryRunHours}</TableCell>
+                  <TableCell style={{ padding: "3px", fontWeight: "bold", whiteSpace: "nowrap", textAlign: "center" }}>{formatToTime(row.batteryRunHours)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -178,7 +179,7 @@ const PieChartComponent2 = ({ data1, handlePieClickCommu }) => {
       border={1}
       borderColor="grey.300"
       borderRadius={2}
-      padding="15px 20px 15px 18px"
+      padding="1px 20px 15px 18px"
       boxShadow={3}
       display="flex"
       flexDirection="column"
@@ -186,10 +187,10 @@ const PieChartComponent2 = ({ data1, handlePieClickCommu }) => {
       height="230px"
       width="fit-content"
     >
-      <Typography variant="h6" fontWeight="bold" gutterBottom>
+      <Typography variant="h5" fontWeight="bold" gutterBottom>
         Device Status
       </Typography>
-      <Box display="flex" justifyContent="center" alignItems="center" mt={-3}>
+      <Box display="flex" justifyContent="center" alignItems="center" mt={-1}>
         <PieChart width={CHART_SIZE} height={CHART_SIZE}>
           <defs>
             <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">

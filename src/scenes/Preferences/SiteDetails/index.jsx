@@ -62,6 +62,7 @@ const SiteLocation = () => {
   const [openNoDataDialog, setOpenNoDataDialog] = useState(false);
   const [siteDetails, setSiteDetails] = useState([]);
   const [formData, setFormData] = useState({});
+  const [errors, setErrors] = useState({}); 
   const [stateOptions, setStateOptions] = useState([]); // Options for state
   const [circleOptions, setCircleOptions] = useState([]); // Options for circle
   const [areaOptions, setAreaOptions] = useState([]); 
@@ -88,17 +89,11 @@ const SiteLocation = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setSiteId("");
+        setSerialNumber("");
         const statesData = await fetchStatesDetails();
-        const circlesData = await fetchCirclesDetails();
-        const areasData = await fetchAreasDetails();
-
         console.log("States Data:", statesData); // Debugging: Log the API response
-        console.log("Circles Data:", circlesData); // Debugging: Log the API response
-        console.log("Areas Data:", areasData); // Debugging: Log the API response
-
         setStateOptions(statesData);
-        setCircleOptions(circlesData);
-        setAreaOptions(areasData);
       } catch (error) {
         console.error('Error fetching site details:', error);
       }
@@ -118,19 +113,16 @@ const SiteLocation = () => {
   };
   
   const handleStateChange = (event, newValue) => {
-    setState(newValue); // Set the selected state
-    setCircle(""); // Clear previous circle selection
-    setArea(""); // Clear previous area selection
+    setCircleOptions([]);
+    const state= stateOptions.find((state) => state.name === newValue); 
+    setCircleOptions(state?.circles || []);
+};
 
-    
-  };
+const handleCircleChange = (event, newValue) => {
+  const circle= circleOptions.find((circle) => circle.name === newValue);
+  setAreaOptions(circle?.areas || []);
+};
 
-  const handleCircleChange = (event, newValue) => {
-    setCircle(newValue); // Set the selected circle
-    setArea(""); // Clear previous area selection
-
-   
-  };
   const handleSearchChange = (e) => {
     const { name, value } = e.target;
     setSearchData({
@@ -359,7 +351,35 @@ const renderFormFields = (columns) => {
     circle: '',
     area: '',
   });
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    let error = '';
 
+    // Custom validation logic
+    if (name === 'highVoltage' && (value < 2 || value > 2.5)) {
+      error = 'High Voltage must be between 2 and 2.5';
+    } else if (name === 'lowVoltage' && (value < 1.9 || value > 1.99)) {
+      error = 'Low Voltage must be between 1.9 and 2';
+    } else if (name === 'batteryAboutToDie' && (value < 1.81 || value > 1.89)) {
+      error = 'Battery About To Die must be between 1.8 and 1.9';
+    } else if (name === 'openBattery' && (value < 1.4 || value > 1.8)) {
+      error = 'Open Battery must be between 1.4 and 1.8';
+    } else if (name === 'highTemperature' && value > 100) {
+      error = 'High Temperature must not exceed 100';
+    }
+
+    // Update form data
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+
+    // Update errors
+    setErrors({
+      ...errors,
+      [name]: error,
+    });
+  };
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Grid container spacing={2}>
@@ -521,6 +541,10 @@ const renderFormFields = (columns) => {
                             ...prev,
                             [key]: false,
                           }));
+                          if(key === 'state') {
+                          handleStateChange(event, newValue);}
+                          if(key === 'circle') {
+                          handleCircleChange(event, newValue);}
                           handleInputChange({
                             target: {
                               name: key,
@@ -636,6 +660,7 @@ const renderFormFields = (columns) => {
                         },
                       });
                     }}
+                    
                     disabled={!isEditing && !isAdding}
                     renderInput={(params) => (
                       <TextField
@@ -681,58 +706,70 @@ const renderFormFields = (columns) => {
 
           return (
             <Grid item xs={12} sm={8} md={4} lg={3} key={key}>
-              <Box width="150px" sx={{ marginTop: '1.5px' }}>
-                <TextField
-                  label={columns[key]}
-                  name={key}
-                  value={formData[key] || ''}
-                  onChange={handleInputChange}
-                  fullWidth
-                  margin="dense"
-                  disabled={!isEditing && !isAdding}
-                  type={
-                    key === 'designVoltage' ||
-                    key === 'ahCapacity' ||
-                    key === 'individualCellVoltage' ||
-                    key === 'highVoltage' ||
-                    key === 'lowVoltage' ||
-                    key === 'highTemperature' ||
-                    key === 'lowTemperature'
-                      ? 'number'
-                      : 'text'
-                  }
-                  inputProps={{
-                    style: { textAlign: 'center' },
-                  }}
-                  InputLabelProps={{
-                    sx: {
-                      fontWeight: "bold",
-                      color: "black",
-                    },
-                  }}
-                  sx={{
-                    '& .MuiInputBase-root': {
-                      height: '35px',
-                      fontWeight: (!isEditing && !isAdding) ? 'bold' : 'bold',
-                      backgroundColor: (!isEditing && !isAdding) ? '#f0f0f0' : 'transparent',
-                    },
-                    '& .MuiInputBase-input': {
-                      padding: '2px 10px',
-                      fontSize: '12px',
-                      fontWeight: (!isEditing && !isAdding) ? 'bold' : 'bold',
-                      color: (!isEditing && !isAdding) ? '#000' : 'inherit',
-                      WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit',
-                    },
-                    '& .MuiFormLabel-root': {
-                      fontSize: '12px',
-                    },
-                  }}
-                />
-              </Box>
-            </Grid>
-          );
-        })}
-      </Grid>
+            <Box width="150px" sx={{ marginTop: '1.5px' }}>
+              <TextField
+                label={columns[key]}
+                name={key}
+                value={formData[key] || ''}
+                onChange={handleInputChange}
+                fullWidth
+                margin="dense"
+                disabled={!isEditing && !isAdding}
+                type={
+                  key === 'designVoltage' ||
+                  key === 'ahCapacity' ||
+                  key === 'individualCellVoltage' ||
+                  key === 'highVoltage' ||
+                  key === 'lowVoltage' ||
+                  key === 'highTemperature' ||
+                  key === 'lowTemperature'
+                    ? 'number'
+                    : 'text'
+                }
+                error={!!errors[key]} // Highlight the field if there's an error
+                helperText={errors[key]} // Display the error message
+                inputProps={{
+                  style: { textAlign: 'center' },
+                  min: key === 'highVoltage' ? 2 : 
+                       key === 'lowVoltage' ? 1.9 : 
+                       key === 'batteryAboutToDie' ? 1.8 : 
+                       key === 'openBattery' ? 1.4 : 
+                       key === 'highTemperature' ? undefined : undefined,
+                  max: key === 'highVoltage' ? 2.5 : 
+                       key === 'lowVoltage' ? 2 : 
+                       key === 'batteryAboutToDie' ? 1.9 : 
+                       key === 'openBattery' ? 1.8 : 
+                       key === 'highTemperature' ? 100 : undefined,
+                }}
+                InputLabelProps={{
+                  sx: {
+                    fontWeight: "bold",
+                    color: "black",
+                  },
+                }}
+                sx={{
+                  '& .MuiInputBase-root': {
+                    height: '35px',
+                    fontWeight: (!isEditing && !isAdding) ? 'bold' : 'bold',
+                    backgroundColor: (!isEditing && !isAdding) ? '#f0f0f0' : 'transparent',
+                  },
+                  '& .MuiInputBase-input': {
+                    padding: '2px 10px',
+                    fontSize: '12px',
+                    fontWeight: (!isEditing && !isAdding) ? 'bold' : 'bold',
+                    color: (!isEditing && !isAdding) ? '#000' : 'inherit',
+                    WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit',
+                  },
+                  '& .MuiFormLabel-root': {
+                    fontSize: '12px',
+                  },
+                }}
+              />
+            </Box>
+          </Grid>
+      );
+    })}
+    </Grid>
     </LocalizationProvider>
   );
 };
