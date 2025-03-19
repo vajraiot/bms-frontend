@@ -102,7 +102,8 @@ const MapWithMarker = ({
           style={{ 
             position: "relative", 
             height: "200px", 
-            width: "100%"
+            width: "100%",
+            boxShadow: '0px 0px 15px rgba(0, 0, 0, 0.3)', borderRadius: '8px',
           }}
         >
           <Map
@@ -120,7 +121,7 @@ const MapWithMarker = ({
               onClick={handleMarkerClick}
             >
               <img
-                src="https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers/img/marker-icon-2x-green.png"
+                src="https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers/img/marker-icon-2x-blue.png"
                 alt="Green Marker"
                 style={{ 
                   width: "25px", 

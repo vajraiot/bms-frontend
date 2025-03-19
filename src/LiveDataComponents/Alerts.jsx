@@ -6,8 +6,14 @@ import {tokens} from "../theme"
 import PowerIcon from "@mui/icons-material/Power"; 
 import { AlertTriangle, BatteryFull ,Power,BatteryLow,BatteryMedium ,CirclePower,Activity} from 'lucide-react';
 import fuse from '.././enums/electronic-fuse.png'
-import { ChargerTrip, StringCurrent, ACVoltage, DCVoltage, Buzzer,BatteryStringIcon,AnimatedFuseIcon,ACVoltageIcon,ChargerLoadIcon, StringCommunicationIcon } from '.././enums/ThresholdValues'
+import { ChargerTrip, StringCurrent, ACVoltage, DCVoltage, Buzzer,BatteryStringIcon,AnimatedFuseIcon,ACVoltageIcon,DCVoltageIcon,ChargerLoadIcon, StringCommunicationIcon } from '.././enums/ThresholdValues'
 import trip from '.././assets/images/png/fuse-box.png'
+import InputMains from '.././assets/images/InputMains.png';
+import chargerloadO from '.././assets/images/ChargerLoadO.png';
+import chargerload from '.././assets/images/ChargerLoadN.png';
+import InputPhase from '.././assets/images/InputPhase.png';
+import InputPhaseF from '.././assets/images/inputphaseF.png';
+
 import mccb from '.././assets/images/png/circuit-breaker.png'
 import acNV from '.././assets/images/png/ac-voltage.png'
 import acLV from '.././assets/images/png/ac-voltage-source.png'
@@ -88,11 +94,11 @@ const Alerts = () => {
     // For other keys (cellVoltageLHN and dcVoltageOLN), use the original logic
     switch (bit) {
       case 0:
-        return { status: "Low", severity: "low", IconComponent: () => <BatteryLow size={20} /> };
+        return { status: "Low", severity: "low", IconComponent: () => <DCVoltageIcon size={50} isActive={true} state="low" /> };
       case 1:
-        return { status: "Normal", severity: "medium", IconComponent: () => <BatteryMedium size={20} /> };
+        return { status: "Normal", severity: "medium", IconComponent: () => <DCVoltageIcon size={50} isActive={true} state="normal" /> };
       case 2:
-        return { status: "High", severity: "high", IconComponent: () => <BatteryFull size={20} /> };
+        return { status: "High", severity: "high", IconComponent: () => <DCVoltageIcon size={50} isActive={true} state="over" /> };
       default:
         return { status: "Unknown", severity: "medium", IconComponent: () => <BatteryLow  size={20} /> };
     }
@@ -111,32 +117,28 @@ const Alerts = () => {
         severity = combinedData[key] ? "high" : "medium";
       }
       if (key === "chargerTrip") {
-        IconComponent =()=> <img src={trip} alt="" style={{width:23}}/>;
+        IconComponent =()=> <img src={trip} alt="" style={{width:30}}/>;
+      }
+      else if (key === "inputMains"||key === "inputPhase" ) {
+        IconComponent = () =><img src={InputMains} alt="" style={{width:25}} />
       }
        else if (key === "resetPushButton") {
         IconComponent =CirclePower;
-      } else if (key === "inputMains") {
-        IconComponent = () => <Power size={20} style={{ color: "#B71C1C" }} />;
+      // } else if (key === "inputMains") {
+      //   IconComponent = () => <Power  style={{ color: "#B71C1C" ,fontSize:"2rem"}} />;
       } else if (key === "buzzer") {
         IconComponent = Buzzer;
       
       } else if (key === "outputMccb") {
-        IconComponent = () => <img src={mccb} alt="" style={{width:23}} />;
+        IconComponent = () => <img src={mccb} alt="" style={{width:30}} />;
       }
 
-      if (key === "inputMains" ) {
+      if (key === "inputMains"||key === "inputPhase" ) {
         IconComponent = () =>
-          combinedData[key] =
-           <PowerIcon size={25} color="#B71C1C" />
-      } if (key === "inputPhase" ) {
-        IconComponent = () =>
-          combinedData[key] =
-           <PowerIcon size={25} color="#B71C1C" />
-      }
-      
-      if (key === "chargerLoad" ) {
-        IconComponent =ChargerLoadIcon   
-      }
+          combinedData[key]?<img src={InputMains} alt="" style={{width:25}} />:<img src={InputMains} alt="" style={{width:35}} />
+         
+      } 
+ 
       if (severity === "high") {
         IconComponent = () => <AlertTriangle size={20} style={{ color: "#B71C1C" }} />;
       }
@@ -149,7 +151,7 @@ const Alerts = () => {
         severity =combinedData[key] ? "medium":"medium"
       } 
       if (key === "batteryCondition") {
-        IconComponent = ()=>combinedData[key]? <BatteryLow size={20} />:<BatteryFull size={20}/>;
+        IconComponent = ()=>combinedData[key]? <DCVoltageIcon size={50} isActive={true} state="low" />:<DCVoltageIcon size={50} isActive={true} state="normal" />;
         severity =combinedData[key] ? "low":"medium"
       }
       // Fuse icons
@@ -171,6 +173,15 @@ const Alerts = () => {
         IconComponent =()=> combinedData[key]?<BatteryStringIcon size={25} isActive={false} 
         strokeWidth={1.5}  />:<BatteryStringIcon size={25} isActive={true} strokeWidth={1.5}  />
         }
+
+        if (key === "chargerLoad" ) {
+          IconComponent =()=> combinedData[key]?<img src={chargerloadO} style={{width:35}}></img>:<img src={chargerload} style={{width:35}}></img> 
+        }
+        if (key === "chargerTrip" ) {
+          IconComponent = () =>
+            combinedData[key] ?<img src={InputPhase} style={{width:28}}></img>:<img src={InputPhaseF} style={{width:28}}></img> 
+        }
+
       return {
         id: index + 1,
         status,

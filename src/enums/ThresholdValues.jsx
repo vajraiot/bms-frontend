@@ -273,6 +273,101 @@ export const ACVoltageIcon = ({
     </svg>
   );
 };
+export const DCVoltageIcon = ({
+  size = 150,
+  state = "normal", // "normal", "low", or "over"
+  className = "",
+}) => {
+  // Define colors based on state
+  const getStateColor = () => {
+    switch (state) {
+      case "low":
+        return "#FFC107"; // Yellow
+      case "over":
+        return "#F44336"; // Red
+      case "normal":
+      default:
+        return "#4CAF50"; // Green
+    }
+  };
+
+  // Calculate dimensions
+  const width = size / 2;
+  const height = size;
+  
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox="0 0 300 600"
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Battery Terminal */}
+      <path
+        d="M125 20 L175 20 C190 20 190 50 175 50 L125 50 C110 50 110 20 125 20 Z"
+        fill="#424242"
+      />
+
+      {/* Battery Body Outline */}
+      <rect
+        x="50"
+        y="50"
+        width="200"
+        height="500"
+        rx="30"
+        ry="30"
+        fill="#424242"
+      />
+
+      {/* Battery Inner Background */}
+      <rect
+        x="65"
+        y="65"
+        width="170"
+        height="470"
+        rx="20"
+        ry="20"
+        fill="white"
+      />
+
+      {/* Battery Fill Level */}
+      <rect
+        x="65"
+        y="65"
+        width="170"
+        height="470"
+        rx="20"
+        ry="20"
+        fill={getStateColor()}
+      />
+
+      {/* Lightning Bolt */}
+      <path
+        d="M150 150 L100 310 L150 310 L130 450 L210 270 L150 270 L180 150 Z"
+        fill="white"
+      />
+
+      {/* Warning Symbol - Only shown in "over" state */}
+      {state === "over" && (
+        <>
+          <path d="M150 120 L180 170 L120 170 Z" fill="yellow" />
+          <text
+            x="150"
+            y="165"
+            textAnchor="middle"
+            fontFamily="Arial"
+            fontSize="40"
+            fontWeight="bold"
+          >
+            !
+          </text>
+        </>
+      )}
+    </svg>
+  );
+};
+
 import React from 'react';
 
 export const BatteryStringIcon = ({

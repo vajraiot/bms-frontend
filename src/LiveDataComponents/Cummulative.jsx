@@ -55,7 +55,7 @@ export default function Cummulative({
         alignItems="flex-start"
       
         ml="8px"
-        pb="21px"
+        pb="23px"
         mr="10px"
       >
         <Typography sx={{ alignSelf: "center"}}  variant="h6" mb="10px">
