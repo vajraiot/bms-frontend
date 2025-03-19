@@ -56,13 +56,7 @@ export default function DischargeCycleWise({
               gap="8px"
             >
               {/* Render the icon if available */}
-              {icon && (
-                <img
-                  src={icon}
-                  alt={label}
-                  style={{ width: "13px", height: "13px" }}
-                />
-              )}
+              🔹
               <Typography
                 variant="h6"
                 fontWeight="bold"
@@ -74,7 +68,7 @@ export default function DischargeCycleWise({
                 :
               </Typography>
               <Typography  fontWeight="bold" variant="h6" style={{ color: "#000f89"}}>
-                {value} {unit || ""}
+                {value}{" "} {unit || ""}
               </Typography>
             </Box>
           ))}

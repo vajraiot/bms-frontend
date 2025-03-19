@@ -51,7 +51,7 @@ function ChargeCycleWise({ PeakChargeCurrent, totalSeconds }) {
                             gap="8px"
                         >
                             {/* Icon */}
-                            <img src={icon} alt={label} width="13px" height="13px" />
+                            🔹
 
                             {/* Label */}
                             <Typography

@@ -109,6 +109,10 @@ const DashBoardBar = () => {
 
   // Handle state selection
   const handleStateChange = async (event, newValue) => {
+    setSiteOptions([]);
+    setSiteId("")
+    setSerialNumber("")
+    setCircle("");
     setState(newValue);
     try {
       const mapData = await fetchMapByState(newValue);
@@ -148,10 +152,12 @@ const DashBoardBar = () => {
 
   // Handle circle selection
   const handleCircleChange = async (event, newValue) => {
+    setSiteOptions([]);
+    setSiteId("")
+    setSerialNumber("")
     setCircle(newValue);
     try {
       const mapData = await fetchMapByCircle(newValue);
-      setSiteOptions([]);
       const siteOptions = mapData.map((site) => site.siteId);
       setSiteOptions(siteOptions);
       if (mapData && mapData.length > 0) {

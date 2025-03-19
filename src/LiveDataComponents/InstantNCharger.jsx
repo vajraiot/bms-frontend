@@ -120,7 +120,7 @@ const{instantaneousCurrent, stringvoltage,ambientTemperature, bmsAlarmsDTO,socLa
               {/* Battery State Paper */}
               <Grid item xs={12} sm={6} md={2.5}>
                 <Paper elevation={8} sx={{ height: "150px", display: "flex", flexDirection: "column", justifyContent: "space-between", p: 1 }}>
-                <Box display="flex" justifyContent="space-between">
+                <Box display="flex" justifyContent="center">
                   <Box>
                     <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold" }} >
                       State of Charge
@@ -130,23 +130,6 @@ const{instantaneousCurrent, stringvoltage,ambientTemperature, bmsAlarmsDTO,socLa
                         socValue={socLatestValueForEveryCycle}
                         socState={socLN}
                       />
-                    </Box>
-                  </Box>
-                  <Box>
-                    <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold" }}>
-                      Charger Energy : {energy}kWh
-                    </Typography>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        textAlign: "center",
-                      }}
-                      pt={2}
-                    >
-                      <img src={chargerIcon} style={{  width: "50px",height: "70px",}}/>
-                     
                     </Box>
                   </Box>
                 </Box>
