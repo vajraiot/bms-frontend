@@ -125,23 +125,26 @@ const Sidebar = () => {
         <ProSidebar collapsed={isCollapsed}>
           <Menu iconShape="square">
             {/* LOGO AND MENU ICON */}
-            <MenuItem
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              icon={isCollapsed ? <MenuOutlinedIcon sx={{ color: "#ffffff" }} /> : undefined}
-              sx={{ padding: "8px 10px !important" }} // Reduced padding for header
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent={isCollapsed ? "center" : "space-between"}
+              sx={{ padding: "8px 10px" }}
             >
               {!isCollapsed && (
-                <Box display="flex" gap="1px" alignItems="center">
-                  <img src={maha} style={{width:"120px"}} alt="Maha Logo" /> {/* Reduced logo size */}
-                  <Box alignSelf="flex-start">
-                    <IconButton onClick={() => setIsCollapsed(!isCollapsed)}>
-                      <MenuOutlinedIcon sx={{ color: "#ffffff", fontSize: "20px" }} /> {/* Smaller icon */}
-                    </IconButton>
-                  </Box>
-                </Box>
+                <img
+                  src={maha}
+                  alt="Maha Logo"
+                  style={{ width: "100px" }} // Adjusted logo size
+                />
               )}
-            </MenuItem>
-
+              <IconButton
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                sx={{ padding: 0,alignSelf:"flex-start" }}
+              >
+                <MenuOutlinedIcon sx={{ color: "#ffffff", fontSize: "20px" }} />
+              </IconButton>
+            </Box>
             <Box sx={{ paddingLeft: isCollapsed ? "0" : "0px", mt: "10px" /* Reduced margin */ }}>
               <Item
                 title="Dashboard"

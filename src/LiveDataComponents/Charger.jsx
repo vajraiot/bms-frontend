@@ -34,6 +34,7 @@ export const Charger = ({charger}) => {
         
               { label: "AC Voltage", value: acVoltage, unit: "V" ,icon:Acvoltage},
               { label: "AC Current", value: acCurrent, unit: "A",icon:Accurrent },
+              {label:"AC Energy", value:energy,unit:"kwh"},
               { label: "Frequency", value: frequency, unit: "Hz",icon:frequenc },
       
               
@@ -45,29 +46,23 @@ export const Charger = ({charger}) => {
                 justifyContent="flex-start"
                 gap="8px" // Adjust space between elements
               >
-                {icon && (
-                <img
-                  src={icon}
-                  alt={label}
-                  style={{ width: "13px", height: "13px" }}
-                />
-              )}
+                🔹
                 <Typography
-                  variant="h5"
+                  variant="h6"
                   fontWeight="bold"
                   style={{ minWidth: "100px" }} // Fixed width for labels
                 >
                   {label}
                 </Typography>
                 <Typography
-                  variant="h5"
+                  variant="h6"
                   fontWeight="bold"
                   style={{ color: "inherit" }} // Ensures colon inherits label's color
                 >
                   :
                 </Typography>
                 <Typography
-                  variant="h5"
+                  variant="h6"
                   fontWeight="bold"
                   style={{ color: "#000f89" }}
                 >

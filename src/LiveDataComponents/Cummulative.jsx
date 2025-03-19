@@ -79,21 +79,14 @@ export default function Cummulative({
             
             >
               {/* Render the corresponding image */}
-              <img 
-                src={iconMap[label]} 
-                alt={label} 
-                style={{ width: "13px", height: "13px" }} 
-              />
+              🔹
 
               <Typography variant="h6"  style={{ minWidth: "150px" }} fontWeight="bold">
                 {label}
               </Typography>
               <Typography variant="h6"  fontWeight="bold" style={{ color: "inherit" }}>:</Typography>
               <Typography variant="h6" fontWeight="bold" style={{ color: "#000f89" }}>
-                {value}
-              </Typography>
-              <Typography variant="h6" fontWeight="bold" style={{ color: "#000f89", marginLeft: "1px" }}>
-                {unit} {/* Display unit next to the value */}
+                {value}{" "}{unit}
               </Typography>
             </Box>
           ))}

@@ -68,11 +68,7 @@ function ManufacturerDetails({
               gap="8px"
       
             >
-              <img 
-                src={iconMap[label]} 
-                alt={label} 
-                style={{ width: "13px", height: "13px" }} 
-              />
+              🔹
               <Typography variant="h6" fontWeight="bold" style={{ minWidth: "150px" }}>
                 {label}
               </Typography>
@@ -80,10 +76,7 @@ function ManufacturerDetails({
                 :
               </Typography>
               <Typography variant="h6"  fontWeight="bold" style={{ color: "#000f89" }}>
-                {value}
-              </Typography>
-              <Typography variant="h6" fontWeight="bold" style={{ color: "#000f89" , marginLeft: "1px" }}>
-                {unit} {/* Display unit next to the value */}
+                {value}{" "}  {unit} 
               </Typography>
             </Box>
           ))}

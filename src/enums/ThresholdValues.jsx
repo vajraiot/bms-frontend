@@ -46,10 +46,10 @@ export const Charging = () => {
 };
 export const ChargingV = () => {
   return (
-    <svg viewBox="0 0 60 100" style={{ width: "3rem" }}>
+    <svg viewBox="0 0 60 100" style={{ width: "6rem" }}>
       <g transform="translate(10,10) scale(0.8)">
         {/* Outer rectangle (vertical orientation) */}
-        <rect x="0" y="0" width="60" height="100" rx="8" fill="none" stroke="#2E7D32" strokeWidth="3">
+        <rect x="0" y="0" width="60" height="130" rx="8" fill="none" stroke="#2E7D32" strokeWidth="3">
           <animate attributeName="stroke-opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite" />
         </rect>
 
@@ -59,7 +59,7 @@ export const ChargingV = () => {
         </rect>
 
         {/* Inner rectangle (vertical orientation, reverse animation) */}
-        <rect x="5" y="85" width="50" height="20" rx="6" fill="#4CAF50">
+        <rect x="5" y="85" width="50" height="50" rx="6" fill="#4CAF50">
           <animate
             attributeName="height"
             values="20;70;20"
