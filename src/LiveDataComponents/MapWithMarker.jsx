@@ -1,117 +1,61 @@
+import React, { useRef, useEffect } from "react";
+import { APIProvider, Map, AdvancedMarker, InfoWindow } from "@vis.gl/react-google-maps";
+import { te } from "date-fns/locale";
 
+// Inline styles for InfoWindow
+const infoWindowStyle = {
+ // width: "260px",
+  background: "#ffffff",
+  //borderRadius: "10px",
+ // padding: "15px",
+  //boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+  fontFamily: "'Roboto', sans-serif",
+ // border: "1px solid #e0e0e0",
+};
 
-// import React from 'react';
-// //import { GoogleMap, AdvancedMarker, InfoWindow, useLoadScript } from "@react-google-maps/api";
-// import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
-// import greenIcon from '../assets/images/marker/greenMarker3232.png'
+const closeButtonStyle = {
+  position: "absolute",
+  top: "8px",
+  right: "8px",
+  width: "24px",
+  height: "24px",
+  background: "#f5f5f5",
+  borderRadius: "50%",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  cursor: "pointer",
+  color: "#757575",
+  fontSize: "16px",
+  border: "none",
+  transition: "background-color 0.2s",
+};
 
+const titleStyle = {
+  fontSize: "16px",
+  fontWeight: "600",
+  color: "#1a73e8",
+  //marginBottom: "10px",
+  textAlign: "center",
+  paddingRight: "20px", // Space for close button
+};
 
-// const MapWithMarker = ({ locationName = "", latitude, longitude, vendorName, batteryAHCapacity }) => {
-//   const [selectedMarker, setSelectedMarker] = React.useState(false);
-//   const { isLoaded, loadError } = useLoadScript({
-//     googleMapsApiKey: "AIzaSyDRsvO4B8wU4AtMjhgRkjRx0YVdrfwouN4",
-//   });
+const contentStyle = {
+  //fontSize: "14px",
+  color: "#424242",
+  lineHeight: "1.5",
+};
 
-//   const isMounted = React.useRef(true);
-
-//   React.useEffect(() => {
-//     return () => {
-//       isMounted.current = false;
-//     };
-//   }, []);
-
-//   const handleMarkerClick = () => {
-//     if (isMounted.current) {
-//       setSelectedMarker(true);
-//     }
-//   };
-
-//   const handleCloseInfoWindow = () => {
-//     if (isMounted.current) {
-//       setSelectedMarker(false);
-//     }
-//   };
-
-//   const mapStyles = {
-//     height: "200px",
-//     width: "100%",
-//   };
-
-//   const defaultCenter = {
-//     lat: 17.4065,
-//     lng: 78.4772,
-//   };
-
-//   if (loadError) return <div>Error loading maps</div>;
-//   if (!isLoaded) return <div>Loading Maps...</div>;
-
-
-//   // const markerIcon = {
-//   //   url: greenIcon ,
-//   //   scaledSize: isLoaded ? new window.google.maps.Size(40, 40) : null, // Properly instantiate Size
-//   // };
-
-//   const localMarkerIcon = {
-//     url: greenIcon, // Local image
-//     scaledSize: new window.google.maps.Size(40, 40),
-//   };
-
-//   const publicMarkerIcon = {
-//     url: "https://maps.google.com/mapfiles/ms/icons/green-dot.png", // Public image
-//     scaledSize: new window.google.maps.Size(40, 40),
-//   };
-
-//   // Debug logs
-//   console.log("Is Google Maps Loaded?", isLoaded);
-//   console.log("Local Marker Icon:", localMarkerIcon);
-//   console.log("Public Marker Icon:", publicMarkerIcon);
-//   console.log("ScaledSize Instance (Local):", localMarkerIcon.scaledSize instanceof window.google.maps.Size);
-//   console.log("Marker Position:", { lat: parseFloat(latitude), lng: parseFloat(longitude) });
-
-//   // Test the image URL accessibility
-//   fetch(greenIcon)
-//     .then((response) => console.log("Image Fetch Test:", response.ok ? "Success" : "Failed", response.status))
-//     .catch((error) => console.error("Image Fetch Error:", error));
-
-//     return (
-//       <GoogleMap center={defaultCenter} zoom={10} mapContainerStyle={mapStyles}>
-//         {isLoaded && (
-//           <AdvancedMarker
-//             position={{ lat: parseFloat(latitude), lng: parseFloat(longitude) }}
-//             onClick={handleMarkerClick}
-//           >
-//             <img
-//               src={localMarkerIcon.url}
-//               alt="Custom Marker"
-//               style={{ width: "40px", height: "40px" }} // Match scaledSize
-//             />
-//           </AdvancedMarker>
-//         )}
-//         {selectedMarker && isLoaded && (
-//           <InfoWindow
-//             position={{ lat: parseFloat(latitude), lng: parseFloat(longitude) }}
-//             onCloseClick={handleCloseInfoWindow}
-//           >
-//             <div>
-//               <strong>{locationName || "Location"}</strong>
-//               <br />
-//               Vendor: {vendorName || "N/A"}
-//               <br />
-//               Battery Capacity: {batteryAHCapacity || "N/A"} AH
-//             </div>
-//           </InfoWindow>
-//         )}
-//       </GoogleMap>
-//     );
-// };
-
-// export default MapWithMarker;
-import React from "react";
-import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
-
-export default MapWithMarker = ({ locationName = "", latitude, longitude, vendorName, batteryAHCapacity }) => {
+const MapWithMarker = ({ 
+  locationName = "", 
+  latitude, 
+  longitude, 
+  vendorName, 
+  batteryAHCapacity 
+}) => {
   const [selectedMarker, setSelectedMarker] = React.useState(false);
   const [mapError, setMapError] = React.useState(null);
+  const mapRef = useRef(null);
   const [mapCenter, setMapCenter] = React.useState({
     lat: 19.2403,
     lng: 73.1305,
@@ -120,12 +64,19 @@ export default MapWithMarker = ({ locationName = "", latitude, longitude, vendor
   const lat = parseFloat(latitude) || mapCenter.lat;
   const lng = parseFloat(longitude) || mapCenter.lng;
 
-  // Update map center when latitude or longitude changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (latitude && longitude) {
       setMapCenter({ lat, lng });
     }
   }, [latitude, longitude]);
+
+  useEffect(() => {
+    if (mapRef.current && selectedMarker) {
+      mapRef.current.panTo({ lat: lat - 0.0025, lng });
+    } else if (mapRef.current && !selectedMarker) {
+      mapRef.current.panTo({ lat, lng });
+    }
+  }, [selectedMarker, lat, lng]);
 
   const handleMarkerClick = () => setSelectedMarker(true);
   const handleCloseInfoWindow = () => setSelectedMarker(false);
@@ -133,6 +84,10 @@ export default MapWithMarker = ({ locationName = "", latitude, longitude, vendor
   const handleApiLoadError = (error) => {
     console.error("Google Maps API Load Error:", error);
     setMapError("Failed to load Google Maps");
+  };
+
+  const handleMapLoad = (map) => {
+    mapRef.current = map;
   };
 
   return (
@@ -143,50 +98,75 @@ export default MapWithMarker = ({ locationName = "", latitude, longitude, vendor
       {mapError ? (
         <div>{mapError}</div>
       ) : (
-        <Map
-          center={mapCenter} // Use dynamic center
-          zoom={10}
-          style={{ height: "200px", width: "100%" }}
-          mapId="57f9f0203fe55f5e" // Replace with your Map ID (e.g., "bms-map")
+        <div 
+          style={{ 
+            position: "relative", 
+            height: "200px", 
+            width: "100%"
+          }}
         >
-          <AdvancedMarker position={{ lat, lng }} onClick={handleMarkerClick}>
-            <img
-              src="https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers/img/marker-icon-2x-green.png"
-              alt="Green Marker"
-              style={{ width: "25px", height: "41px" }} // Adjust size to match the new marker
-            />
-          </AdvancedMarker>
-          {selectedMarker && (
-            <div style={{ position: "relative" }}>
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: "50px", // Position above the marker
-                  left: "50%", // Center horizontally
-                  transform: "translateX(-50%)", // Adjust for centering
-                  background: "white",
-                  padding: "5px",
-                  borderRadius: "3px",
-                  boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
-                  fontSize: "12px", // Smaller text
-                  whiteSpace: "nowrap", // Keep it compact
-                  zIndex: 1000, // Ensure it’s above other elements
+          <Map
+            defaultCenter={{ lat, lng }}
+            zoom={10}
+            style={{ height: "100%", width: "100%" }}
+            mapId="57f9f0203fe55f5e"
+            mapTypeId="hybrid"
+            gestureHandling="greedy"
+            disableDefaultUI={true}
+            onMapLoad={handleMapLoad}
+          >
+            <AdvancedMarker 
+              position={{ lat, lng }} 
+              onClick={handleMarkerClick}
+            >
+              <img
+                src="https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers/img/marker-icon-2x-green.png"
+                alt="Green Marker"
+                style={{ 
+                  width: "25px", 
+                  height: "41px",
+                  transform: "translateY(-50%)"
                 }}
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent map click from closing it
-                  handleCloseInfoWindow();
-                }}
+              />
+            </AdvancedMarker>
+
+            {selectedMarker && (
+              <InfoWindow
+                position={{ lat, lng }}
+                onCloseClick={handleCloseInfoWindow}
+                pixelOffset={[0, -41]}
+                disableAutoClose={false} // Use custom close button only
               >
-                <strong>{locationName || "Location"}</strong>
-                <br />
-                Customer: {vendorName || "N/A"}
-                <br />
-                Battery Capacity: {batteryAHCapacity || "N/A"} AH
-              </div>
-            </div>
-          )}
-        </Map>
+                <div style={infoWindowStyle}>
+                  <button
+                    style={closeButtonStyle}
+                    onClick={handleCloseInfoWindow}
+                    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#e0e0e0")}
+                    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#f5f5f5")}
+                  >
+                    ×
+                  </button>
+                  <div style={titleStyle}>{locationName || "Location"}</div>
+                  <div style={contentStyle}>
+                    <div style={{ display: "flex", alignItems: "center", marginBottom: "6px" }}>
+                      <strong style={{ width: "100px", display: "inline-block" }}>🔹 Customer</strong>
+                      <strong style={{ margin: "0 5px" }}>:</strong>
+                      <span style={{ color: "#000f89", fontWeight: "bold" }}>{vendorName || "N/A"}</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <strong style={{ width: "100px", display: "inline-block" }}>🔹 AH Capacity</strong>
+                      <strong style={{ margin: "0 5px" }}>:</strong>
+                      <span style={{ color: "#000f89", fontWeight: "bold" }}>{batteryAHCapacity.ahCapacity|| "N/A"} AH</span>
+                    </div>
+                  </div>
+                </div>
+              </InfoWindow>
+            )}
+          </Map>
+        </div>
       )}
     </APIProvider>
   );
 };
+
+export default MapWithMarker;

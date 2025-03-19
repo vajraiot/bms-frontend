@@ -55,16 +55,16 @@ function ChargeCycleWise({ PeakChargeCurrent, totalSeconds }) {
 
                             {/* Label */}
                             <Typography
-                                variant="h5"
+                                variant="h6"
                                 fontWeight="bold"
-                                style={{ minWidth: "130px" }}
+                                style={{ minWidth: "170px" }}
                             >
                                 {label}
                             </Typography>
 
                             {/* Colon */}
                             <Typography
-                                variant="h5"
+                                variant="h6"
                                 fontWeight="bold"
                                 style={{ color: "inherit" }}
                             >
@@ -73,7 +73,7 @@ function ChargeCycleWise({ PeakChargeCurrent, totalSeconds }) {
 
                             {/* Value */}
                             <Typography
-                                variant="h5" 
+                                variant="h6" 
                                  fontWeight="bold"
                                 style={{ color: "#000f89" }}
                             >

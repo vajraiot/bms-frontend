@@ -295,7 +295,6 @@ const DataDialog = ({
                 };
               }
               break;
-              case "DC Over Voltage":
                 case "DC Under Voltage":
                   if (detail.stringvoltage !== undefined) {
                     return {
@@ -306,6 +305,7 @@ const DataDialog = ({
                       units: "V",
                     };
                   }
+              break;
             case "Cell(V) Low":
               if (detail.cellVoltage !== undefined) {
                 return {
@@ -327,6 +327,28 @@ const DataDialog = ({
                   units: "V",
                 };
               }
+              break;
+              case "Cell Temperature":
+              if (detail.cellTemperature !== undefined) {
+                return {
+                  siteId: detail.siteId,
+                  serialNumber: detail.serialNumber,
+                  serverTime: detail.serverTime,
+                  value: detail.cellTemperature,
+                  units: "°C",
+                };
+              }
+              break;
+              case "DC Over Voltage":
+                  if (detail.stringvoltage !== undefined) {
+                    return {
+                      siteId: detail.siteId,
+                      serialNumber: detail.serialNumber,
+                      serverTime: detail.serverTime,
+                      value: detail.stringvoltage,
+                      units: "V",
+                    };
+                  }
               break;
             case "SOC Low":
               if (detail.socLatestValueForEveryCycle !== undefined) {
@@ -490,7 +512,7 @@ const DataDialog = ({
                   serialNumber: detail.serialNumber,
                   serverTime: detail.serverTime,
                   value: detail.ambientTemperature,
-                  units: "",
+                  units: "°C",
                 };
               }
               break;

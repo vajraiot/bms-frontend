@@ -47,7 +47,7 @@ const Bar = () => {
     latitude = 0,                     // Default latitude (could use a fallback like 0 or a center point)
     longitude = 0,                    // Default longitude
     vendorName = "Unknown Vendor",    // Default vendor name
-    batteryAHCapacity = "Not Specified", // Default battery capacity
+    manufacturerDetails= "Not Specified", // Default battery capacity
     area
   } = location?.siteLocation || {}; // Handle case where location itself might be undefined
   
@@ -114,7 +114,7 @@ const Bar = () => {
         spacing={2}
         sx={{
           overflowY: "auto", // Enable scrolling
-          padding: "0px 10px 150px 10px;", // Padding: top, right, bottom, left
+          padding: "0px 10px 120px 10px;", // Padding: top, right, bottom, left
           boxSizing: "border-box", // Ensure padding is included in width/height
           height: "calc(100vh - 64px)", // Adjust based on Topbar height (assuming 64px)
         }}
@@ -135,7 +135,7 @@ const Bar = () => {
                   latitude={latitude}
                   longitude={longitude}
                   vendorName={vendorName}
-                  batteryAHCapacity={batteryAHCapacity}
+                  batteryAHCapacity={manufacturerDetails}
                 />
               </Paper>
           </Grid>
@@ -167,7 +167,7 @@ const Bar = () => {
               <Alerts charger={charger} bmsalarms={bmsAlarmsDTO} />
             </Paper>
           </Grid>
-          <Grid item xs={2.5}>
+          <Grid item xs={3}>
             <Grid container direction="column" spacing={1}>
               <Grid item xs={4}>
                 <Paper elevation={8}>
@@ -224,11 +224,3 @@ const Bar = () => {
 };
 
 export default Bar;
-
-
-
-
-
-
-
-

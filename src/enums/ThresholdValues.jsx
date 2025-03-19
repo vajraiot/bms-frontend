@@ -273,6 +273,355 @@ export const ACVoltageIcon = ({
     </svg>
   );
 };
+import React from 'react';
+
+export const BatteryStringIcon = ({
+  size = 50,
+  color = "#3DD598",
+  bgColor = "#E4FFF0",
+  errorColor = "#FF5C5C",
+  strokeWidth = 2,
+  isActive = true,
+  orientation = "vertical"
+}) => {
+  // Determine if we're rendering a vertical or horizontal layout
+  const isVertical = orientation === "vertical";
+  
+  // Set viewBox based on orientation
+  const viewBox = isVertical ? "0 0 100 200" : "0 0 200 100";
+  
+  // Adjust dimensions based on orientation
+  const width = isVertical ? size : size * 2;
+  const height = isVertical ? size * 2 : size;
+  
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox={viewBox}
+      fill="none"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {isVertical ? (
+        // VERTICAL LAYOUT
+        <>
+          {/* Battery cells */}
+          <rect x="30" y="15" width="40" height="20" rx="2" stroke="#555" strokeWidth={strokeWidth} fill={bgColor} />
+          <rect x="30" y="75" width="40" height="20" rx="2" stroke="#555" strokeWidth={strokeWidth} fill={bgColor} />
+          <rect x="30" y="135" width="40" height="20" rx="2" stroke="#555" strokeWidth={strokeWidth} fill={bgColor} />
+          
+          {/* Battery terminals */}
+          <line x1="45" y1="10" x2="45" y2="15" stroke="#555" strokeWidth={strokeWidth} />
+          <line x1="40" y1="12.5" x2="50" y2="12.5" stroke="#555" strokeWidth={strokeWidth} />
+          <line x1="55" y1="35" x2="55" y2="40" stroke="#555" strokeWidth={strokeWidth} />
+          
+          <line x1="45" y1="70" x2="45" y2="75" stroke="#555" strokeWidth={strokeWidth} />
+          <line x1="40" y1="72.5" x2="50" y2="72.5" stroke="#555" strokeWidth={strokeWidth} />
+          <line x1="55" y1="95" x2="55" y2="100" stroke="#555" strokeWidth={strokeWidth} />
+          
+          <line x1="45" y1="130" x2="45" y2="135" stroke="#555" strokeWidth={strokeWidth} />
+          <line x1="40" y1="132.5" x2="50" y2="132.5" stroke="#555" strokeWidth={strokeWidth} />
+          <line x1="55" y1="155" x2="55" y2="160" stroke="#555" strokeWidth={strokeWidth} />
+          
+          {/* Connector lines */}
+          <line x1="50" y1="35" x2="50" y2="75" stroke="#555" strokeWidth={strokeWidth} />
+          <line x1="50" y1="95" x2="50" y2="135" stroke="#555" strokeWidth={strokeWidth} />
+          
+          {/* Communication wires */}
+          {isActive ? (
+            <>
+              <path 
+                d="M25,25 C15,25 15,85 25,85" 
+                stroke={color} 
+                strokeWidth={strokeWidth} 
+                fill="none"
+              >
+                <animate 
+                  attributeName="stroke-opacity" 
+                  values="1;0.3;1" 
+                  dur="2s" 
+                  repeatCount="indefinite" 
+                />
+              </path>
+              <path 
+                d="M25,85 C15,85 15,145 25,145" 
+                stroke={color} 
+                strokeWidth={strokeWidth} 
+                fill="none"
+              >
+                <animate 
+                  attributeName="stroke-opacity" 
+                  values="1;0.3;1" 
+                  dur="2s" 
+                  repeatCount="indefinite" 
+                />
+              </path>
+              
+              {/* Data dots */}
+              <circle cx="20" cy="25" r="3" fill={color}>
+                <animate 
+                  attributeName="fill-opacity" 
+                  values="1;0.3;1" 
+                  dur="2s" 
+                  repeatCount="indefinite" 
+                />
+              </circle>
+              <circle cx="20" cy="85" r="3" fill={color}>
+                <animate 
+                  attributeName="fill-opacity" 
+                  values="1;0.3;1" 
+                  dur="2s" 
+                  repeatCount="indefinite" 
+                />
+              </circle>
+              <circle cx="20" cy="145" r="3" fill={color}>
+                <animate 
+                  attributeName="fill-opacity" 
+                  values="1;0.3;1" 
+                  dur="2s" 
+                  repeatCount="indefinite" 
+                />
+              </circle>
+              
+              {/* Data flow animations */}
+              <path 
+                d="M20,35 C15,45 25,55 20,65" 
+                stroke={color} 
+                strokeWidth={1.5} 
+                fill="none"
+              >
+                <animate 
+                  attributeName="stroke-opacity" 
+                  values="0;1;0" 
+                  dur="2s" 
+                  repeatCount="indefinite" 
+                />
+              </path>
+              <path 
+                d="M20,95 C15,105 25,115 20,125" 
+                stroke={color} 
+                strokeWidth={1.5} 
+                fill="none"
+              >
+                <animate 
+                  attributeName="stroke-opacity" 
+                  values="0;1;0" 
+                  dur="2s" 
+                  repeatCount="indefinite" 
+                />
+              </path>
+            </>
+          ) : (
+            <>
+              <path 
+                d="M25,25 C15,25 15,55 20,55" 
+                stroke={color} 
+                strokeWidth={strokeWidth} 
+                fill="none"
+              >
+                <animate 
+                  attributeName="stroke-opacity" 
+                  values="1;0.3;1" 
+                  dur="2s" 
+                  repeatCount="indefinite" 
+                />
+              </path>
+              <path 
+                d="M20,55 C15,55 15,85 25,85" 
+                stroke={errorColor} 
+                strokeWidth={strokeWidth} 
+                fill="none"
+                strokeDasharray="4 4"
+              />
+              <path 
+                d="M25,85 C15,85 15,145 25,145" 
+                stroke={errorColor} 
+                strokeWidth={strokeWidth} 
+                fill="none"
+                strokeDasharray="4 4"
+              />
+              
+              {/* Status indicators */}
+              <circle cx="20" cy="25" r="3" fill={color}>
+                <animate 
+                  attributeName="fill-opacity" 
+                  values="1;0.3;1" 
+                  dur="2s" 
+                  repeatCount="indefinite" 
+                />
+              </circle>
+              <circle cx="20" cy="85" r="3" fill={errorColor} />
+              <circle cx="20" cy="145" r="3" fill={errorColor} />
+              
+              {/* Broken connection symbol */}
+              <line x1="15" y1="62" x2="25" y2="68" stroke={errorColor} strokeWidth={strokeWidth} />
+              <line x1="15" y1="68" x2="25" y2="62" stroke={errorColor} strokeWidth={strokeWidth} />
+            </>
+          )}
+        </>
+      ) : (
+        // HORIZONTAL LAYOUT
+        <>
+          {/* Battery cells */}
+          <rect x="15" y="30" width="20" height="40" rx="2" stroke="#555" strokeWidth={strokeWidth} fill={bgColor} />
+          <rect x="75" y="30" width="20" height="40" rx="2" stroke="#555" strokeWidth={strokeWidth} fill={bgColor} />
+          <rect x="135" y="30" width="20" height="40" rx="2" stroke="#555" strokeWidth={strokeWidth} fill={bgColor} />
+          
+          {/* Battery terminals */}
+          <line x1="10" y1="45" x2="15" y2="45" stroke="#555" strokeWidth={strokeWidth} />
+          <line x1="12.5" y1="40" x2="12.5" y2="50" stroke="#555" strokeWidth={strokeWidth} />
+          <line x1="35" y1="55" x2="40" y2="55" stroke="#555" strokeWidth={strokeWidth} />
+          
+          <line x1="70" y1="45" x2="75" y2="45" stroke="#555" strokeWidth={strokeWidth} />
+          <line x1="72.5" y1="40" x2="72.5" y2="50" stroke="#555" strokeWidth={strokeWidth} />
+          <line x1="95" y1="55" x2="100" y2="55" stroke="#555" strokeWidth={strokeWidth} />
+          
+          <line x1="130" y1="45" x2="135" y2="45" stroke="#555" strokeWidth={strokeWidth} />
+          <line x1="132.5" y1="40" x2="132.5" y2="50" stroke="#555" strokeWidth={strokeWidth} />
+          <line x1="155" y1="55" x2="160" y2="55" stroke="#555" strokeWidth={strokeWidth} />
+          
+          {/* Connector lines */}
+          <line x1="35" y1="50" x2="75" y2="50" stroke="#555" strokeWidth={strokeWidth} />
+          <line x1="95" y1="50" x2="135" y2="50" stroke="#555" strokeWidth={strokeWidth} />
+          
+          {/* Communication wires */}
+          {isActive ? (
+            <>
+              <path 
+                d="M25,25 C25,15 85,15 85,25" 
+                stroke={color} 
+                strokeWidth={strokeWidth} 
+                fill="none"
+              >
+                <animate 
+                  attributeName="stroke-opacity" 
+                  values="1;0.3;1" 
+                  dur="2s" 
+                  repeatCount="indefinite" 
+                />
+              </path>
+              <path 
+                d="M85,25 C85,15 145,15 145,25" 
+                stroke={color} 
+                strokeWidth={strokeWidth} 
+                fill="none"
+              >
+                <animate 
+                  attributeName="stroke-opacity" 
+                  values="1;0.3;1" 
+                  dur="2s" 
+                  repeatCount="indefinite" 
+                />
+              </path>
+              
+              {/* Data dots */}
+              <circle cx="25" cy="20" r="3" fill={color}>
+                <animate 
+                  attributeName="fill-opacity" 
+                  values="1;0.3;1" 
+                  dur="2s" 
+                  repeatCount="indefinite" 
+                />
+              </circle>
+              <circle cx="85" cy="20" r="3" fill={color}>
+                <animate 
+                  attributeName="fill-opacity" 
+                  values="1;0.3;1" 
+                  dur="2s" 
+                  repeatCount="indefinite" 
+                />
+              </circle>
+              <circle cx="145" cy="20" r="3" fill={color}>
+                <animate 
+                  attributeName="fill-opacity" 
+                  values="1;0.3;1" 
+                  dur="2s" 
+                  repeatCount="indefinite" 
+                />
+              </circle>
+              
+              {/* Data flow animations */}
+              <path 
+                d="M35,20 C45,15 55,25 65,20" 
+                stroke={color} 
+                strokeWidth={1.5} 
+                fill="none"
+              >
+                <animate 
+                  attributeName="stroke-opacity" 
+                  values="0;1;0" 
+                  dur="2s" 
+                  repeatCount="indefinite" 
+                />
+              </path>
+              <path 
+                d="M95,20 C105,15 115,25 125,20"
+                stroke={color} 
+                strokeWidth={1.5} 
+                fill="none"
+              >
+                <animate 
+                  attributeName="stroke-opacity" 
+                  values="0;1;0" 
+                  dur="2s" 
+                  repeatCount="indefinite" 
+                />
+              </path>
+            </>
+          ) : (
+            <>
+              <path 
+                d="M25,25 C25,15 55,15 55,20" 
+                stroke={color} 
+                strokeWidth={strokeWidth} 
+                fill="none"
+              >
+                <animate 
+                  attributeName="stroke-opacity" 
+                  values="1;0.3;1" 
+                  dur="2s" 
+                  repeatCount="indefinite" 
+                />
+              </path>
+              <path 
+                d="M55,20 C55,15 85,15 85,25" 
+                stroke={errorColor} 
+                strokeWidth={strokeWidth} 
+                fill="none"
+                strokeDasharray="4 4"
+              />
+              <path 
+                d="M85,25 C85,15 145,15 145,25" 
+                stroke={errorColor} 
+                strokeWidth={strokeWidth} 
+                fill="none"
+                strokeDasharray="4 4"
+              />
+              
+              {/* Status indicators */}
+              <circle cx="25" cy="20" r="3" fill={color}>
+                <animate 
+                  attributeName="fill-opacity" 
+                  values="1;0.3;1" 
+                  dur="2s" 
+                  repeatCount="indefinite" 
+                />
+              </circle>
+              <circle cx="85" cy="20" r="3" fill={errorColor} />
+              <circle cx="145" cy="20" r="3" fill={errorColor} />
+              
+              {/* Broken connection symbol */}
+              <line x1="62" y1="15" x2="68" y2="25" stroke={errorColor} strokeWidth={strokeWidth} />
+              <line x1="68" y1="15" x2="62" y2="25" stroke={errorColor} strokeWidth={strokeWidth} />
+            </>
+          )}
+        </>
+      )}
+    </svg>
+  );
+};
+
 export const Discharging = () => {
   return (
     <svg viewBox="0 0 100 60" style={{ width: "3rem"  }}>
@@ -293,25 +642,50 @@ export const Discharging = () => {
 export const DischargingV = () => {
   return (
     <svg viewBox="0 0 60 100" style={{ width: "3rem" }}>
-      <g transform="translate(10,10) scale(0.8)">
-        {/* Outer rectangle (vertical orientation) */}
-        <rect x="0" y="0" width="60" height="100" rx="8" fill="none" stroke="#C62828" strokeWidth="3">
-          <animate attributeName="stroke-opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite" />
+      <g transform="translate(0,0)">
+        {/* Outer rectangle */}
+        <rect
+          x="5"
+          y="10"
+          width="50"
+          height="80"
+          rx="6"
+          fill="none"
+          stroke="#C62828"
+          strokeWidth="4"
+        >
+          <animate
+            attributeName="stroke-opacity"
+            values="1;0.3;1"
+            dur="1.5s"
+            repeatCount="indefinite"
+          />
         </rect>
 
-        {/* Terminal (vertical orientation) */}
-        <rect x="20" y="100" width="20" height="8" fill="none" stroke="#C62828" strokeWidth="3">
-          <animate attributeName="stroke-opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite" />
-        </rect>
+        {/* Battery Terminal */}
+        <rect x="22" y="0" width="16" height="6" fill="#C62828" />
 
-        {/* Inner rectangle (vertical orientation) */}
-        <rect x="5" y="5" width="50" height="70" rx="6" fill="#FF5252">
-          <animate attributeName="height" values="70;30;70" dur="3s" repeatCount="indefinite" />
+        {/* Battery Level */}
+        <rect x="10" y="60" width="40" height="30" rx="4" fill="#FF5252">
+          <animate
+            attributeName="height"
+            values="30;15;30"
+            dur="1.5s"
+            repeatCount="indefinite"
+          />
+          <animate
+            attributeName="y"
+            values="60;75;60"
+            dur="1.5s"
+            repeatCount="indefinite"
+          />
         </rect>
       </g>
     </svg>
   );
 };
+
+
 
 export const CommunicationFailed = () => {
   return (
@@ -327,7 +701,7 @@ export const CommunicationFailed = () => {
           <rect x="15" y="15" width="10" height="25" fill="#455A64" opacity="0.3">
             <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" begin="0.2s" repeatCount="indefinite" />
           </rect>
-          <rect x="30" y="10" width="10" height="30" fill="#455A64" opacity="0.3">
+          <rect x="30" y="10" width="10" height="50" fill="#455A64" opacity="0.3">
             <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" begin="0.4s" repeatCount="indefinite" />
           </rect>
         </g>

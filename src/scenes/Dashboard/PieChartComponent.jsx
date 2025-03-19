@@ -19,7 +19,7 @@ const PieChartComponent = ({ data2 = [], handlePieClick }) => {
       display="flex"
       flexDirection="column"
       alignItems="center"
-      height="240px"
+      height="230px"
       width="fit-content"
     >
       <Typography variant="h5" fontWeight="bold" gutterBottom>

@@ -263,6 +263,7 @@ const Dashboard = () => {
           testPushButton:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.testPushButton,
           resetPushButton:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.resetPushButton,
           cellVoltage:item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.[0]?.cellVoltage,
+          cellTemperature:item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.[0]?.cellTemperature,
           // cellVoltageNH:item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.cellVoltage,
           bankDischargeCycle:item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.bankDischargeCycle ,
           bmsSedCommunication:item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.bmsSedCommunication ,
@@ -378,10 +379,10 @@ const Dashboard = () => {
           chartData = [
             generateChartData(filteredData, "Ambient (°C) High", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.ambientTemperatureHN === true),
             generateChartData(filteredData, "Cell Comm Fail", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.cellCommunication === true),
-            generateChartData(filteredData, "DC Over Voltage ", (item) => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.dcVoltageOLN === 2),
+            generateChartData(filteredData, "DC Over Voltage", (item) => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.dcVoltageOLN === 2),
             generateChartData(filteredData, "DC Under Voltage", (item) => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.dcVoltageOLN === 0),
             generateChartData(filteredData, "AC Under Voltage", (item) =>item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.acVoltageULN === 0),
-            generateChartData(filteredData, "Output Fuse Fail", (item) =>item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.chargerDTO?.outputFuse === true),
+            generateChartData(filteredData, "Output Fuse Fail", (item) =>item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.outputFuse === true),
           ];
           break;
   

@@ -64,16 +64,16 @@ export default function DischargeCycleWise({
                 />
               )}
               <Typography
-                variant="h5"
+                variant="h6"
                 fontWeight="bold"
-                style={{ minWidth: "180px" }}
+                style={{ minWidth: "170px" }}
               >
                 {label}
               </Typography>
-              <Typography variant="h5"   fontWeight="bold" style={{ color: "inherit" }}>
+              <Typography variant="h6"   fontWeight="bold" style={{ color: "inherit" }}>
                 :
               </Typography>
-              <Typography  fontWeight="bold" variant="h5" style={{ color: "#000f89"}}>
+              <Typography  fontWeight="bold" variant="h6" style={{ color: "#000f89"}}>
                 {value} {unit || ""}
               </Typography>
             </Box>

@@ -56,11 +56,7 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
       if (cellVoltage === 65.535 || cellTemperature === 65535) {
         return "Communication Failed";
       }
-      if(bmsAlarmsDTO.cellTemperatureHN){
-      if (cellTemperature >= parseFloat(HighTemperature)) {
-        return "High Temperature";
-      }
-    }
+    
       if (cellVoltage <= parseFloat(OpenBattery)) {
         return "Open Battery";
       }
@@ -76,6 +72,11 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
       if (cellVoltage >= parseFloat(HighVoltage)) {
         return "High Voltage";
       }}
+      if(bmsAlarmsDTO.cellTemperatureHN){
+        if (cellTemperature >= parseFloat(HighTemperature)) {
+          return "High Temperature";
+        }
+      }
       // 4. Charging Status
       return chargingStatus ? "Discharging" : "Charging";
   };

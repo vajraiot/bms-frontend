@@ -6,7 +6,7 @@ import {tokens} from "../theme"
 import PowerIcon from "@mui/icons-material/Power"; 
 import { AlertTriangle, BatteryFull ,Power,BatteryLow,BatteryMedium ,CirclePower,Activity} from 'lucide-react';
 import fuse from '.././enums/electronic-fuse.png'
-import { ChargerTrip, StringCurrent, ACVoltage, DCVoltage, Buzzer,AnimatedFuseIcon,ACVoltageIcon,ChargerLoadIcon, StringCommunicationIcon } from '.././enums/ThresholdValues'
+import { ChargerTrip, StringCurrent, ACVoltage, DCVoltage, Buzzer,BatteryStringIcon,AnimatedFuseIcon,ACVoltageIcon,ChargerLoadIcon, StringCommunicationIcon } from '.././enums/ThresholdValues'
 import trip from '.././assets/images/png/fuse-box.png'
 import mccb from '.././assets/images/png/circuit-breaker.png'
 import acNV from '.././assets/images/png/ac-voltage.png'
@@ -110,9 +110,7 @@ const Alerts = () => {
         status = combinedData[key] ? "" : "";
         severity = combinedData[key] ? "high" : "medium";
       }
-     if (key === "bmsSedCommunicationFD") {
-        IconComponent=  StringCommunicationIcon;
-      }else if (key === "chargerTrip") {
+      if (key === "chargerTrip") {
         IconComponent =()=> <img src={trip} alt="" style={{width:23}}/>;
       }
        else if (key === "resetPushButton") {
@@ -169,7 +167,10 @@ const Alerts = () => {
             <AnimatedFuseIcon size={25} color="rgb(50, 149, 56)" strokeWidth={1.5} isBroken={false} />
           );
       }
-      
+      if (key === "bmsSedCommunicationFD") {
+        IconComponent =()=> combinedData[key]?<BatteryStringIcon size={25} isActive={false} 
+        strokeWidth={1.5}  />:<BatteryStringIcon size={25} isActive={true} strokeWidth={1.5}  />
+        }
       return {
         id: index + 1,
         status,
@@ -193,6 +194,19 @@ const Alerts = () => {
     }
   };
 
+  const getSeverityStyles1 = (severity) => {
+    switch (severity) {
+      case "high":
+        return { backgroundColor: "#ffff", color: "rgb(183, 28, 28)" };
+      case "medium":
+        return { backgroundColor: "#ffff", color: "rgb(27, 94, 32)" };
+      case "low":
+        return { backgroundColor: "ffff", color: "#orange" };
+      default:
+        return { backgroundColor: "#ECEFF1", color: "#455A64" };
+    }
+  };
+
   return (
     <Box
       display="flex"
@@ -201,7 +215,7 @@ const Alerts = () => {
       justifyContent="center"
       width="100%"
       height="100%"
-      pb="25px"
+      pb="7px"
     >
       <Typography variant="h6" sx={{ alignSelf: "center", fontWeight: "bold" }}>
         Alarms Info
@@ -212,13 +226,13 @@ const Alerts = () => {
   justifyContent="center"
   alignItems="center"
   gap={1}
-  sx={{ padding: "15px 2px 20px 8px", width: "100%" }}
+  sx={{ padding: "5px 2px 5px 8px", width: "100%" }}
 >
   {alerts.map((alert) => (
     <Grid item xs={12} sm={6} md={4} lg={2} key={alert.id}>
       <Card
         style={{
-          ...getSeverityStyles(alert.severity),
+       
           border: "1px solid #ccc",
           borderRadius: 8,
           transition: "transform 0.3s ease",
@@ -241,6 +255,7 @@ const Alerts = () => {
             alignItems: 'center',
             justifyContent: 'center',
             padding: 1,
+            ...getSeverityStyles1(alert.severity),
             backgroundColor: '#ffff', // Transparent background
           }}
         >
@@ -269,6 +284,7 @@ const Alerts = () => {
             alignItems: 'center',
             justifyContent: 'center',
             padding: 1,
+            ...getSeverityStyles(alert.severity),
           }}
         >
           <Typography 
