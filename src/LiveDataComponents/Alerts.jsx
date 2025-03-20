@@ -56,21 +56,29 @@ const Alerts = () => {
   console.log("chargerDTO:", chargerDTO);
   const detailsMap = {
     bankDischargeCycle: "Battery status",
-    inputMains: "Input Mains",
-    rectifierFuse: "Rectifier fuse",
-    acVoltageULN: "AC Voltage",
     dcVoltageOLN: "DC Voltage",
-    filterFuse: "Filter Fuse",
     bmsSedCommunicationFD: "String Commun",
-    inputPhase:"Input phase",
-    outputFuse: "Output Fuse",
-    chargerTrip: "Charger Trip",
     batteryCondition: "Battery Condition",
-    outputMccb: "Output Mccb",
+    chargerLoad: "Charger Load",
+    inputMains: "Input Mains",
+    inputPhase:"Input phase",
+    acVoltageULN: "AC Voltage",
+    chargerTrip: "Charger Trip",
+    
     buzzer: "Buzzer",
+    rectifierFuse: "Rectifier fuse",
+   
+    
+    filterFuse: "Filter Fuse",
+   
+  
+    outputFuse: "Output Fuse",
+   
+    
+
     inputFuse: "Input Fuse",
     alarmSupplyFuse: "Alarm Fuse",
-    chargerLoad: "Charger Load",
+    outputMccb: "Output Mccb",
     resetPushButton: "Reset Button",
 
 
@@ -94,11 +102,11 @@ const Alerts = () => {
     // For other keys (cellVoltageLHN and dcVoltageOLN), use the original logic
     switch (bit) {
       case 0:
-        return { status: "Low", severity: "low", IconComponent: () => <DCVoltageIcon size={50} isActive={true} state="low" /> };
+        return { status: "Low", severity: "low", IconComponent: () => <DCVoltageIcon size={30} isActive={true} state="low" /> };
       case 1:
-        return { status: "Normal", severity: "medium", IconComponent: () => <DCVoltageIcon size={50} isActive={true} state="normal" /> };
+        return { status: "Normal", severity: "medium", IconComponent: () => <DCVoltageIcon size={30} isActive={true} state="normal" /> };
       case 2:
-        return { status: "High", severity: "high", IconComponent: () => <DCVoltageIcon size={50} isActive={true} state="over" /> };
+        return { status: "High", severity: "high", IconComponent: () => <DCVoltageIcon size={30} isActive={true} state="over" /> };
       default:
         return { status: "Unknown", severity: "medium", IconComponent: () => <BatteryLow  size={20} /> };
     }
@@ -135,7 +143,7 @@ const Alerts = () => {
 
       if (key === "inputMains"||key === "inputPhase" ) {
         IconComponent = () =>
-          combinedData[key]?<img src={InputMains} alt="" style={{width:25}} />:<img src={InputMains} alt="" style={{width:35}} />
+          combinedData[key]?<img src={InputMains} alt="" style={{width:"20px",height:"30px"}} />:<img src={InputMains} alt="" style={{width:"20px",height:"30px"}} />
          
       } 
  
@@ -151,7 +159,7 @@ const Alerts = () => {
         severity =combinedData[key] ? "medium":"medium"
       } 
       if (key === "batteryCondition") {
-        IconComponent = ()=>combinedData[key]? <DCVoltageIcon size={50} isActive={true} state="low" />:<DCVoltageIcon size={50} isActive={true} state="normal" />;
+        IconComponent = ()=>combinedData[key]? <DCVoltageIcon size={50} isActive={true} state="low" />:<DCVoltageIcon size={30} isActive={true} state="normal" />;
         severity =combinedData[key] ? "low":"medium"
       }
       // Fuse icons
@@ -164,14 +172,14 @@ const Alerts = () => {
       ) {
         IconComponent = () =>
           combinedData[key] ? (
-           <AnimatedFuseIcon size={25} color="rgb(183, 28, 28)" strokeWidth={1.5} isBroken={true} />
+           <AnimatedFuseIcon size={14}  color="rgb(183, 28, 28)" strokeWidth={1.5} isBroken={true} />
           ) : (
-            <AnimatedFuseIcon size={25} color="rgb(50, 149, 56)" strokeWidth={1.5} isBroken={false} />
+            <AnimatedFuseIcon size={14} color="rgb(50, 149, 56)" strokeWidth={1.5} isBroken={false} />
           );
       }
       if (key === "bmsSedCommunicationFD") {
         IconComponent =()=> combinedData[key]?<BatteryStringIcon size={25} isActive={false} 
-        strokeWidth={1.5}  />:<BatteryStringIcon size={25} isActive={true} strokeWidth={1.5}  />
+        strokeWidth={1.5}  />:<BatteryStringIcon size={18} isActive={true} strokeWidth={1.5}  />
         }
 
         if (key === "chargerLoad" ) {
@@ -241,19 +249,19 @@ const Alerts = () => {
 >
   {alerts.map((alert) => (
     <Grid item xs={12} sm={6} md={4} lg={2} key={alert.id}>
-      <Card
+     <Card
         style={{
-       
           border: "1px solid #ccc",
           borderRadius: 8,
           transition: "transform 0.3s ease",
           boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
           cursor: "pointer",
           minWidth: 100,
-          height: 45,
-          display: 'flex',           // Add flex display
-          flexDirection: 'row',      // Horizontal layout
-          overflow: 'hidden',        // Prevent content overflow
+          // Remove fixed height or use minHeight to allow growth
+          minHeight: 45, // Changed from height: 45
+          display: "flex",
+          flexDirection: "row",
+          overflow: "hidden",
         }}
         onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
         onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
@@ -261,13 +269,13 @@ const Alerts = () => {
         {/* Icon Section */}
         <Box
           sx={{
-            width: '30%',            // Icon takes 30% of width
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 1,
+            width: "30%", // Keep this, but ensure it doesn't overly constrain the SVG
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 0.5, // Reduced padding to give more space to the SVG
             ...getSeverityStyles1(alert.severity),
-            backgroundColor: '#ffff', // Transparent background
+            backgroundColor: "#fff", // Fixed typo: '#ffff' -> '#fff'
           }}
         >
           {alert.IconComponent ? (
@@ -286,25 +294,25 @@ const Alerts = () => {
             </>
           )}
         </Box>
-        
+
         {/* Text Section */}
         <Box
           sx={{
-            width: '70%',            // Text takes 70% of width
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            width: "70%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             padding: 1,
             ...getSeverityStyles(alert.severity),
           }}
         >
-          <Typography 
-            variant="body2" 
-            sx={{ 
-              fontSize: 9, 
+          <Typography
+            variant="body2"
+            sx={{
+              fontSize: 9,
               fontWeight: "bold",
-              textAlign: 'center',
-              wordBreak: 'break-word',  // Handle long words
+              textAlign: "center",
+              wordBreak: "break-word",
             }}
           >
             {alert.details}
