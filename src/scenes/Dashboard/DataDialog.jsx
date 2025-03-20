@@ -307,12 +307,12 @@ const DataDialog = ({
                   }
               break;
             case "Cell(V) Low":
-              if (detail.cellVoltage !== undefined) {
+              if (detail.cellVoltageLow !== undefined) {
                 return {
                   siteId: detail.siteId,
                   serialNumber: detail.serialNumber,
                   serverTime: detail.serverTime,
-                  value: detail.cellVoltage,
+                  value: detail.cellVoltageLow,
                   units: "V",
                 };
               }
@@ -517,23 +517,23 @@ const DataDialog = ({
               }
               break;
               case "Battery Open":
-                if (detail.cellVoltage !== undefined) {
+                if (detail.cellVoltageOpenBattery !== undefined) {
                   return {
                     siteId: detail.siteId,
                     serialNumber: detail.serialNumber,
                     serverTime: detail.serverTime,
-                    value: detail.cellVoltage,
+                    value: detail.cellVoltageOpenBattery,
                     units: "V",
                   };
                 }
                 break;
                 case "Battery AboutToDie":
-                  if (detail.cellVoltage !== undefined) {
+                  if (detail.cellVoltageAboutToDie !== undefined) {
                     return {
                       siteId: detail.siteId,
                       serialNumber: detail.serialNumber,
                       serverTime: detail.serverTime,
-                      value: detail.cellVoltage,
+                      value: detail.cellVoltageAboutToDie,
                       units: "V",
                     };
                   }

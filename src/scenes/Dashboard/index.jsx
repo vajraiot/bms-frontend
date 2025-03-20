@@ -237,42 +237,55 @@ const Dashboard = () => {
     const generateChartData = (filteredData, alarmType, condition) => {
       const count = filteredData.filter((item) => condition(item)).length;
       const details = filteredData
-        .filter((item) => condition(item))
-        .map((item) => ({
-          serverTime:item.generalDataDTO?.serverTime,
-          siteId: item.siteId,
-          serialNumber: item.generalDataDTO?.deviceDataDTO?.[0]?.serialNumber || "N/A", 
-          stringvoltage: item.generalDataDTO?.deviceDataDTO?.[0]?.stringvoltage || "N/A",
-          instantaneousCurrent:item.generalDataDTO?.deviceDataDTO?.[0]?.instantaneousCurrent,
-          ambientTemperature:item.generalDataDTO?.deviceDataDTO?.[0]?.ambientTemperature,
-          socLatestValueForEveryCycle:item.generalDataDTO?.deviceDataDTO?.[0]?.socLatestValueForEveryCycle,
-          dodLatestValueForEveryCycle:item.generalDataDTO?.deviceDataDTO?.[0]?.dodLatestValueForEveryCycle,
-          acVoltage:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.acVoltage,
-          inputMains:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.inputMains,
-          batteryCondition:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.batteryCondition,
-          chargerTrip:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.chargerTrip,
-          inputPhase:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.inputPhase,
-          rectifierFuse:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.rectifierFuse,
-          filterFuse:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.filterFuse,
-          outputFuse:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.outputFuse,
-          // dcVoltageOLN:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.,
-          outputMccb:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.outputMccb,
-          chargerLoad:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.chargerLoad,
-          inputFuse:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.inputFuse,
-          alarmSupplyFuse:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.alarmSupplyFuse,
-          testPushButton:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.testPushButton,
-          resetPushButton:item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.resetPushButton,
-          cellVoltage:item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.[0]?.cellVoltage,
-          cellTemperature:item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.[0]?.cellTemperature,
-          // cellVoltageNH:item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.cellVoltage,
-          bankDischargeCycle:item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.bankDischargeCycle ,
-          bmsSedCommunication:item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.bmsSedCommunication ,
-          cellCommunication:item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.cellCommunication ,
-          buzzer:item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.buzzer ,
-          // openBattery:item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.cellVoltage,
-          // batteryAboutToDie:item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.cellVoltage
-
-        }));
+      .filter((item) => condition(item)) // Ensure condition(item) is defined
+      .map((item) => {
+          // Define thresholds from manufacturerDTO
+          const aboutToDieVoltage = parseFloat(item.siteLocationDTO.manufacturerDTO.batteryAboutToDie);
+          const lowVoltage = parseFloat(item.siteLocationDTO.manufacturerDTO.lowVoltage);
+          const openBattery = parseFloat(item.siteLocationDTO.manufacturerDTO.openBattery);
+  
+          // Extract cell voltages
+          const cellVoltages = item.generalDataDTO.deviceDataDTO[0].cellVoltageTemperatureData.map(cell => cell.cellVoltage);
+  
+          // Categorize cell voltages
+          const cellVoltageLow = cellVoltages.filter(voltage => voltage < lowVoltage && voltage > aboutToDieVoltage && voltage > openBattery);
+          const cellVoltageAboutToDie = cellVoltages.filter(voltage => voltage < lowVoltage && voltage > openBattery);
+          const cellVoltageOpenBattery = cellVoltages.filter(voltage => voltage < lowVoltage && voltage < aboutToDieVoltage);
+  
+          return {
+              serverTime: item.generalDataDTO?.serverTime || "N/A",
+              siteId: item.siteId || "N/A",
+              serialNumber: item.generalDataDTO?.deviceDataDTO?.[0]?.serialNumber || "N/A",
+              stringvoltage: item.generalDataDTO?.deviceDataDTO?.[0]?.stringvoltage || "N/A",
+              instantaneousCurrent: item.generalDataDTO?.deviceDataDTO?.[0]?.instantaneousCurrent || "N/A",
+              ambientTemperature: item.generalDataDTO?.deviceDataDTO?.[0]?.ambientTemperature || "N/A",
+              socLatestValueForEveryCycle: item.generalDataDTO?.deviceDataDTO?.[0]?.socLatestValueForEveryCycle || "N/A",
+              dodLatestValueForEveryCycle: item.generalDataDTO?.deviceDataDTO?.[0]?.dodLatestValueForEveryCycle || "N/A",
+              acVoltage: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.acVoltage || "N/A",
+              inputMains: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.inputMains || "N/A",
+              batteryCondition: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.batteryCondition || "N/A",
+              chargerTrip: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.chargerTrip || "N/A",
+              inputPhase: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.inputPhase || "N/A",
+              rectifierFuse: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.rectifierFuse || "N/A",
+              filterFuse: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.filterFuse || "N/A",
+              outputFuse: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.outputFuse || "N/A",
+              outputMccb: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.outputMccb || "N/A",
+              chargerLoad: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.chargerLoad || "N/A",
+              inputFuse: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.inputFuse || "N/A",
+              alarmSupplyFuse: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.alarmSupplyFuse || "N/A",
+              testPushButton: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.testPushButton || "N/A",
+              resetPushButton: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.resetPushButton || "N/A",
+              cellVoltage: item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.[0]?.cellVoltage || "N/A",
+              cellTemperature: item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.[0]?.cellTemperature || "N/A",
+              bankDischargeCycle: item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.bankDischargeCycle || "N/A",
+              bmsSedCommunication: item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.bmsSedCommunication || "N/A",
+              cellCommunication: item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.cellCommunication || "N/A",
+              buzzer: item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.buzzer || "N/A",
+              cellVoltageLow: cellVoltageLow.length > 0 ? cellVoltageLow : "No low voltage cells", // Add low voltage cells
+              cellVoltageAboutToDie: cellVoltageAboutToDie.length > 0 ? cellVoltageAboutToDie : "No about to die cells", // Add about to die cells
+              cellVoltageOpenBattery: cellVoltageOpenBattery.length > 0 ? cellVoltageOpenBattery : "No open battery cells" // Add open battery cells
+          };
+      });
       console.log("item", filteredData);
       return { name: alarmType, count, details };
     };

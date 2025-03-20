@@ -147,7 +147,7 @@ const Alerts = () => {
         ({ status, severity, IconComponent } = getSeverityFromBit(bitValue, key));
     } 
       if (key === "bankDischargeCycle") {
-        IconComponent = combinedData[key] ? DischargingV : ChargingV;
+        IconComponent = combinedData[key] ? DischargingV : ChargingV ;
         severity =combinedData[key] ? "medium":"medium"
       } 
       if (key === "batteryCondition") {
