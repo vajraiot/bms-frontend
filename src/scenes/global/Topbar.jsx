@@ -156,6 +156,7 @@ const Topbar = ({ liveTime="", vendorName, locationName = "" }) => {
           height: "40px",
           width: "100%", // Full width of the Grid item
           px: 1, // Padding for content
+          cursor: "pointer",
         }}
       >
         <Typography variant="body2">{locationName}</Typography>
@@ -256,7 +257,7 @@ const Topbar = ({ liveTime="", vendorName, locationName = "" }) => {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            mr: 1, // Margin for spacing
+            mr: 7, // Margin for spacing
           }}
         >
           <Box
@@ -268,7 +269,7 @@ const Topbar = ({ liveTime="", vendorName, locationName = "" }) => {
             }}
           />
           <Typography fontSize="12px" fontWeight="bold" color="red">
-            Failure/high/Tripped
+            On event
           </Typography>
         </Box>
         <Box
@@ -290,26 +291,6 @@ const Topbar = ({ liveTime="", vendorName, locationName = "" }) => {
           />
           <Typography fontSize="12px" fontWeight="bold" color="green">
             Normal
-          </Typography>
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Box
-            sx={{
-              width: "20px",
-              height: "20px",
-              borderRadius: "50%",
-              backgroundColor: "Orange", // Warning
-            }}
-          />
-          <Typography fontSize="12px" fontWeight="bold" color="orange">
-            Low
           </Typography>
         </Box>
       </Box>

@@ -216,9 +216,64 @@ export const AnimatedFuseIcon = ({
     </svg>
   );
 };
+export const ACVoltagered = ({
+  size = 50,
+  color = "#FF5252",
+  bgColor = "#FFEBEE",
+  strokeWidth = 6,
+  isActive = true,
+}) => {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      fill="none"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* Top terminal - increased height */}
+      <rect x="45" y="0" width="10" height="25" rx="5" fill={color} />
+      
+      {/* Bottom terminal - increased height */}
+      <rect x="45" y="75" width="10" height="25" rx="5" fill={color} />
+      
+      {/* Main circular body - increased radius */}
+      <circle cx="50" cy="50" r="40" fill={bgColor} />
+      
+      {/* Improved AC sine wave with better visibility and animation */}
+      {isActive ? (
+        <path 
+          d="M25,50 Q37.5,20 50,50 T75,50"
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+        >
+          <animate 
+            attributeName="d" 
+            values="M25,50 Q37.5,20 50,50 T75,50;
+                    M25,50 Q37.5,80 50,50 T75,50;
+                    M25,50 Q37.5,20 50,50 T75,50" 
+            dur="1.5s" 
+            repeatCount="indefinite" 
+          />
+        </path>
+      ) : (
+        <path 
+          d="M25,50 L75,50"
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray="4 4"
+        />
+      )}
+    </svg>
+  );
+};
 export const ACVoltageIcon = ({
   size = 50,
-  // width={50} ,height={200}
   color = "#3DD598",
   bgColor = "#E4FFF0",
   strokeWidth = 6,
@@ -242,10 +297,10 @@ export const ACVoltageIcon = ({
       {/* Main circular body - increased radius */}
       <circle cx="50" cy="50" r="40" fill={bgColor} />
       
-      {/* AC sine wave - adjusted for larger size */}
+      {/* Improved AC sine wave with better visibility and animation */}
       {isActive ? (
         <path 
-          d="M30,50 Q45,20 50,50 T70,50"
+          d="M25,50 Q37.5,20 50,50 T75,50"
           fill="none"
           stroke={color}
           strokeWidth={strokeWidth}
@@ -253,16 +308,16 @@ export const ACVoltageIcon = ({
         >
           <animate 
             attributeName="d" 
-            values="M30,50 Q45,20 50,50 T70,50;
-                    M30,50 Q45,80 50,50 T70,50;
-                    M30,50 Q45,20 50,50 T70,50" 
-            dur="1s" 
+            values="M25,50 Q37.5,20 50,50 T75,50;
+                    M25,50 Q37.5,80 50,50 T75,50;
+                    M25,50 Q37.5,20 50,50 T75,50" 
+            dur="1.5s" 
             repeatCount="indefinite" 
           />
         </path>
       ) : (
         <path 
-          d="M30,50 L70,50"
+          d="M25,50 L75,50"
           fill="none"
           stroke={color}
           strokeWidth={strokeWidth}
@@ -273,6 +328,7 @@ export const ACVoltageIcon = ({
     </svg>
   );
 };
+
 export const DCVoltageIcon = ({
   size = 150,
   state = "normal", // "normal", "low", or "over"

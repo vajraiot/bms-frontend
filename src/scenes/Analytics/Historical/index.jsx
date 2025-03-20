@@ -51,9 +51,8 @@ const columnMappings = {
 
 const Historical = () => {
   const theme = useTheme();
-  const { data = [] } = useContext(AppContext);
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(100);
+  const { data = [] ,   page, setPage,rowsPerPage, setRowsPerPage,handleAnalytics,totalRecords} = useContext(AppContext);
+  // const [rowsPerPage, setRowsPerPage] = React.useState(100);
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("date");
   const [pageType, setPageType] = useState(0);
@@ -94,7 +93,7 @@ const Historical = () => {
   };
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+    setPage(0); // Reset to first page when rows per page changes
   };
 
   const dataArray = data.content;
@@ -131,7 +130,7 @@ const Historical = () => {
   };
 
   const formattedData = combineAlarmsData(dataArray);
-  const displayedData = sortedData(formattedData);
+ // const displayedData = sortedData(formattedData);
 
   // Get all unique keys from the data
   const allKeys = formattedData.reduce((keys, row) => {
@@ -238,8 +237,8 @@ const Historical = () => {
               </TableHead>
 
               <TableBody sx={{ overflowY: 'auto' }}>
-                {displayedData
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                {formattedData
+                  //.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => (
                     <TableRow
                       key={index}
@@ -284,9 +283,9 @@ const Historical = () => {
           </TableContainer>
 
           <TablePagination
-            rowsPerPageOptions={[100, 200, 500,1000,1500,2000]}
+            rowsPerPageOptions={[20, 30, 40,100,200,500]}
             component="div"
-            count={formattedData.length}
+            count={totalRecords}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

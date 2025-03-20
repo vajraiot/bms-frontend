@@ -1,5 +1,6 @@
-import React, { createContext, useState, useEffect } from "react";
-import { fetchAllSiteIds, fetchDeviceDetails, fetchManufacturerDetails } from "./apiService";
+import React, { createContext, useState, useEffect, useContext } from "react";
+import { fetchAllSiteIds, fetchDeviceDetails, fetchManufacturerDetails,  fetchHistoricalBatteryandChargerdetails,  fetchDaywiseBatteryandChargerdetails,
+  fetchAlarmsBatteryandChargerdetails, } from "./apiService";
 
 export const AppContext = createContext();
 
@@ -22,8 +23,9 @@ export const AppProvider = ({ children }) => {
   const [userRole, setUserRole] = useState("");
   const [username, setUsername] = useState("");
   const [marginMinutes, setMarginMinutes] = useState(15);
-
-
+  const [page, setPage]=useState(0);
+  const[rowsPerPage, setRowsPerPage]=useState(20);
+ const [totalRecords, setTotalRecords] = useState(0);
   // Fetch site options on load
   useEffect(() => {
     
@@ -94,6 +96,75 @@ export const AppProvider = ({ children }) => {
     setIsAuthenticated(false); 
   };
 
+  const [loadingReport, setLoadingReport] = useState(false);
+  const [errors, setErrors] = useState({
+    siteId: false,
+    serialNumber: false,
+    startDate: false,
+    endDate: false,
+  });
+
+  const handleAnalytics = async (pageType) => {
+    // Check for empty fields and update errors state
+    const newErrors = {
+      siteId: !siteId,
+      serialNumber: !serialNumber,
+      startDate: !startDate,
+      endDate: !endDate,
+    };
+    setErrors(newErrors);
+
+    // Stop execution if any field is empty
+    if (!siteId || !serialNumber || !startDate || !endDate) {
+      return;
+    }
+
+    try {
+      setLoadingReport(true);
+      setData([])
+
+      let result;
+      switch (pageType) {
+        case "historical":
+          result = await fetchHistoricalBatteryandChargerdetails(
+            serialNumber,
+            siteId,
+            startDate,
+            endDate,page,rowsPerPage
+          );
+          break;
+
+        case "daywise":
+          result = await fetchDaywiseBatteryandChargerdetails(
+            serialNumber,
+            siteId,
+            startDate,
+            endDate
+          );
+          break;
+
+        case "alarms":
+          result = await fetchAlarmsBatteryandChargerdetails(
+            serialNumber,
+            siteId,
+            startDate,
+            endDate
+          );
+          break;
+
+        default:
+          throw new Error("Invalid page type");
+      }
+
+      setData(result); // Update report data
+      setTotalRecords(result.page.totalElements)
+    } catch (error) {
+      console.error("Error during search:", error);
+    } finally {
+      setLoadingReport(false);
+    }
+  };
+
   const contextValue = {
     siteOptions,handleSearch,
     serialNumberOptions,
@@ -111,10 +182,11 @@ export const AppProvider = ({ children }) => {
     endDate,
     setEndDate,username, setUsername,
     year,
-    setYear,
+    setYear,handleAnalytics,
     month,userRole, setUserRole,marginMinutes, setMarginMinutes,
-    setMonth,isAuthenticated, setIsAuthenticated,charger,setCharger,liveTime,setLiveTime,mapMarkers, setMapMarkers
-
+    setMonth,isAuthenticated, setIsAuthenticated,
+    charger,setCharger,liveTime,setLiveTime,mapMarkers, setMapMarkers,
+    page, setPage,rowsPerPage, setRowsPerPage,loadingReport,errors,totalRecords, setTotalRecords
   
   };
 

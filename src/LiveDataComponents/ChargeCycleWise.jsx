@@ -40,8 +40,8 @@ function ChargeCycleWise({ PeakChargeCurrent, totalSeconds }) {
                 </Typography>
                 <Box display="flex" flexDirection="column">
                     {[
-                        { label: "Peak Charge Current", value: PeakChargeCurrent, unit: "A", icon: peakChargeIcon },
-                        { label: "Charge Time", value: ChargeTime(totalSeconds), icon: chargeTimeIcon },
+                        { label: "Charge Current", value: PeakChargeCurrent, unit: "A", icon: peakChargeIcon },
+                        { label: "Run Time", value: ChargeTime(totalSeconds), icon: chargeTimeIcon },
                     ].map(({ label, value, unit, icon }, index) => (
                         <Box
                             key={index}

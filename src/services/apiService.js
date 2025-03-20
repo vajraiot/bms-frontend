@@ -49,10 +49,10 @@ export const fetchDeviceDetails = async (siteId, serialNumber) => {
     }
   };
 
-  export const fetchHistoricalBatteryandChargerdetails =async (serialNumber,siteId,strStartDate,strEndDate)=>{
+  export const fetchHistoricalBatteryandChargerdetails =async (serialNumber,siteId,strStartDate,strEndDate,page,size)=>{
     try{
       const response =await axios.get(
-        `${BASE_URL}/getHistoricalStringDataBySiteidAndSerialNumberBetweenDateswithPg?siteId=${siteId}&serialNumber=${serialNumber}
+        `${BASE_URL}/getHistoricalStringDataBySiteidAndSerialNumberBetweenDateswithPg?page=${page}&size=${size}&siteId=${siteId}&serialNumber=${serialNumber}
                                                                             &strStartDate=${strStartDate}&strEndDate=${strEndDate}`
       );
       return response.data;
