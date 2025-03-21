@@ -306,3 +306,52 @@ export const fetchMapByArea = async (area) => {
     throw error;
   }
 };
+export const last7daysTickets = async (currentPage,rowsPerPage) => {
+  try {
+    const response = await apiClient.get(
+      `${BASE_URL}/latest7days?page=${currentPage}&size=${rowsPerPage}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error in fetching ticket details: ", error);
+    throw error;
+  }
+};
+export const fetchUserDetails = async () => {
+  try {
+    const response = await apiClient.get(`${BASE_URL}/GetAllLoginDetailsInPlainLoginDetailFormate`);
+    return response.data;
+  } catch (error) {
+    console.error("Error in fetching login details: ", error);
+    throw error;
+  }
+};
+export const deleteUser = async (id) => {
+  try {
+    const response = await apiClient.delete(`${BASE_URL}/DeleteLoginUserByLoginCredId?loginCredId=${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error in deleting user details: ", error);
+    throw error;
+  }
+};
+export const PostUser = async (userData) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/PostCreateNewLoginUser`, userData);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating user:', error);
+    throw error;
+  }
+};
+
+// Update an existing user
+export const UpdateUser = async (userData) => {
+  try {
+    const response = await apiClient.post(`${BASE_URL}/PostUpdateLoginUser`, userData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating user:', error);
+    throw error;
+  }
+};

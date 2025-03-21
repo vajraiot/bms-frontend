@@ -15,6 +15,7 @@ import {
   MenuItem,
   IconButton,
 } from "@mui/material";
+import { fetchLoginRoles,fetchUserDetails ,UpdateUser,deleteUser,PostUser} from "../../services/apiService.js";
 import { useTheme } from "@mui/material/styles";
 import {
   AdminPanelSettingsOutlined as AdminIcon,
@@ -23,34 +24,16 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
 } from "@mui/icons-material";
+
 import axios from "axios";
 
-const BASE_URL = "http://localshost:51270";
-const apiClient = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-// Add JWT token to every request via interceptor
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 const Team = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
   const [open, setOpen] = useState(false);
-  const [selectedRow, setSelectedRow] = useState(null);
+  const [selectedRow, setSelectedRow] = useState(null); // Track the selected row for editing
   const [userData, setUserData] = useState([]);
   const [roles, setRoles] = useState([]);
   const [formData, setFormData] = useState({
@@ -68,14 +51,11 @@ const Team = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const rolesResponse = await apiClient.get(`${BASE_URL}/getListofLoginRoles`);
-        const rolesData = await rolesResponse.json();
-        setRoles(rolesData);
+        const rolesResponse = await fetchLoginRoles();
+        setRoles(rolesResponse);
 
-        const usersResponse = await apiClient.get(`${BASE_URL}/GetAllLoginDetailsInPlainLoginDetailFormate`);
-        if (!usersResponse.ok) throw new Error("Failed to fetch users");
-        const usersData = await usersResponse.json();
-        setUserData(usersData);
+        const usersResponse = await fetchUserDetails();
+        setUserData(usersResponse);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -94,6 +74,7 @@ const Team = () => {
   // Open modal for add/edit
   const handleOpen = (mode, row = null) => {
     if (mode === "edit" && row) {
+      setSelectedRow(row); // Set the selectedRow state
       setFormData({
         loginCredentialsId: row.loginCredentialsId,
         uname: row.userName,
@@ -103,6 +84,7 @@ const Team = () => {
         password: row.password,
       });
     } else {
+      setSelectedRow(null); // Reset selectedRow for "add" mode
       setFormData({
         uname: "",
         email: "",
@@ -131,10 +113,6 @@ const Team = () => {
       return;
     }
 
-    const url = selectedRow
-      ? `${BASE_URL}/PostUpdateLoginUser`
-      : `${BASE_URL}/PostCreateNewLoginUser`;
-
     const data = {
       role: formData.role,
       lstLoginCredentials: [
@@ -153,12 +131,15 @@ const Team = () => {
     };
 
     try {
-      const response = await axios.post(url, data);
-      if (response.data.value === 0) {
-        setUserError(response.data.message);
+      const response = selectedRow
+        ? await UpdateUser(data) // Pass data to UpdateUser
+        : await PostUser(data); // Pass data to PostUser
+
+      if (response.value === 0) {
+        setUserError(response.message);
       } else {
-        fetchUserData();
-        handleClose();
+        fetchUserData(); // Refresh the user data
+        handleClose(); // Close the modal
       }
     } catch (error) {
       setUserError(error.response?.data?.message || "Error submitting user data");
@@ -169,7 +150,7 @@ const Team = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       try {
-        await axios.delete(`${BASE_URL}/DeleteLoginUserByLoginCredId?loginCredId=${id}`);
+        await deleteUser(id);
         fetchUserData();
       } catch (error) {
         console.error("Error deleting user:", error);
@@ -180,10 +161,8 @@ const Team = () => {
   // Fetch user data
   const fetchUserData = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/GetAllLoginDetailsInPlainLoginDetailFormate`);
-      if (!response.ok) throw new Error("Failed to fetch users");
-      const data = await response.json();
-      setUserData(data);
+      const response = await fetchUserDetails();
+      setUserData(response); // Directly set the response to userData
     } catch (error) {
       console.error("Error fetching user data:", error);
     }
@@ -224,7 +203,7 @@ const Team = () => {
         handleSubmit={handleSubmit}
         roles={roles}
         userError={userError}
-        isEditing={!!selectedRow}
+        isEditing={!!selectedRow} // Pass whether selectedRow exists
         colors={colors}
       />
     </Box>
@@ -306,7 +285,7 @@ const UserModal = ({ open, handleClose, formData, setFormData, handleSubmit, rol
         {isEditing ? "Edit User" : "Add User"}
       </Typography>
       {userError && <Typography color="error" sx={{ textAlign: "center" }}>{userError}</Typography>}
-      {["uname", "password", "email", "phone"].map((field) => (
+      {["uname", "email", "phone"].map((field) => (
         <TextField
           key={field}
           required
@@ -314,7 +293,7 @@ const UserModal = ({ open, handleClose, formData, setFormData, handleSubmit, rol
           id={field}
           name={field}
           label={field.charAt(0).toUpperCase() + field.slice(1)}
-          type={field === "password" ? "password" : "text"}
+          type="text"
           fullWidth
           variant="outlined"
           value={formData[field]}

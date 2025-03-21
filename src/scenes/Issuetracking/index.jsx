@@ -18,12 +18,12 @@ import {
   TablePagination,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import {last7daysTickets} from "../../services/apiService";
 import axios from 'axios';
 import Autocomplete from '@mui/material/Autocomplete';
 import { AppContext } from "../../services/AppContext";
 import { tokens } from "../../theme";
 
-const BASE_URL = "http://122.175.45.16:51270";
 
 const TicketTable = () => {
   const [siteId, setSiteId] = useState('');
@@ -46,17 +46,7 @@ const TicketTable = () => {
     handleFetchTickets();
   };
 
-  const last7daysTickets = async (currentPage) => {
-    try {
-      const response = await axios.get(
-        `${BASE_URL}/latest7days?page=${currentPage}&size=${rowsPerPage}`
-      );
-      setTickets(response.data.content);
-      setTotalRecords(response.data.totalElements);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
+  
 
   const TimeFormat = (dateString) => {
     if (dateString == null) return '';
@@ -100,14 +90,19 @@ const TicketTable = () => {
     }
   };
 
-  const handleFetchTickets = () => {
+  const handleFetchTickets = async () => {
     if (startDate && endDate) {
-      fetchTickets(page);
+      await fetchTickets(page);
     } else {
-      last7daysTickets(page);
+      try {
+        const response = await last7daysTickets(page, rowsPerPage);
+        setTickets(response.content);
+        setTotalRecords(response.totalElements);
+      } catch (error) {
+        console.error('Error fetching last 7 days tickets:', error);
+      }
     }
   };
-
   useEffect(() => {
     handleFetchTickets();
   }, [page, rowsPerPage]); // Added rowsPerPage to dependencies
