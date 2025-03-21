@@ -242,15 +242,41 @@ const Dashboard = () => {
           // Define thresholds from manufacturerDTO
           const aboutToDieVoltage = parseFloat(item.siteLocationDTO.manufacturerDTO.batteryAboutToDie);
           const lowVoltage = parseFloat(item.siteLocationDTO.manufacturerDTO.lowVoltage);
+          const highVoltage = parseFloat(item.siteLocationDTO.manufacturerDTO.highVoltage);
           const openBattery = parseFloat(item.siteLocationDTO.manufacturerDTO.openBattery);
   
-          // Extract cell voltages
-          const cellVoltages = item.generalDataDTO.deviceDataDTO[0].cellVoltageTemperatureData.map(cell => cell.cellVoltage);
+          // Extract cell voltages and temperatures with cell numbers
+          const cellVoltageTemperatureData = item.generalDataDTO.deviceDataDTO[0].cellVoltageTemperatureData;
+          const cellData = cellVoltageTemperatureData.map((cell, index) => ({
+              cellNumber: index + 1, // Cell numbers start from 1
+              cellVoltage: cell.cellVoltage,
+              cellTemperature: cell.cellTemperature,
+          }));
   
-          // Categorize cell voltages
-          const cellVoltageLow = cellVoltages.filter(voltage => voltage < lowVoltage && voltage > aboutToDieVoltage && voltage > openBattery);
-          const cellVoltageAboutToDie = cellVoltages.filter(voltage => voltage < lowVoltage && voltage > openBattery);
-          const cellVoltageOpenBattery = cellVoltages.filter(voltage => voltage < lowVoltage && voltage < aboutToDieVoltage);
+          // Extract cell voltages and temperatures
+          const cellVoltages = cellData.map(cell => cell.cellVoltage);
+          const cellTemperatures = cellData.map(cell => cell.cellTemperature);
+  
+          // Categorize cell voltages with cell numbers
+          const cellVoltageLow = cellData
+              .filter(cell => cell.cellVoltage < lowVoltage && cell.cellVoltage > aboutToDieVoltage && cell.cellVoltage > openBattery)
+              .map(cell => ({ cellNumber: cell.cellNumber, cellVoltage: cell.cellVoltage }));
+  
+          const cellNotComm = cellData
+              .filter(cell => cell.cellVoltage === 65.535 && cell.cellTemperature === 65535)
+              .map(cell => ({ cellNumber: cell.cellNumber, cellVoltage: cell.cellVoltage }));
+  
+          const cellVoltageHigh = cellData
+              .filter(cell => cell.cellVoltage > highVoltage)
+              .map(cell => ({ cellNumber: cell.cellNumber, cellVoltage: cell.cellVoltage }));
+  
+          const cellVoltageAboutToDie = cellData
+              .filter(cell => cell.cellVoltage < lowVoltage && cell.cellVoltage > openBattery)
+              .map(cell => ({ cellNumber: cell.cellNumber, cellVoltage: cell.cellVoltage }));
+  
+          const cellVoltageOpenBattery = cellData
+              .filter(cell => cell.cellVoltage < lowVoltage && cell.cellVoltage < aboutToDieVoltage)
+              .map(cell => ({ cellNumber: cell.cellNumber, cellVoltage: cell.cellVoltage }));
   
           return {
               serverTime: item.generalDataDTO?.serverTime || "N/A",
@@ -275,15 +301,17 @@ const Dashboard = () => {
               alarmSupplyFuse: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.alarmSupplyFuse || "N/A",
               testPushButton: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.testPushButton || "N/A",
               resetPushButton: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.resetPushButton || "N/A",
-              cellVoltage: item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.[0]?.cellVoltage || "N/A",
-              cellTemperature: item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.[0]?.cellTemperature || "N/A",
+              cellVoltage: cellData[0]?.cellVoltage || "N/A",
+              cellTemperature: cellData[0]?.cellTemperature || "N/A",
               bankDischargeCycle: item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.bankDischargeCycle || "N/A",
               bmsSedCommunication: item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.bmsSedCommunication || "N/A",
               cellCommunication: item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.cellCommunication || "N/A",
               buzzer: item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.buzzer || "N/A",
-              cellVoltageLow: cellVoltageLow.length > 0 ? cellVoltageLow : "No low voltage cells", // Add low voltage cells
-              cellVoltageAboutToDie: cellVoltageAboutToDie.length > 0 ? cellVoltageAboutToDie : "No about to die cells", // Add about to die cells
-              cellVoltageOpenBattery: cellVoltageOpenBattery.length > 0 ? cellVoltageOpenBattery : "No open battery cells" // Add open battery cells
+              cellNotComm: cellNotComm.length > 0 ? cellNotComm : "No non-communicating cells",
+              cellVoltageHigh: cellVoltageHigh.length > 0 ? cellVoltageHigh : "No high voltage cells",
+              cellVoltageLow: cellVoltageLow.length > 0 ? cellVoltageLow : "No low voltage cells",
+              cellVoltageAboutToDie: cellVoltageAboutToDie.length > 0 ? cellVoltageAboutToDie : "No about to die cells",
+              cellVoltageOpenBattery: cellVoltageOpenBattery.length > 0 ? cellVoltageOpenBattery : "No open battery cells",
           };
       });
       console.log("item", filteredData);

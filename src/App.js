@@ -1,26 +1,22 @@
-import { useState, useContext, useContext } from "react";
+import React, { useState } from "react";
+import { CssBaseline, ThemeProvider } from "@mui/material";
+import { ColorModeContext, useMode } from "./theme";
+import { createBrowserRouter, RouterProvider, Outlet, Navigate } from "react-router-dom";
+import { AppProvider, AppContext } from "./services/AppContext.js";
+import LoginPage from "./components/LoginPage/index.jsx";
+import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import Sidebar from "./scenes/global/Sidebar";
 import Dashboard from "./scenes/Dashboard/index.jsx";
-import LoginPage from "../src/components/LoginPage/index.jsx";
-import Header from "./components/Header/Header";
 import Livemonitoring from "./scenes/Livemonitoring/livemonitoring.jsx";
 import Historical from "./scenes/Analytics/Historical/index.jsx";
 import Alarms from "./scenes/Analytics/Alarms/index.jsx";
 import Daywise from "./scenes/Analytics/Daywise/index.jsx";
 import Monthly from "./scenes/Analytics/Monthly/index.jsx";
 import SiteDetails from "./scenes/Preferences/SiteDetails/index.jsx";
-// import VendorInfo from "./scenes/Preferences/VendorInfo/index.jsx";
 import IssueTracking from "./scenes/Issuetracking/index.jsx";
-// import Events from "./scenes/Events/index.jsx";
-import { CssBaseline, ThemeProvider,  } from "@mui/material";
-import { ColorModeContext, useMode } from "./theme";
 import Users from "./scenes/Users/index.jsx";
-import { createBrowserRouter, RouterProvider, Outlet, Navigate } from "react-router-dom";
-import { AppContext } from "./services/AppContext.js";
-
 import './index.css';
-// Auto-refresh hook
 
 const AuthenticatedLayout = ({ isSidebar, setIsSidebar }) => {
   return (
@@ -36,13 +32,14 @@ const AuthenticatedLayout = ({ isSidebar, setIsSidebar }) => {
     </div>
   );
 };
-function AuthenticatedRoute({children}){
-  const { isAuthenticated} = useContext(AppContext);
-  if(isAuthenticated){
-    return children
+
+const AuthenticatedRoute = ({ children }) => {
+  const { isAuthenticated } = React.useContext(AppContext);
+  if (isAuthenticated) {
+    return children;
   }
-  return <Navigate to="/login"/>
-}
+  return <Navigate to="/login" replace />;
+};
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -50,18 +47,13 @@ function App() {
 
   const router = createBrowserRouter([
     {
-      path: "/login",
-      element: <LoginPage />, // LoginPage handles authentication
-    },
-    {
       path: "/",
       element: (
-        <AuthenticatedRoute>
-          <AuthenticatedLayout 
-            isSidebar={isSidebar} 
-            setIsSidebar={setIsSidebar} 
-          />
-        </AuthenticatedRoute>
+        <AppProvider>
+          <AuthenticatedRoute>
+            <AuthenticatedLayout isSidebar={isSidebar} setIsSidebar={setIsSidebar} />
+          </AuthenticatedRoute>
+        </AppProvider>
       ),
       children: [
         { path: "/", element: <Dashboard /> },
@@ -74,6 +66,14 @@ function App() {
         { path: "/issuetracking", element: <IssueTracking /> },
         { path: "/users", element: <Users /> },
       ],
+    },
+    {
+      path: "/login",
+      element: (
+        <AppProvider>
+          <LoginPage />
+        </AppProvider>
+      ),
     },
   ]);
 

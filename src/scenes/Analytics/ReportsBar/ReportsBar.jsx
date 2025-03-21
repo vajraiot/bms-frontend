@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState,useEffect } from "react";
 import { AppContext } from "../../../services/AppContext";
 import {
   Box,
@@ -32,6 +32,8 @@ const ReportsBar = ({ pageType }) => {
   } = useContext(AppContext);
 
   const [loadingReport, setLoadingReport] = useState(false);
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(200);
   const [errors, setErrors] = useState({
     siteId: false,
     serialNumber: false,
@@ -64,7 +66,9 @@ const ReportsBar = ({ pageType }) => {
             serialNumber,
             siteId,
             startDate,
-            endDate
+            endDate,
+            page,
+            rowsPerPage
           );
           break;
 

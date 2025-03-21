@@ -25,7 +25,25 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 
-const BASE_URL = "http://122.175.45.16:51270";
+const BASE_URL = "http://localshost:51270";
+const apiClient = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Add JWT token to every request via interceptor
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 const Team = () => {
   const theme = useTheme();
@@ -50,11 +68,11 @@ const Team = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const rolesResponse = await fetch(`${BASE_URL}/getListofLoginRoles`);
+        const rolesResponse = await apiClient.get(`${BASE_URL}/getListofLoginRoles`);
         const rolesData = await rolesResponse.json();
         setRoles(rolesData);
 
-        const usersResponse = await fetch(`${BASE_URL}/GetAllLoginDetailsInPlainLoginDetailFormate`);
+        const usersResponse = await apiClient.get(`${BASE_URL}/GetAllLoginDetailsInPlainLoginDetailFormate`);
         if (!usersResponse.ok) throw new Error("Failed to fetch users");
         const usersData = await usersResponse.json();
         setUserData(usersData);

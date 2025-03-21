@@ -306,28 +306,75 @@ const DataDialog = ({
                     };
                   }
               break;
-            case "Cell(V) Low":
-              if (detail.cellVoltageLow !== undefined) {
-                return {
-                  siteId: detail.siteId,
-                  serialNumber: detail.serialNumber,
-                  serverTime: detail.serverTime,
-                  value: detail.cellVoltageLow,
-                  units: "V",
-                };
-              }
-              break;
+              case "Cell(V) Low":
+                if (detail.cellVoltageLow !== undefined && Array.isArray(detail.cellVoltageLow)) {
+                    // Format the cellVoltageLow array into a readable string
+                    const formattedValue = detail.cellVoltageLow
+                        .map(cell => `Cell ${cell.cellNumber}: ${cell.cellVoltage}V`)
+                        .join(", ");
+            
+                    return {
+                        siteId: detail.siteId,
+                        serialNumber: detail.serialNumber,
+                        serverTime: detail.serverTime,
+                        value: formattedValue || "No low voltage cells", // Fallback if array is empty
+                        units: "V",
+                    };
+                } else if (typeof detail.cellVoltageLow === "string") {
+                    // If cellVoltageLow is already a string (e.g., "No low voltage cells")
+                    return {
+                        siteId: detail.siteId,
+                        serialNumber: detail.serialNumber,
+                        serverTime: detail.serverTime,
+                        value: detail.cellVoltageLow,
+                        units: "V",
+                    };
+                } else {
+                    // Fallback for unexpected cases
+                    return {
+                        siteId: detail.siteId,
+                        serialNumber: detail.serialNumber,
+                        serverTime: detail.serverTime,
+                        value: "No data available",
+                        units: "V",
+                    };
+                }
+                break;
+            
             case "Cell(V) High":
-              if (detail.cellVoltage !== undefined) {
-                return {
-                  siteId: detail.siteId,
-                  serialNumber: detail.serialNumber,
-                  serverTime: detail.serverTime,
-                  value: detail.cellVoltage,
-                  units: "V",
-                };
-              }
-              break;
+                if (detail.cellVoltageHigh !== undefined && Array.isArray(detail.cellVoltageHigh)) {
+                    // Format the cellVoltageHigh array into a readable string
+                    const formattedValue = detail.cellVoltageHigh
+                        .map(cell => `Cell ${cell.cellNumber}: ${cell.cellVoltage}V`)
+                        .join(", ");
+            
+                    return {
+                        siteId: detail.siteId,
+                        serialNumber: detail.serialNumber,
+                        serverTime: detail.serverTime,
+                        value: formattedValue || "No high voltage cells", // Fallback if array is empty
+                        units: "V",
+                    };
+                } else if (typeof detail.cellVoltageHigh === "string") {
+                    // If cellVoltageHigh is already a string (e.g., "No high voltage cells")
+                    return {
+                        siteId: detail.siteId,
+                        serialNumber: detail.serialNumber,
+                        serverTime: detail.serverTime,
+                        value: detail.cellVoltageHigh,
+                        units: "V",
+                    };
+                } else {
+                    // Fallback for unexpected cases
+                    return {
+                        siteId: detail.siteId,
+                        serialNumber: detail.serialNumber,
+                        serverTime: detail.serverTime,
+                        value: "No data available",
+                        units: "V",
+                    };
+                }
+                break;
               case "Cell Temperature":
               if (detail.cellTemperature !== undefined) {
                 return {
@@ -517,38 +564,109 @@ const DataDialog = ({
               }
               break;
               case "Battery Open":
-                if (detail.cellVoltageOpenBattery !== undefined) {
-                  return {
-                    siteId: detail.siteId,
-                    serialNumber: detail.serialNumber,
-                    serverTime: detail.serverTime,
-                    value: detail.cellVoltageOpenBattery,
-                    units: "V",
-                  };
+                if (detail.cellVoltageOpenBattery !== undefined && Array.isArray(detail.cellVoltageOpenBattery)) {
+                    // Format the cellVoltageOpenBattery array into a readable string
+                    const formattedValue = detail.cellVoltageOpenBattery
+                        .map(cell => `Cell ${cell.cellNumber}: ${cell.cellVoltage}V`)
+                        .join(", ");
+            
+                    return {
+                        siteId: detail.siteId,
+                        serialNumber: detail.serialNumber,
+                        serverTime: detail.serverTime,
+                        value: formattedValue || "No open battery cells", // Fallback if array is empty
+                        units: "V",
+                    };
+                } else if (typeof detail.cellVoltageOpenBattery === "string") {
+                    // If cellVoltageOpenBattery is already a string (e.g., "No open battery cells")
+                    return {
+                        siteId: detail.siteId,
+                        serialNumber: detail.serialNumber,
+                        serverTime: detail.serverTime,
+                        value: detail.cellVoltageOpenBattery,
+                        units: "V",
+                    };
+                } else {
+                    // Fallback for unexpected cases
+                    return {
+                        siteId: detail.siteId,
+                        serialNumber: detail.serialNumber,
+                        serverTime: detail.serverTime,
+                        value: "No data available",
+                        units: "V",
+                    };
                 }
                 break;
-                case "Battery AboutToDie":
-                  if (detail.cellVoltageAboutToDie !== undefined) {
+            
+            case "Battery AboutToDie":
+                if (detail.cellVoltageAboutToDie !== undefined && Array.isArray(detail.cellVoltageAboutToDie)) {
+                    // Format the cellVoltageAboutToDie array into a readable string
+                    const formattedValue = detail.cellVoltageAboutToDie
+                        .map(cell => `Cell ${cell.cellNumber}: ${cell.cellVoltage}V`)
+                        .join(", ");
+            
                     return {
-                      siteId: detail.siteId,
-                      serialNumber: detail.serialNumber,
-                      serverTime: detail.serverTime,
-                      value: detail.cellVoltageAboutToDie,
-                      units: "V",
+                        siteId: detail.siteId,
+                        serialNumber: detail.serialNumber,
+                        serverTime: detail.serverTime,
+                        value: formattedValue || "No about to die cells", // Fallback if array is empty
+                        units: "V",
                     };
-                  }
+                } else if (typeof detail.cellVoltageAboutToDie === "string") {
+                    // If cellVoltageAboutToDie is already a string (e.g., "No about to die cells")
+                    return {
+                        siteId: detail.siteId,
+                        serialNumber: detail.serialNumber,
+                        serverTime: detail.serverTime,
+                        value: detail.cellVoltageAboutToDie,
+                        units: "V",
+                    };
+                } else {
+                    // Fallback for unexpected cases
+                    return {
+                        siteId: detail.siteId,
+                        serialNumber: detail.serialNumber,
+                        serverTime: detail.serverTime,
+                        value: "No data available",
+                        units: "V",
+                    };
+                }
+                break;
                   break;
-            case "Cell Comm Fail":
-              if (detail.cellCommunication !== undefined) {
-                return {
-                  siteId: detail.siteId,
-                  serialNumber: detail.serialNumber,
-                  serverTime: detail.serverTime,
-                  value: detail.cellCommunication,
-                  units: "",
-                };
-              }
-              break;
+                  case "Cell Comm Fail":
+                    if (detail.cellNotComm !== undefined && Array.isArray(detail.cellNotComm)) {
+                        // Format the cellNotComm array into a readable string
+                        const formattedValue = detail.cellNotComm
+                            .map(cell => `Cell ${cell.cellNumber}: ${cell.cellVoltage}V`)
+                            .join(", ");
+                
+                        return {
+                            siteId: detail.siteId,
+                            serialNumber: detail.serialNumber,
+                            serverTime: detail.serverTime,
+                            value: formattedValue || "No non-communicating cells", // Fallback if array is empty
+                            units: "",
+                        };
+                    } else if (typeof detail.cellNotComm === "string") {
+                        // If cellNotComm is already a string (e.g., "No non-communicating cells")
+                        return {
+                            siteId: detail.siteId,
+                            serialNumber: detail.serialNumber,
+                            serverTime: detail.serverTime,
+                            value: detail.cellNotComm,
+                            units: "",
+                        };
+                    } else {
+                        // Fallback for unexpected cases
+                        return {
+                            siteId: detail.siteId,
+                            serialNumber: detail.serialNumber,
+                            serverTime: detail.serverTime,
+                            value: "No data available",
+                            units: "",
+                        };
+                    }
+                    break;
            
             case "Buzzer Alarm":
               if (detail.buzzer !== undefined) {

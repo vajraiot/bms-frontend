@@ -1,13 +1,13 @@
 import { useState, useEffect, useContext, useRef } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom"; // Add this
 import Login from "../../assets/images/login.png";
 import Watermark from "../../assets/images/watermark.jpeg";
-import { fetchLoginDetails } from "../../services/apiService";
 import { Navigate } from "react-router-dom";
 import { AppContext } from "../../services/AppContext";
 import Logo from "../../assets/images/png/vajra.png";
 import MahaLogo from "../../assets/images/png/maha.png";
-import { AlignCenter } from "lucide-react";
-import { AppContext } from "../../services/AppContext";
+
 const LoginPage = () => {
   const [role, setRole] = useState("");
   const [roles, setRoles] = useState([]);
@@ -16,16 +16,17 @@ const LoginPage = () => {
   const [captchaInput, setCaptchaInput] = useState("");
   const [captchaText, setCaptchaText] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [validationMessages, setValidationMessages] = useState([]); // Store validation messages
+  const [validationMessages, setValidationMessages] = useState([]);
   const captchaCanvasRef = useRef(null);
-  const { setIsAuthenticated, isAuthenticated, setUserRole,username, setUsername } = useContext(AppContext);
+  const { setIsAuthenticated, isAuthenticated, setUserRole, username, setUsername, setToken } = useContext(AppContext);
+  const navigate = useNavigate(); // Add this
+
+  const BASE_URL = "http://localhost:51270"; // Match your backend port
 
   const fetchRoles = async () => {
     try {
-      const response = await fetch("http://122.175.45.16:51270/getListofLoginRoles");
-      if (!response.ok) throw new Error("Failed to fetch roles");
-      const data = await response.json();
-      setRoles(data || []);
+      const response = await axios.get(`${BASE_URL}/getListofLoginRoles`);
+      setRoles(response.data || []);
     } catch (error) {
       console.error("Error fetching roles:", error);
       setValidationMessages(["Failed to fetch roles. Please try again later."]);
@@ -74,7 +75,22 @@ const LoginPage = () => {
     if (captchaCanvasRef.current) {
       generateCaptcha();
     }
-  }, [captchaCanvasRef.current]);
+  }, [captchaCanvasRef]);
+
+  const fetchLoginDetails = async (role, username, password) => {
+    try {
+      const response = await axios.post(`${BASE_URL}/authenticate`, {
+        role,
+        username,
+        password,
+      });
+      console.log("Login Response:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error during login:", error.response?.data || error.message);
+      throw error;
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -97,24 +113,26 @@ const LoginPage = () => {
     if (messages.length > 0) return;
 
     try {
-      const data = await fetchLoginDetails(role, username, password); // Placeholder function
-      console.log("Login Response:", data);
-
-      if (!data || Object.keys(data).length === 0) {
+      const data = await fetchLoginDetails(role, username, password);
+      if (!data || !data.jwt) {
         setValidationMessages(["Invalid credentials. Please try again."]);
       } else {
+        localStorage.setItem("token", data.jwt);
+        setToken(data.jwt);
         setIsAuthenticated(true);
         setUserRole(role);
+        navigate("/"); // Redirect to home page
       }
     } catch (error) {
-      console.error("Error during login:", error);
-      setValidationMessages(["An error occurred during login. Please try again."]);
+      const errorMessage = error.response?.data?.message || "An error occurred during login. Please try again.";
+      setValidationMessages([errorMessage]);
     }
   };
 
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
   const styles = {
+    // Your existing styles remain unchanged
     background: {
       position: "fixed",
       top: 0,
@@ -185,18 +203,17 @@ const LoginPage = () => {
     },
     captchaInput: {
       width: "100%",
-      padding: "8px", // Same as input to maintain box size
-      fontSize: "12px", // Same as input for typed text
+      padding: "8px",
+      fontSize: "12px",
       border: "1px solid #ccc",
       borderRadius: "4px",
       backgroundColor: "#fff",
       color: "#333",
       boxSizing: "border-box",
       outline: "none",
-      // Target placeholder specifically
       "::placeholder": {
-        fontSize: "10px", // Smaller placeholder font
-        color: "#999", // Optional: lighter color for contrast
+        fontSize: "10px",
+        color: "#999",
       },
     },
     passwordContainer: {
@@ -275,7 +292,7 @@ const LoginPage = () => {
       padding: "0",
       outline: "none",
     },
-    validationContainer: { // New style for validation messages
+    validationContainer: {
       textAlign: "center",
       marginBottom: "10px",
     },
@@ -298,7 +315,6 @@ const LoginPage = () => {
       <div style={styles.wrapper}>
         <div style={styles.watermark}></div>
         <form onSubmit={handleSubmit} style={styles.form}>
-          {/* Validation Messages */}
           {validationMessages.length > 0 && (
             <div style={styles.validationContainer}>
               {validationMessages.map((message, index) => (
@@ -373,7 +389,7 @@ const LoginPage = () => {
               value={captchaInput}
               onChange={(e) => setCaptchaInput(e.target.value)}
               placeholder="Enter CAPTCHA"
-              style={styles.captchaInput} // Use new smaller style
+              style={styles.captchaInput}
             />
           </div>
           <button type="submit" style={styles.button}>
@@ -386,15 +402,6 @@ const LoginPage = () => {
       </div>
     </div>
   );
-};
-
-// Placeholder fetchLoginDetails (replace with actual implementation)
-const fetchLoginDetails = async (role, username, password) => {
-  return fetch("http://122.175.45.16:51270/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ role, username, password }),
-  }).then((res) => res.json());
 };
 
 export default LoginPage;
