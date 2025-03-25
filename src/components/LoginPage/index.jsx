@@ -18,7 +18,7 @@ const LoginPage = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [validationMessages, setValidationMessages] = useState([]);
   const captchaCanvasRef = useRef(null);
-  const { setIsAuthenticated, isAuthenticated, setUserRole, username, setUsername, setToken } = useContext(AppContext);
+  const { token, setToken, setUserRole, username, setUsername } = useContext(AppContext);
   const navigate = useNavigate(); // Add this
 
   const BASE_URL = "http://localhost:51270"; // Match your backend port
@@ -119,7 +119,6 @@ const LoginPage = () => {
       } else {
         localStorage.setItem("token", data.jwt);
         setToken(data.jwt);
-        setIsAuthenticated(true);
         setUserRole(role);
         navigate("/"); // Redirect to home page
       }
@@ -128,7 +127,6 @@ const LoginPage = () => {
       setValidationMessages([errorMessage]);
     }
   };
-
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
   const styles = {
@@ -303,7 +301,7 @@ const LoginPage = () => {
     },
   };
 
-  if (isAuthenticated) return <Navigate to="/" />;
+  if (token) return <Navigate to="/" />;
 
   return (
     <div>

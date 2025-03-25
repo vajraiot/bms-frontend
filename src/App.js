@@ -34,8 +34,8 @@ const AuthenticatedLayout = ({ isSidebar, setIsSidebar }) => {
 };
 
 const AuthenticatedRoute = ({ children }) => {
-  const { isAuthenticated } = React.useContext(AppContext);
-  if (isAuthenticated) {
+  const { token } = React.useContext(AppContext);
+  if (token) {
     return children;
   }
   return <Navigate to="/login" replace />;

@@ -45,8 +45,8 @@ export default function DischargeCycleWise({
         </Typography>
         <Box display="flex" flexDirection="column">
           {[
-            { label: "Peak Discharge Current", value: peakDischargeCurrent, unit: "A", icon: pdcIcon },
-            { label: "Discharge Time", value: dischargeTime(totalSeconds), icon: dtIcon },
+            { label: "Charge Current", value: peakDischargeCurrent, unit: "A", icon: pdcIcon },
+            { label: "Run Time", value: dischargeTime(totalSeconds), icon: dtIcon },
           ].map(({ label, value, unit, icon }, index) => (
             <Box
               key={index}

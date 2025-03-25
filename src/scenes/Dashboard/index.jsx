@@ -73,7 +73,7 @@ const Dashboard = () => {
                   MostCriticalCount++; // Increment if any cell voltage meets the "about to die" condition
               }
           }
-
+          const isLowVoltageConditionMet = cellVoltageData?.some(cell => cell.cellVoltage === lowVoltageThreshold);
           // Check if the battery is "open" based on cell voltage
           if (cellVoltageData && !isNaN(openBatteryThreshold)) {
               const isOpenBattery = cellVoltageData.some(cell => cell.cellVoltage <= openBatteryThreshold);
@@ -85,7 +85,11 @@ const Dashboard = () => {
 
           if (MostCriticalConditions || ChargerMonitoringMostCritical) {
               if (MostCriticalConditions?.stringVoltageLNH === 0) MostCriticalCount++;      // String Voltage Low
-              if (MostCriticalConditions?.cellVoltageLN === true) MostCriticalCount++;     // Cell Voltage Low
+              if (MostCriticalConditions?.cellVoltageLN === true) {
+                if (isLowVoltageConditionMet) {
+                    MostCriticalCount++; // Increment only if condition is met
+                }
+            }    // Cell Voltage Low
               if (MostCriticalConditions?.socLN === true) MostCriticalCount++;            // SOC Low
               if (ChargerMonitoringMostCritical?.chargerTrip === true) MostCriticalCount++; // Charger Trip
           }
@@ -341,10 +345,11 @@ const Dashboard = () => {
           const isOpenBattery = cellVoltageTemperatureData?.some(cell =>
             cell.cellVoltage <= openBatteryThreshold
           );
-
+          const isCellVoltageLow = bmsAlarms?.cellVoltageLN === true &&
+          cellVoltageData?.some(cell => cell.cellVoltage === lowVoltageThreshold);
           return (
             bmsAlarms?.stringVoltageLNH === 0 || // String Voltage Low
-            bmsAlarms?.cellVoltageLN === true || // Cell Voltage Low
+            isCellVoltageLow || // Cell Voltage Low
             bmsAlarms?.socLN === true || // SOC Low
             isOpenBattery || // Open Battery
             isBatteryAboutToDie || // Battery About to Die

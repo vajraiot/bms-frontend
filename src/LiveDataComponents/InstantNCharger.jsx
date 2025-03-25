@@ -107,7 +107,7 @@ const{instantaneousCurrent, stringvoltage,ambientTemperature, bmsAlarmsDTO,socLa
   
       const getColorForDCV=(value)=>{
         if(value===0){
-          return "#FFAE42";
+          return "rgb(183, 28, 28)";
         }else if(value===1){
           return "rgb(27, 94, 32)";
         }else{

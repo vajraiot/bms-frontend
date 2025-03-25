@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { useTheme, IconButton,Box } from "@mui/material";
-import { AppContext } from "../../../services/AppContext";
+import { AppContext,formatDate } from "../../../services/AppContext";
 import ReportsBar from "../ReportsBar/ReportsBar";
 import * as XLSX from "xlsx";
 import excelIcon from "../../../assets/images/png/ExcellTrans100_98.png";
@@ -14,9 +14,10 @@ import {
   Paper,
   Typography,
   TablePagination,
-  TableSortLabel,
+  TableSortLabel, CircularProgress,
 } from "@mui/material";
 import { Box } from "lucide-react";
+import {downloadHistoricalBatteryandChargerdetails} from '../../../services/apiService'
 
 const columnMappings = {
   bmsManufacturerID: "BMS Manufacturer ID",
@@ -51,9 +52,11 @@ const columnMappings = {
 
 const Historical = () => {
   const theme = useTheme();
-  const { data = [] } = useContext(AppContext);
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(100);
+  const { data = [] ,   page, setPage,rowsPerPage, setRowsPerPage,siteId,
+    serialNumber,
+    startDate, 
+    endDate,totalRecords} = useContext(AppContext);
+  // const [rowsPerPage, setRowsPerPage] = React.useState(100);
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("date");
   const [pageType, setPageType] = useState(0);
@@ -94,10 +97,10 @@ const Historical = () => {
   };
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+    setPage(0); // Reset to first page when rows per page changes
   };
 
-  const dataArray = data.content;
+  const dataArray = data;
 
   const combineAlarmsData = (dataArray) => {
     if (!dataArray || dataArray.length === 0) return [];
@@ -131,7 +134,7 @@ const Historical = () => {
   };
 
   const formattedData = combineAlarmsData(dataArray);
-  const displayedData = sortedData(formattedData);
+ // const displayedData = sortedData(formattedData);
 
   // Get all unique keys from the data
   const allKeys = formattedData.reduce((keys, row) => {
@@ -156,34 +159,7 @@ const Historical = () => {
   }
 
   const handleDownloadExcel = () => {
-    if (!formattedData || formattedData.length === 0) {
-      alert("No data available to export!");
-      return;
-    }
-
-    const workbook = XLSX.utils.book_new();
-    const excelData = displayedData.map((row) => {
-      return reorderedKeys.map((key) => {
-        if (key === "packetDateTime" || key === "serverTime") {
-          return TimeFormat(row[key]);
-        } else if (key === "dcVoltageOLN") {
-          return row[key] === 0 ? "Low" : row[key] === 1 ? "Normal" : row[key] === 2 ? "Over" : row[key];
-        } else if (typeof row[key] === "boolean") {
-          return row[key] ? "Fail" : "Normal";
-        } else {
-          return row[key] !== undefined && row[key] !== null ? row[key] : "No Data";
-        }
-      });
-    });
-
-    if (formattedData.length > 0) {
-      const headers = reorderedKeys.map((key) => columnMappings[key] || key);
-      excelData.unshift(headers);
-    }
-
-    const worksheet = XLSX.utils.aoa_to_sheet(excelData);
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Historical Data");
-    XLSX.writeFile(workbook, "Historical_Data.xlsx");
+    downloadHistoricalBatteryandChargerdetails(siteId,serialNumber,formatDate(startDate),formatDate(endDate))
   };
 
   return (
@@ -238,8 +214,8 @@ const Historical = () => {
               </TableHead>
 
               <TableBody sx={{ overflowY: 'auto' }}>
-                {displayedData
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                {formattedData
+                  //.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => (
                     <TableRow
                       key={index}
@@ -284,9 +260,9 @@ const Historical = () => {
           </TableContainer>
 
           <TablePagination
-            rowsPerPageOptions={[100, 200, 500,1000,1500,2000]}
+            rowsPerPageOptions={[5, 100, 200,300,500]}
             component="div"
-            count={formattedData.length}
+            count={totalRecords}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

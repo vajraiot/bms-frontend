@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import axios from "axios";
 import {fetchStatesDetails, fetchCirclesDetails, fetchAreasDetails, fetchSiteDetailsBatteryandChargerdetails, updateSiteLocation, addSiteLocation, deleteSite } from '../../../services/apiService';
 import {
   Grid,
@@ -22,8 +23,27 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
-const BASE_URL = "http://122.175.45.16:51270";
-import axios from "axios";
+const BASE_URL = "http://localhost:51270";
+
+const apiClient = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Add JWT token to every request via interceptor
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 const columnMappingsPart1 = {
   siteId: 'Substation ID',
   vendorName: 'Customer',
@@ -205,8 +225,37 @@ const handleCircleChange = (event, newValue) => {
       setFormData({}); // Clear form for a new entry
     }
   };
- 
+  const validateForm = () => {
+    const newErrors = {};
+  
+    // Custom validation logic
+    if (formData.highVoltage && (formData.highVoltage < 2 || formData.highVoltage > 2.5)) {
+      newErrors.highVoltage = 'High Voltage must be between 2 and 2.5';
+    }
+    if (formData.lowVoltage && (formData.lowVoltage < 1.9 || formData.lowVoltage > 2)) {
+      newErrors.lowVoltage = 'Low Voltage must be between 1.9 and 2';
+    }
+    if (formData.batteryAboutToDie && (formData.batteryAboutToDie < 1.8 || formData.batteryAboutToDie > 1.9)) {
+      newErrors.batteryAboutToDie = 'Battery About To Die must be between 1.8 and 1.9';
+    }
+    if (formData.openBattery && (formData.openBattery < 1.4 || formData.openBattery > 1.8)) {
+      newErrors.openBattery = 'Open Battery must be between 1.4 and 1.8';
+    }
+    if (formData.highTemperature && formData.highTemperature > 100) {
+      newErrors.highTemperature = 'High Temperature must not exceed 100';
+    }
+  
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0; // Return true if no errors
+  };
   const handleUpdate = async () => {
+    if (!validateForm()) {
+      setSnackbarMessage('Please fix the validation errors before submitting.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      return;
+    }
+  
     try {
       const combinedData = {
         state: formData?.state || '',
@@ -237,7 +286,7 @@ const handleCircleChange = (event, newValue) => {
         },
       };
 
-      const response = await axios.put(`${BASE_URL}/api/updateSiteLocationToSiteId`, combinedData);
+      const response = await apiClient.put(`${BASE_URL}/api/updateSiteLocationToSiteId`, combinedData);
 
       // Show success Snackbar
       setSnackbarMessage('Updated successfully!');
@@ -263,6 +312,13 @@ const handleCircleChange = (event, newValue) => {
 
 
 const handleAddSite = async () => {
+  if (!validateForm()) {
+    setSnackbarMessage('Please fix the validation errors before submitting.');
+    setSnackbarSeverity('error');
+    setSnackbarOpen(true);
+    return;
+  }
+
   try {
     // Validate required fields
     if (!formData.siteId || !formData.serialNumber) {
@@ -337,15 +393,13 @@ const handleDeleteSite = async () => {
   useEffect(() => {
     console.log('Updated formData:', formData); // This will log each time formData updates
   }, [formData]);
-
-
 const renderFormFields = (columns) => {
   // Separate states for "Other" selection and custom input
-  const [isOtherSelected, setIsOtherSelected] = React.useState({
+   const [isOtherSelected, setIsOtherSelected] = React.useState({
     state: false,
     circle: false,
     area: false,
-  });
+   });
   const [otherValues, setOtherValues] = React.useState({
     state: '',
     circle: '',
@@ -354,26 +408,26 @@ const renderFormFields = (columns) => {
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     let error = '';
-
+  
     // Custom validation logic
     if (name === 'highVoltage' && (value < 2 || value > 2.5)) {
       error = 'High Voltage must be between 2 and 2.5';
-    } else if (name === 'lowVoltage' && (value < 1.9 || value > 1.99)) {
+    } else if (name === 'lowVoltage' && (value < 1.9 || value > 2)) {
       error = 'Low Voltage must be between 1.9 and 2';
-    } else if (name === 'batteryAboutToDie' && (value < 1.81 || value > 1.89)) {
+    } else if (name === 'batteryAboutToDie' && (value < 1.8 || value > 1.9)) {
       error = 'Battery About To Die must be between 1.8 and 1.9';
     } else if (name === 'openBattery' && (value < 1.4 || value > 1.8)) {
       error = 'Open Battery must be between 1.4 and 1.8';
     } else if (name === 'highTemperature' && value > 100) {
       error = 'High Temperature must not exceed 100';
     }
-
+  
     // Update form data
     setFormData({
       ...formData,
       [name]: value,
     });
-
+  
     // Update errors
     setErrors({
       ...errors,
@@ -707,64 +761,64 @@ const renderFormFields = (columns) => {
           return (
             <Grid item xs={12} sm={8} md={4} lg={3} key={key}>
             <Box width="150px" sx={{ marginTop: '1.5px' }}>
-              <TextField
-                label={columns[key]}
-                name={key}
-                value={formData[key] || ''}
-                onChange={handleInputChange}
-                fullWidth
-                margin="dense"
-                disabled={!isEditing && !isAdding}
-                type={
-                  key === 'designVoltage' ||
-                  key === 'ahCapacity' ||
-                  key === 'individualCellVoltage' ||
-                  key === 'highVoltage' ||
-                  key === 'lowVoltage' ||
-                  key === 'highTemperature' ||
-                  key === 'lowTemperature'
-                    ? 'number'
-                    : 'text'
-                }
-                error={!!errors[key]} // Highlight the field if there's an error
-                helperText={errors[key]} // Display the error message
-                inputProps={{
-                  style: { textAlign: 'center' },
-                  min: key === 'highVoltage' ? 2 : 
-                       key === 'lowVoltage' ? 1.9 : 
-                       key === 'batteryAboutToDie' ? 1.8 : 
-                       key === 'openBattery' ? 1.4 : 
-                       key === 'highTemperature' ? undefined : undefined,
-                  max: key === 'highVoltage' ? 2.5 : 
-                       key === 'lowVoltage' ? 2 : 
-                       key === 'batteryAboutToDie' ? 1.9 : 
-                       key === 'openBattery' ? 1.8 : 
-                       key === 'highTemperature' ? 100 : undefined,
-                }}
-                InputLabelProps={{
-                  sx: {
-                    fontWeight: "bold",
-                    color: "black",
-                  },
-                }}
-                sx={{
-                  '& .MuiInputBase-root': {
-                    height: '35px',
-                    fontWeight: (!isEditing && !isAdding) ? 'bold' : 'bold',
-                    backgroundColor: (!isEditing && !isAdding) ? '#f0f0f0' : 'transparent',
-                  },
-                  '& .MuiInputBase-input': {
-                    padding: '2px 10px',
-                    fontSize: '12px',
-                    fontWeight: (!isEditing && !isAdding) ? 'bold' : 'bold',
-                    color: (!isEditing && !isAdding) ? '#000' : 'inherit',
-                    WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit',
-                  },
-                  '& .MuiFormLabel-root': {
-                    fontSize: '12px',
-                  },
-                }}
-              />
+            <TextField
+                  label={columns[key]}
+                  name={key}
+                  value={formData[key] || ''}
+                  onChange={handleInputChange}
+                  fullWidth
+                  margin="dense"
+                  disabled={!isEditing && !isAdding}
+                  type={
+                    key === 'designVoltage' ||
+                    key === 'ahCapacity' ||
+                    key === 'individualCellVoltage' ||
+                    key === 'highVoltage' ||
+                    key === 'lowVoltage' ||
+                    key === 'highTemperature' ||
+                    key === 'lowTemperature'
+                      ? 'number'
+                      : 'text'
+                  }
+                  error={!!errors[key]} // Highlight the field if there's an error
+                  helperText={errors[key]} // Display the error message
+                  inputProps={{
+                    style: { textAlign: 'center' },
+                    min: key === 'highVoltage' ? 2 : 
+                        key === 'lowVoltage' ? 1.9 : 
+                        key === 'batteryAboutToDie' ? 1.8 : 
+                        key === 'openBattery' ? 1.4 : 
+                        key === 'highTemperature' ? undefined : undefined,
+                    max: key === 'highVoltage' ? 2.5 : 
+                        key === 'lowVoltage' ? 2 : 
+                        key === 'batteryAboutToDie' ? 1.9 : 
+                        key === 'openBattery' ? 1.8 : 
+                        key === 'highTemperature' ? 100 : undefined,
+                  }}
+                  InputLabelProps={{
+                    sx: {
+                      fontWeight: "bold",
+                      color: "black",
+                    },
+                  }}
+                  sx={{
+                    '& .MuiInputBase-root': {
+                      height: '35px',
+                      fontWeight: (!isEditing && !isAdding) ? 'bold' : 'bold',
+                      backgroundColor: (!isEditing && !isAdding) ? '#f0f0f0' : 'transparent',
+                    },
+                    '& .MuiInputBase-input': {
+                      padding: '2px 10px',
+                      fontSize: '12px',
+                      fontWeight: (!isEditing && !isAdding) ? 'bold' : 'bold',
+                      color: (!isEditing && !isAdding) ? '#000' : 'inherit',
+                      WebkitTextFillColor: (!isEditing && !isAdding) ? 'black' : 'inherit',
+                    },
+                    '& .MuiFormLabel-root': {
+                      fontSize: '12px',
+                    },
+                  }}
+                />
             </Box>
           </Grid>
       );

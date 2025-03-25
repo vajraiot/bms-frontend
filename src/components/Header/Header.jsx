@@ -12,11 +12,14 @@ import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import BMS from "../../assets/images/jpeg/BMS.jpg"; // Importing the image
 import { AppContext } from '../../services/AppContext';
+import { useNavigate } from "react-router-dom"; 
 import login from "../../assets/images/png/vajra.png";
 const Header = () => {
   const { handleLogout, username } = useContext(AppContext); // Use AppContext for logout
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+
+  const navigate = useNavigate();
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -28,7 +31,7 @@ const Header = () => {
 
   const handleSignOut = () => {
     handleMenuClose();
-    handleLogout();
+    handleLogout(navigate); 
   };
 
   return (

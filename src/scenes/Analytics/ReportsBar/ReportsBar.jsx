@@ -1,4 +1,4 @@
-import React, { useContext, useState,useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { AppContext } from "../../../services/AppContext";
 import {
   Box,
@@ -22,85 +22,19 @@ const ReportsBar = ({ pageType }) => {
     serialNumberOptions,
     siteId,
     serialNumber,
-    startDate,
+    startDate, 
     endDate,
     setSiteId,
     setSerialNumber,
     setStartDate,
     setEndDate,
-    setData,
+    handleAnalytics,loadingReport,errors,page,rowsPerPage
   } = useContext(AppContext);
 
-  const [loadingReport, setLoadingReport] = useState(false);
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(200);
-  const [errors, setErrors] = useState({
-    siteId: false,
-    serialNumber: false,
-    startDate: false,
-    endDate: false,
-  });
-
-  const handleSearch = async () => {
-    // Check for empty fields and update errors state
-    const newErrors = {
-      siteId: !siteId,
-      serialNumber: !serialNumber,
-      startDate: !startDate,
-      endDate: !endDate,
-    };
-    setErrors(newErrors);
-
-    // Stop execution if any field is empty
-    if (!siteId || !serialNumber || !startDate || !endDate) {
-      return;
-    }
-
-    try {
-      setLoadingReport(true);
-
-      let result;
-      switch (pageType) {
-        case "historical":
-          result = await fetchHistoricalBatteryandChargerdetails(
-            serialNumber,
-            siteId,
-            startDate,
-            endDate,
-            page,
-            rowsPerPage
-          );
-          break;
-
-        case "daywise":
-          result = await fetchDaywiseBatteryandChargerdetails(
-            serialNumber,
-            siteId,
-            startDate,
-            endDate
-          );
-          break;
-
-        case "alarms":
-          result = await fetchAlarmsBatteryandChargerdetails(
-            serialNumber,
-            siteId,
-            startDate,
-            endDate
-          );
-          break;
-
-        default:
-          throw new Error("Invalid page type");
-      }
-
-      setData(result); // Update report data
-    } catch (error) {
-      console.error("Error during search:", error);
-    } finally {
-      setLoadingReport(false);
-    }
-  };
+ useEffect(()=>{
+  if(siteId&&serialNumber&&startDate&&endDate)
+  handleAnalytics(pageType)
+},[page,rowsPerPage])
 
   const renderHighlightedOption = (props, option, value) => (
     <li
@@ -240,7 +174,7 @@ const ReportsBar = ({ pageType }) => {
         />
 
         {/* Search Button */}
-        <IconButton onClick={handleSearch} disabled={loadingReport}>
+        <IconButton onClick={() => handleAnalytics(pageType)} disabled={loadingReport}>
           <SearchIcon />
         </IconButton>
       </Box>

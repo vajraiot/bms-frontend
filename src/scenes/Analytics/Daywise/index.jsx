@@ -1,12 +1,13 @@
 import React, { useContext, useState } from "react";
 import { useTheme, IconButton, Box } from "@mui/material";
 import { ColorModeContext, tokens } from "../../../theme";
-import { AppContext } from "../../../services/AppContext";
+import { AppContext,formatDate } from "../../../services/AppContext";
 import excelIcon from "../../../assets/images/png/ExcellTrans100_98.png";
 import ReportsBar from "../ReportsBar/ReportsBar";
 import ChargingGraph from "./ChargingGraph";
 import AhGraph from "./AhGraph";
 import { formatToTime } from "../../../services/AppContext";
+import {downloadDayWiseBatteryandChargerdetails} from '../../../services/apiService'
 import * as XLSX from "xlsx";
 import {
   Table,
@@ -37,9 +38,12 @@ const DayWise = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const colorMode = useContext(ColorModeContext);
-  const { data = [] } = useContext(AppContext);
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const { data = [] ,   page, setPage,rowsPerPage, setRowsPerPage,siteId,
+      serialNumber,
+      startDate, 
+      endDate,totalRecords} = useContext(AppContext);
+  // const [page, setPage] = React.useState(0);
+  // const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("dayWiseDate");
   const [pageType, setPageType] = useState(0);
@@ -55,21 +59,11 @@ const DayWise = () => {
   };
 
   const handleDownloadExcel = () => {
-    const workbook = XLSX.utils.book_new();
-    const excelData = displayedData.map((row) => {
-      return Object.keys(row).map((key) => {
-        return row[key] !== undefined && row[key] !== null ? row[key] : "No Data";
-      });
-    });
-    const headers = Object.keys(formattedData[0]).map((key) => columnMappings[key] || key);
-    excelData.unshift(headers);
-    const worksheet = XLSX.utils.aoa_to_sheet(excelData);
-    XLSX.utils.book_append_sheet(workbook, worksheet, "DayWise Data");
-    XLSX.writeFile(workbook, "DayWise_Data.xlsx");
+    downloadDayWiseBatteryandChargerdetails(siteId,serialNumber,formatDate(startDate),formatDate(endDate))
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+    setRowsPerPage(parseInt(event.target.value, 10)); 
     setPage(0);
   };
 
@@ -115,17 +109,17 @@ const DayWise = () => {
     return formattedData;
   };
 
-  const sortedData = (data) => {
-    return [...data].sort((a, b) => {
-      if (order === "asc") {
-        return a[orderBy] > b[orderBy] ? 1 : -1;
-      }
-      return a[orderBy] < b[orderBy] ? 1 : -1;
-    });
-  };
+  // const sortedData = (data) => {
+  //   return [...data].sort((a, b) => {
+  //     if (order === "asc") {
+  //       return a[orderBy] > b[orderBy] ? 1 : -1;
+  //     }
+  //     return a[orderBy] < b[orderBy] ? 1 : -1;
+  //   });
+  // };
 
   const formattedData = formatData(data);
-  const displayedData = sortedData(formattedData);
+  //const displayedData = sortedData(formattedData);
 
   return (
     <div>
@@ -197,8 +191,8 @@ const DayWise = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {displayedData
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  {formattedData
+                    //.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row, index) => (
                       <TableRow
                         key={index}
@@ -226,10 +220,10 @@ const DayWise = () => {
             </TableContainer>
 
             {/* Pagination */}
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 15]}
+           <TablePagination
+              rowsPerPageOptions={[5, 100, 200,300,500]}
               component="div"
-              count={formattedData.length}
+              count={totalRecords}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}

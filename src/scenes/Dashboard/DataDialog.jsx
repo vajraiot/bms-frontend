@@ -635,10 +635,14 @@ const DataDialog = ({
                   break;
                   case "Cell Comm Fail":
                     if (detail.cellNotComm !== undefined && Array.isArray(detail.cellNotComm)) {
-                        // Format the cellNotComm array into a readable string
                         const formattedValue = detail.cellNotComm
-                            .map(cell => `Cell ${cell.cellNumber}: ${cell.cellVoltage}V`)
-                            .join(", ");
+                        .map(cell => {
+                          const voltage = (typeof cell.cellVoltage === 'number' && !isNaN(cell.cellVoltage)) 
+                            ?'N/A'
+                            : 'N/A';
+                          return `Cell ${cell.cellNumber}: ${voltage}`;
+                        })
+                        .join(", ");
                 
                         return {
                             siteId: detail.siteId,

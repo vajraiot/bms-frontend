@@ -1,23 +1,18 @@
 import React,{useContext,useMemo } from "react";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import CancelIcon from "@mui/icons-material/Cancel";
 import {Grid,Tooltip,useTheme,Box,Typography,Grid, Card, CardContent} from "@mui/material";
-import {tokens} from "../theme"
-import PowerIcon from "@mui/icons-material/Power"; 
 import { AlertTriangle, BatteryFull ,Power,BatteryLow,BatteryMedium ,CirclePower,Activity} from 'lucide-react';
-import fuse from '.././enums/electronic-fuse.png'
-import { ChargerTrip, StringCurrent, ACVoltage, DCVoltage, Buzzer,BatteryStringIcon,AnimatedFuseIcon,ACVoltageIcon,DCVoltageIcon,ChargerLoadIcon, StringCommunicationIcon } from '.././enums/ThresholdValues'
+import { ChargerTrip, StringCurrent, ACVoltage, DCVoltage, Buzzer,BatteryStringIcon,AnimatedFuseIcon,ACVoltageIcon,DCVoltageIcon,ACVoltagered, StringCommunicationIcon } from '.././enums/ThresholdValues'
 import trip from '.././assets/images/png/fuse-box.png'
 import InputMains from '.././assets/images/InputMains.png';
 import chargerloadO from '.././assets/images/ChargerLoadO.png';
 import chargerload from '.././assets/images/ChargerLoadN.png';
 import InputPhase from '.././assets/images/InputPhase.png';
 import InputPhaseF from '.././assets/images/inputphaseF.png';
-
 import mccb from '.././assets/images/png/circuit-breaker.png'
 import acNV from '.././assets/images/png/ac-voltage.png'
-import acLV from '.././assets/images/png/ac-voltage-source.png'
-import acHV from '.././assets/images/png/air.png'
+import commun from '.././assets/images/png/cellCommun.png'
+import batteryLow from '.././assets/images/png/low-charge.png'
+import batteryN from '.././assets/images/png/batteryN.png'
 import {
   Box,
   Paper,
@@ -52,36 +47,24 @@ const Alerts = () => {
   const { bmsAlarmsDTO } = device;
   const chargerDTO = charger[0]?.chargerDTO || {};
   const combinedData = { ...bmsAlarmsDTO, ...chargerDTO };
-  console.log("bmsAlarmsDTO:", bmsAlarmsDTO);
-  console.log("chargerDTO:", chargerDTO);
   const detailsMap = {
-    bankDischargeCycle: "Battery status",
+    bankDischargeCycle: "Battery",
     dcVoltageOLN: "DC Voltage",
-    bmsSedCommunicationFD: "String Commun",
+    cellCommunication: "Cell Commun",
     batteryCondition: "Battery Condition",
     chargerLoad: "Charger Load",
     inputMains: "Input Mains",
     inputPhase:"Input phase",
     acVoltageULN: "AC Voltage",
     chargerTrip: "Charger Trip",
-    
-    buzzer: "Buzzer",
-    rectifierFuse: "Rectifier fuse",
-   
-    
-    filterFuse: "Filter Fuse",
-   
-  
-    outputFuse: "Output Fuse",
-   
-    
-
-    inputFuse: "Input Fuse",
-    alarmSupplyFuse: "Alarm Fuse",
     outputMccb: "Output Mccb",
+    inputFuse: "Input Fuse",
+    rectifierFuse: "Rectifier fuse",
+    filterFuse: "Filter Fuse",
+    outputFuse: "Output Fuse",
+    alarmSupplyFuse: "Alarm Fuse",
+    buzzer: "Buzzer",
     resetPushButton: "Reset Button",
-
-
   };
 
   const getSeverityFromBit = (bit, key) => {
@@ -89,11 +72,11 @@ const Alerts = () => {
     if (key === "acVoltageULN") {
         switch (bit) {
             case 0:
-                return { status: "Low", severity: "low", IconComponent:()=> <ACVoltageIcon size={25} color="orange" strokeWidth={1.5}  /> };
+                return { status: "Low", severity: "low", IconComponent:()=> <ACVoltagered size={20}/> };
             case 1:
-                return { status: "Normal", severity: "medium", IconComponent: ()=> <ACVoltageIcon size={25} color="rgb(50, 149, 56)" strokeWidth={1.5} />};
+                return { status: "", severity: "medium", IconComponent: ()=> <ACVoltageIcon size={20}/>};
             case 2:
-                return { status: "High", severity: "high", IconComponent: ()=> <ACVoltageIcon size={25} color="rgb(183, 28, 28)" strokeWidth={1.5}  />};
+                return { status: "over", severity: "high", IconComponent: ()=> <ACVoltagered size={20}/>};
             default:
                 return { status: "Unknown", severity: "medium", IconComponent: ()=> <img src={acNV} style={{width:23}}></img> };
         }
@@ -102,9 +85,9 @@ const Alerts = () => {
     // For other keys (cellVoltageLHN and dcVoltageOLN), use the original logic
     switch (bit) {
       case 0:
-        return { status: "Low", severity: "low", IconComponent: () => <DCVoltageIcon size={30} isActive={true} state="low" /> };
+        return { status: "Low", severity: "low", IconComponent: () => <DCVoltageIcon size={30} isActive={true} state="over" /> };
       case 1:
-        return { status: "Normal", severity: "medium", IconComponent: () => <DCVoltageIcon size={30} isActive={true} state="normal" /> };
+        return { status: "", severity: "medium", IconComponent: () => <DCVoltageIcon size={30} isActive={true} state="normal" /> };
       case 2:
         return { status: "High", severity: "high", IconComponent: () => <DCVoltageIcon size={30} isActive={true} state="over" /> };
       default:
@@ -121,14 +104,14 @@ const Alerts = () => {
         status = combinedData[key] ? "" : "";
         severity = combinedData[key] ? "high" : "medium";
       } else {
-        status = combinedData[key] ? "" : "";
+        status = combinedData[key] ? "fail" : "";
         severity = combinedData[key] ? "high" : "medium";
       }
       if (key === "chargerTrip") {
         IconComponent =()=> <img src={trip} alt="" style={{width:30}}/>;
       }
       else if (key === "inputMains"||key === "inputPhase" ) {
-        IconComponent = () =><img src={InputMains} alt="" style={{width:25}} />
+        IconComponent = () =><img src={acNV} style={{width:23}}></img>
       }
        else if (key === "resetPushButton") {
         IconComponent =CirclePower;
@@ -139,12 +122,6 @@ const Alerts = () => {
       
       } else if (key === "outputMccb") {
         IconComponent = () => <img src={mccb} alt="" style={{width:30}} />;
-      }
-
-      if (key === "inputMains"||key === "inputPhase" ) {
-        IconComponent = () =>
-          combinedData[key]?<img src={InputMains} alt="" style={{width:"20px",height:"30px"}} />:<img src={InputMains} alt="" style={{width:"20px",height:"30px"}} />
-         
       } 
  
       if (severity === "high") {
@@ -156,11 +133,13 @@ const Alerts = () => {
     } 
       if (key === "bankDischargeCycle") {
         IconComponent = combinedData[key] ? DischargingV : ChargingV ;
-        severity =combinedData[key] ? "medium":"medium"
+        severity =combinedData[key] ? "high":"medium"
+        status = combinedData[key] ? "discharging" : "charging";
       } 
       if (key === "batteryCondition") {
-        IconComponent = ()=>combinedData[key]? <DCVoltageIcon size={50} isActive={true} state="low" />:<DCVoltageIcon size={30} isActive={true} state="normal" />;
+        IconComponent = ()=>combinedData[key]? <img src={batteryLow} style={{width:30}}></img>:<img src={batteryN} style={{width:30}}></img>;
         severity =combinedData[key] ? "low":"medium"
+        status = combinedData[key] ? "" : "";
       }
       // Fuse icons
       if (
@@ -177,9 +156,8 @@ const Alerts = () => {
             <AnimatedFuseIcon size={14} color="rgb(50, 149, 56)" strokeWidth={1.5} isBroken={false} />
           );
       }
-      if (key === "bmsSedCommunicationFD") {
-        IconComponent =()=> combinedData[key]?<BatteryStringIcon size={25} isActive={false} 
-        strokeWidth={1.5}  />:<BatteryStringIcon size={18} isActive={true} strokeWidth={1.5}  />
+      if (key === "cellCommunication") {
+        IconComponent =()=> combinedData[key]? <AlertTriangle size={20} style={{ color: "#B71C1C" }} />:<img src={commun} style={{width:30}}></img> 
         }
 
         if (key === "chargerLoad" ) {
@@ -207,7 +185,7 @@ const Alerts = () => {
       case "medium":
         return { backgroundColor: "rgb(27, 94, 32)", color: "#ffff" };
       case "low":
-        return { backgroundColor: "orange", color: "#ffff" };
+        return { backgroundColor: "rgb(183, 28, 28)", color: "#ffff" };
       default:
         return { backgroundColor: "#ECEFF1", color: "#455A64" };
     }
@@ -220,7 +198,7 @@ const Alerts = () => {
       case "medium":
         return { backgroundColor: "#ffff", color: "rgb(27, 94, 32)" };
       case "low":
-        return { backgroundColor: "ffff", color: "#orange" };
+        return { backgroundColor: "ffff", color: "rgb(183, 28, 28)" };
       default:
         return { backgroundColor: "#ECEFF1", color: "#455A64" };
     }
@@ -253,7 +231,7 @@ const Alerts = () => {
         style={{
           border: "1px solid #ccc",
           borderRadius: 8,
-          transition: "transform 0.3s ease",
+          transition: "transform 0.1s ease",
           boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
           cursor: "pointer",
           minWidth: 100,
@@ -315,7 +293,7 @@ const Alerts = () => {
               wordBreak: "break-word",
             }}
           >
-            {alert.details}
+            {alert.details}{" "}{alert.status}
           </Typography>
         </Box>
       </Card>

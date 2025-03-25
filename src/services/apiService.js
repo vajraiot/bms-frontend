@@ -67,41 +67,115 @@ export const fetchDeviceDetails = async (siteId, serialNumber) => {
     throw error;
   }
 };
-export const fetchHistoricalBatteryandChargerdetails = async (
-  serialNumber,
-  siteId,
-  strStartDate,
-  strEndDate,
-  page,
-  rowsPerPage
-) => {
-  try {
-    const response = await apiClient.get(
-      `/getHistoricalStringDataBySiteidAndSerialNumberBetweenDateswithPg?siteId=${siteId}&serialNumber=${serialNumber}&strStartDate=${strStartDate}&strEndDate=${strEndDate}&page=${page}&size=${rowsPerPage}`
+export const fetchHistoricalBatteryandChargerdetails =async (serialNumber,siteId,strStartDate,strEndDate,page,size)=>{
+  try{
+    const response =await apiClient.get(
+      `${BASE_URL}/getHistoricalStringDataBySiteidAndSerialNumberBetweenDateswithPg?page=${page}&size=${size}&sort=serverTime,desc&siteId=${siteId}&serialNumber=${serialNumber}
+                                                                          &strStartDate=${strStartDate}&strEndDate=${strEndDate}`
     );
     return response.data;
-  } catch (error) {
-    console.error("Error fetching Historical String details:", error);
+  }
+  catch(error){
+    console.error("Error fetching Historical String details",error);
     throw error;
   }
-};
 
-export const fetchDaywiseBatteryandChargerdetails = async (
-  serialNumber,
-  siteId,
-  strStartDate,
-  strEndDate
-) => {
-  try {
-    const response = await apiClient.get(
-      `/getDaywiseReports?siteId=${siteId}&serialNumber=${serialNumber}&strStartDate=${strStartDate}&strEndDate=${strEndDate}`
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching Daywise String details:", error);
-    throw error;
   }
-};
+  export const downloadHistoricalBatteryandChargerdetails=async(siteId,serialNumber,strStartDate,strEndDate)=>{
+   
+    try {
+      // Construct the query parameters
+      const params = {
+          siteId,
+          serialNumber,
+          strStartDate,
+          strEndDate,
+      };
+
+      // Make a GET request to the backend endpoint using Axios
+      const response = await apiClient.get(`${BASE_URL}/downloadHistoricalStringReport`, {
+          params, // Pass query parameters
+          responseType: 'blob', // Ensure the response is treated as a Blob (binary data)
+      });
+
+      // Create a temporary URL for the Blob
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+
+      // Create a temporary anchor element to trigger the download
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `HistoricalStringReport_${siteId}_${serialNumber}.xls`; // Set the file name
+      document.body.appendChild(a); // Append the anchor to the DOM
+      a.click(); // Programmatically click the anchor to trigger the download
+
+      // Clean up
+      window.URL.revokeObjectURL(url); // Release the object URL
+      document.body.removeChild(a); // Remove the anchor from the DOM
+  } catch (error) {
+      console.error('Error downloading the Excel file:', error);
+  }
+
+    }
+  export const downloadDayWiseBatteryandChargerdetails=async(siteId,serialNumber,strStartDate,strEndDate)=>{
+  
+    try {
+      // Construct the query parameters
+      const params = {
+          siteId,
+          serialNumber,
+          strStartDate,
+          strEndDate,
+      };
+
+      // Make a GET request to the backend endpoint using Axios
+      const response = await apiClient.get(`${BASE_URL}/downloadDaywiseReports`, {
+          params, // Pass query parameters
+          responseType: 'blob', // Ensure the response is treated as a Blob (binary data)
+      });
+
+      // Create a temporary URL for the Blob
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+
+      // Create a temporary anchor element to trigger the download
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `DayWiseReport_${siteId}.xls`; // Set the file name
+      document.body.appendChild(a); // Append the anchor to the DOM
+      a.click(); // Programmatically click the anchor to trigger the download
+
+      // Clean up
+      window.URL.revokeObjectURL(url); // Release the object URL
+      document.body.removeChild(a); // Remove the anchor from the DOM
+  } catch (error) {
+      console.error('Error downloading the Excel file:', error);
+  }
+
+    }
+
+  export const fetchDaywiseBatteryandChargerdetails =async (serialNumber,siteId,strStartDate,strEndDate,page,size)=>{
+    try{
+      const response =await apiClient.get(
+        `${BASE_URL}/getDaywiseReports?siteId=${siteId}&serialNumber=${serialNumber}
+                                                                            &strStartDate=${strStartDate}&strEndDate=${strEndDate}&page=${page}&size=${size}`
+      );
+      return response.data;
+    }
+    catch(error){
+      console.error("Error fetching Daywise String details",error);
+      throw error;
+    }
+     
+  }
+  export const fetchCycleData=async(siteId,serialNumber,date)=>{
+    try{
+      const response = await apiClient.get(`${BASE_URL}/getDaywiseCycleReports?siteId=${siteId}&serialNumber=${serialNumber}&date=${date}`);
+      return response.data;
+    }
+    catch(error){
+      console.error("Error fetching Daywise String details",error);
+      throw error;
+    }
+  }
 
 export const fetchAlarmsBatteryandChargerdetails = async (
   serialNumber,
@@ -306,17 +380,7 @@ export const fetchMapByArea = async (area) => {
     throw error;
   }
 };
-export const last7daysTickets = async (currentPage,rowsPerPage) => {
-  try {
-    const response = await apiClient.get(
-      `${BASE_URL}/latest7days?page=${currentPage}&size=${rowsPerPage}`
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error in fetching ticket details: ", error);
-    throw error;
-  }
-};
+
 export const fetchUserDetails = async () => {
   try {
     const response = await apiClient.get(`${BASE_URL}/GetAllLoginDetailsInPlainLoginDetailFormate`);
@@ -355,3 +419,29 @@ export const UpdateUser = async (userData) => {
     throw error;
   }
 };
+
+export const Updatesite = async () => {
+  try {
+    const response = await apiClient.put(`${BASE_URL}/api/updateSiteLocationToSiteId`, combinedData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating user:', error);
+    throw error;
+  }
+};
+
+
+
+
+
+export const getCoordinates = async (siteId) => {
+  try {
+    const response = await apiClient.get(`${BASE_URL}/api/getCoordinates`, {
+      params: { siteId, marginMinutes: 15 },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch coordinates:', error);
+    throw error;
+  }
+}
