@@ -1,3 +1,4 @@
+// src/components/PieChartComponent2.js
 import React, { useState, useContext } from 'react';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { formatToTime } from "../../services/AppContext";
@@ -8,9 +9,10 @@ import {
 } from '@mui/material';
 import { AppContext } from "../../services/AppContext";
 import { useNavigate } from "react-router-dom";
+import { fetchCommunicationStatus } from '../../services/apiService';
 
 const PieChartComponent2 = ({ data1, handlePieClickCommu }) => {
-  const { setSiteId, setSerialNumber, handleSearch } = useContext(AppContext);
+  const { setSiteId, setSerialNumber, handleSearch ,marginMinutes} = useContext(AppContext);
   const [clickedSection, setClickedSection] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [tableData, setTableData] = useState([]);
@@ -22,7 +24,6 @@ const PieChartComponent2 = ({ data1, handlePieClickCommu }) => {
   const CHART_SIZE = 220;
   const OUTER_RADIUS = 80;
   const INNER_RADIUS = 25;
-  const API_URL = "http://122.175.45.16:51270/getCommnStatus?marginMinutes=15";
   const TITLE_GRADIENT = 'linear-gradient(90deg, rgb(0, 212, 255) 0%, rgb(9, 9, 121) 35%, rgb(0, 212, 255) 100%)';
   const HEADER_GRADIENT = 'linear-gradient(to bottom, #d82b27, #f09819)';
   const BUTTON_COLOR = 'rgb(216, 43, 39)';
@@ -43,17 +44,6 @@ const PieChartComponent2 = ({ data1, handlePieClickCommu }) => {
     textAlign: 'center'
   };
 
-  // Fetch communication status
-  const fetchCommunicationStatus = async () => {
-    try {
-      const response = await fetch(API_URL);
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching communication status:", error);
-      return [];
-    }
-  };
-
   // Pagination handlers
   const handleChangePage = (event, newPage) => setPage(newPage);
   const handleChangeRowsPerPage = (event) => {
@@ -67,7 +57,7 @@ const PieChartComponent2 = ({ data1, handlePieClickCommu }) => {
     setIsDialogOpen(true);
 
     try {
-      const response = await fetchCommunicationStatus();
+      const response = await fetchCommunicationStatus(marginMinutes);
       const filteredData = response
         .filter(item => data.name === 'Communicating' ? item.statusType === 1 : item.statusType === 0)
         .map(item => ({

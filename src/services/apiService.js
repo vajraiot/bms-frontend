@@ -430,7 +430,15 @@ export const Updatesite = async () => {
   }
 };
 
-
+export const fetchCellVT = async (siteId,serialNumber,cellNumber,startDateTime,endDateTime) => {
+  try {
+    const response = await apiClient.get(`${BASE_URL}/getSpecificCellDataBySiteIdAndSerialNumberBetweenDates?siteId=${siteId}&serialNumber=${serialNumber}&cellNumber=${cellNumber}&strStartDate=${encodeURIComponent(startDateTime)}&strEndDate=${encodeURIComponent(endDateTime)}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating user:', error);
+    throw error;
+  }
+}
 export const downloadCellVTDetails=async(siteId,serialNumber,cellNumber,strStartDate,strEndDate)=>{
   
   try {

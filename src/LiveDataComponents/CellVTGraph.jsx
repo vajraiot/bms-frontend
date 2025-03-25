@@ -11,29 +11,8 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { Box, Paper, Typography, Stack, IconButton,useTheme } from "@mui/material";
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import CloseIcon from "@mui/icons-material/Close";
-import {downloadCellVTDetails} from "../services/apiService"
-// import "./CellVTGraph.css";
-const BASE_URL = "http://localhost:51270";
+import {downloadCellVTDetails,fetchCellVT} from "../services/apiService"
 
-const apiClient = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-// Add JWT token to every request via interceptor
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-import { tokens } from '../theme';
 const CellVTGraph = ({ site, serial, cellNumber, open, onClose }) => {
   const theme = useTheme();
   const [startDate, setStartDate] = useState(new Date());
@@ -86,7 +65,7 @@ const CellVTGraph = ({ site, serial, cellNumber, open, onClose }) => {
     }
   }, [startDate, open]);
 
-  const fetchCellData = (date) => {
+  const fetchCellData = async(date) => {
     if (typeof date === "string") {
       date = new Date(date);
     }
@@ -99,30 +78,14 @@ const CellVTGraph = ({ site, serial, cellNumber, open, onClose }) => {
     const startDateTime = `${formattedDate} 00:00:00`;
     const endDateTime = `${formattedDate} 23:59:59`;
 
-    const apiUrl = `${BASE_URL}/getSpecificCellDataBySiteIdAndSerialNumberBetweenDates?siteId=${cellInfo.siteId}&serialNumber=${cellInfo.serialNumber}&cellNumber=${cellInfo.cellNumber}&strStartDate=${encodeURIComponent(
-      startDateTime
-    )}&strEndDate=${encodeURIComponent(endDateTime)}`;
-
-    fetch(apiUrl)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("API Data:", data); // Debug: Log API data
-        setCellData(data);
-        generateCharts(
-          data.filter(
-            (cell) =>
-              cell.cellVoltage !== 65.535 && cell.cellTemperature !== 65535
-          )
-        );
-      })
-      .catch((error) => {
-        console.error("Error fetching cell data:", error);
-      });
+    const data = await fetchCellVT(cellInfo.siteId,cellInfo.serialNumber,cellInfo.cellNumber,startDateTime,endDateTime)
+    setCellData(data);
+    generateCharts(
+      data.filter(
+        (cell) =>
+          cell.cellVoltage !== 65.535 && cell.cellTemperature !== 65535
+      )
+    );
   };
 
   const manipulateDateTime = (dateString) => {
@@ -388,172 +351,3 @@ const CellVTGraph = ({ site, serial, cellNumber, open, onClose }) => {
 
 export default CellVTGraph;
 
-// import React, { useState, useEffect } from "react";
-// import { Box, Stack, Paper, Typography, TextField, IconButton } from "@mui/material";
-// import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-// import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-// import FileDownloadIcon from "@mui/icons-material/FileDownload";
-// import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-
-// const CellVTGraph = ({ site, serial, cellNumber }) => {
-//   const [startDate, setStartDate] = useState(new Date());
-//   const [cellData, setCellData] = useState([]);
-//   const [cellInfo, setCellInfo] = useState({
-//     siteId: site,
-//     serialNumber: serial,
-//     cellNumber: cellNumber,
-//   });
-
-//   // Fetch cell data on start date change
-//   useEffect(() => {
-//     const formattedDate = startDate.toISOString().slice(0, 10);
-//     fetchCellData(formattedDate);
-//   }, [startDate]);
-
-//   const fetchCellData = (date) => {
-//     if (typeof date === "string") {
-//       date = new Date(date);
-//     }
-
-//     if (!(date instanceof Date) || isNaN(date)) {
-//       console.error("Invalid date:", date);
-//       return;
-//     }
-
-//     const formattedDate = date.toISOString().slice(0, 10);
-//     const startDateTime = `${formattedDate} 00:00:00`;
-//     const endDateTime = `${formattedDate} 23:59:59`;
-
-//     const apiUrl = `http://122.175.45.16:51270/getSpecificCellDataBySiteIdAndSerialNumberBetweenDates?siteId=${cellInfo.siteId}&serialNumber=${cellInfo.serialNumber}&cellNumber=${cellInfo.cellNumber}&strStartDate=${encodeURIComponent(
-//       startDateTime
-//     )}&strEndDate=${encodeURIComponent(endDateTime)}`;
-
-//     fetch(apiUrl)
-//       .then((response) => {
-//         if (!response.ok) {
-//           throw new Error(`HTTP error! Status: ${response.status}`);
-//         }
-//         return response.json();
-//       })
-//       .then((data) => {
-//         setCellData(data.filter((cell) => cell.cellVoltage !== 65.535 && cell.cellTemperature !== 65535));
-//       })
-//       .catch((error) => {
-//         console.error("Error fetching cell data:", error);
-//       });
-//   };
-
-//   // Format data for Recharts
-//   const formatChartData = (data) => {
-//     return data.map((item) => ({
-//       datetime: new Date(item.packetDateTime).toLocaleString(),
-//       voltage: item.cellVoltage,
-//       temperature: item.cellTemperature,
-//     }));
-//   };
-
-//   // Download cell data as Excel
-//   const downloadExcel = () => {
-//     const startDateTime = `${startDate.toISOString().slice(0, 10)} 00:00:00`;
-//     const endDateTime = `${startDate.toISOString().slice(0, 10)} 23:59:59`;
-
-//     const url = `http://122.175.45.16:51470/downloadCellDataReport?siteId=${cellInfo.siteId}&serialNumber=${cellInfo.serialNumber}&cellNumber=${cellInfo.cellNumber}&strStartDate=${startDateTime}&strEndDate=${endDateTime}`;
-
-//     const anchor = document.createElement("a");
-//     anchor.href = url;
-//     anchor.download = `CellData_${cellInfo.cellNumber}_${startDate.toISOString().slice(0, 10)}.xlsx`;
-//     document.body.appendChild(anchor);
-//     anchor.click();
-//     document.body.removeChild(anchor);
-//   };
-
-//   return (
-//     <Box
-//       sx={{
-//         p: "13px",
-//         display: "flex",
-//         flexDirection: "column",
-//         alignItems: "center",
-//         justifyContent: "center",
-//         width: "70%",
-//         maxWidth: "1200px",
-//         backgroundColor: "white",
-//         borderRadius: "10px",
-//       }}
-//     >
-//       {/* Date Picker and Download Button Row */}
-//       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2, width: "100%", justifyContent: "space-between" }}>
-//         {/* Start Date Picker */}
-//         <Box sx={{ flex: 1 }}>
-//           <LocalizationProvider dateAdapter={AdapterDateFns}>
-//             <DatePicker
-//               label="Start Date"
-//               value={startDate}
-//               onChange={(date) => setStartDate(date)}
-//               renderInput={(params) => <TextField {...params} sx={{ width: 200 }} />}
-//             />
-//           </LocalizationProvider>
-//         </Box>
-
-//         {/* Cell Number Text */}
-//         <Box sx={{ flex: 1, textAlign: "center" }}>
-//           <Typography variant="h6" sx={{ color: "black" }}>
-//             {`Cell Number: ${cellInfo.cellNumber}`}
-//           </Typography>
-//         </Box>
-
-//         {/* Download Button */}
-//         <Box sx={{ flex: 1, textAlign: "right", paddingRight: 10 }}>
-//           <IconButton onClick={downloadExcel} aria-label="Download Excel" sx={{ padding: 1, color: "black" }}>
-//             <FileDownloadIcon fontSize="large" />
-//           </IconButton>
-//         </Box>
-//       </Stack>
-
-//       {/* Card Container for Charts */}
-//       <Paper sx={{ width: "100%", height: "500px", borderRadius: "10px", border: "1px solid #444", overflowY: "auto" }}>
-//         <Box sx={{ display: "flex", flexDirection: "column", gap: 4, padding: 3 }}>
-//           {/* Voltage Chart */}
-//           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-//             <ResponsiveContainer width="100%" height={300}>
-//               <LineChart data={formatChartData(cellData)}>
-//                 <CartesianGrid strokeDasharray="3 3" />
-//                 <XAxis
-//                 dataKey="datetime"
-//                 angle={-45} // Rotate labels by -45 degrees
-//                 dy={10} // Adjust vertical position of labels
-//                 tick={{ fontSize: 10 }} // Adjust font size if needed
-//                 />
-//                 <YAxis label={{ value: "Voltage (V)", angle: -90, position: "insideLeft" }} />
-//                 <Tooltip />
-//                 <Legend />
-//                 <Line type="monotone" dataKey="voltage" stroke="#8884d8" />
-//               </LineChart>
-//             </ResponsiveContainer>
-//           </Box>
-
-//           {/* Temperature Chart */}
-//           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-//             <ResponsiveContainer width="100%" height={300}>
-//               <LineChart data={formatChartData(cellData)}>
-//                 <CartesianGrid strokeDasharray="3 3" />
-//                 <XAxis
-//                   dataKey="datetime"
-//                   angle={-45} // Rotate labels by -45 degrees
-//                   dy={10} // Adjust vertical position of labels
-//                   tick={{ fontSize: 10 }} // Adjust font size if needed
-//                 />
-//                 <YAxis label={{ value: "Temperature (°C)", angle: -90, position: "insideLeft" }} />
-//                 <Tooltip />
-//                 <Legend />
-//                 <Line type="monotone" dataKey="temperature" stroke="#82ca9d" />
-//               </LineChart>
-//             </ResponsiveContainer>
-//           </Box>
-//         </Box>
-//       </Paper>
-//     </Box>
-//   );
-// };
-
-// export default CellVTGraph;
