@@ -431,7 +431,42 @@ export const Updatesite = async () => {
 };
 
 
+export const downloadCellVTDetails=async(siteId,serialNumber,cellNumber,strStartDate,strEndDate)=>{
+  
+  try {
+    // Construct the query parameters
+    const params = {
+        siteId,
+        serialNumber,
+        cellNumber,
+        strStartDate,
+        strEndDate,
+    };
 
+    // Make a GET request to the backend endpoint using Axios
+    const response = await apiClient.get(`${BASE_URL}/downloadCellDataReport`, {
+        params, // Pass query parameters
+        responseType: 'blob', // Ensure the response is treated as a Blob (binary data)
+    });
+
+    // Create a temporary URL for the Blob
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+
+    // Create a temporary anchor element to trigger the download
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Cell${cellNumber}_VT.xls`; // Set the file name
+    document.body.appendChild(a); // Append the anchor to the DOM
+    a.click(); // Programmatically click the anchor to trigger the download
+
+    // Clean up
+    window.URL.revokeObjectURL(url); // Release the object URL
+    document.body.removeChild(a); // Remove the anchor from the DOM
+} catch (error) {
+    console.error('Error downloading the Excel file:', error);
+}
+
+  }
 
 
 export const getCoordinates = async (siteId) => {

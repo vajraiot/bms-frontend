@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts";
 import DatePicker from "react-datepicker";
+import axios from "axios";
 //import "react-datepicker/dist/react-datepicker.css";
 import { Dialog, DialogContent } from "@mui/material";
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -10,8 +11,28 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { Box, Paper, Typography, Stack, IconButton,useTheme } from "@mui/material";
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import CloseIcon from "@mui/icons-material/Close";
-import {convertOwlDatetimeToCustomDate} from "../services/AppContext"
+import {downloadCellVTDetails} from "../services/apiService"
 // import "./CellVTGraph.css";
+const BASE_URL = "http://localhost:51270";
+
+const apiClient = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Add JWT token to every request via interceptor
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 import { tokens } from '../theme';
 const CellVTGraph = ({ site, serial, cellNumber, open, onClose }) => {
   const theme = useTheme();
@@ -78,7 +99,7 @@ const CellVTGraph = ({ site, serial, cellNumber, open, onClose }) => {
     const startDateTime = `${formattedDate} 00:00:00`;
     const endDateTime = `${formattedDate} 23:59:59`;
 
-    const apiUrl = `http://122.175.45.16:51270/getSpecificCellDataBySiteIdAndSerialNumberBetweenDates?siteId=${cellInfo.siteId}&serialNumber=${cellInfo.serialNumber}&cellNumber=${cellInfo.cellNumber}&strStartDate=${encodeURIComponent(
+    const apiUrl = `${BASE_URL}/getSpecificCellDataBySiteIdAndSerialNumberBetweenDates?siteId=${cellInfo.siteId}&serialNumber=${cellInfo.serialNumber}&cellNumber=${cellInfo.cellNumber}&strStartDate=${encodeURIComponent(
       startDateTime
     )}&strEndDate=${encodeURIComponent(endDateTime)}`;
 
@@ -206,17 +227,7 @@ const CellVTGraph = ({ site, serial, cellNumber, open, onClose }) => {
   const downloadExcel = () => {
     const startDateTime = `${startDate.toISOString().slice(0, 10)} 00:00:00`;
     const endDateTime = `${startDate.toISOString().slice(0, 10)} 23:59:59`;
-
-    const url = `http://122.175.45.16:51270/downloadCellDataReport?siteId=${cellInfo.siteId}&serialNumber=${cellInfo.serialNumber}&cellNumber=${cellInfo.cellNumber}&strStartDate=${startDateTime}&strEndDate=${endDateTime}`;
-
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `CellData_${cellInfo.cellNumber}_${startDate
-      .toISOString()
-      .slice(0, 10)}.xlsx`;
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
+    downloadCellVTDetails(cellInfo.siteId,cellInfo.serialNumber,cellInfo.cellNumber,startDateTime,endDateTime)
   };
   
 
