@@ -210,7 +210,7 @@ const Historical = () => {
               </TableHead>
               <TableBody>
                 {sortedData
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                //  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => (
                     <TableRow
                       key={index}
@@ -243,9 +243,9 @@ const Historical = () => {
           </TableContainer>
 
           <TablePagination
-            rowsPerPageOptions={[5, 100, 200, 300, 500]}
+            rowsPerPageOptions={[5, 100, 200,300,500]}
             component="div"
-            count={totalRecords || sortedData.length}
+            count={totalRecords}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

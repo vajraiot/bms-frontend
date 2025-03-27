@@ -6,6 +6,7 @@ import ReportsBar from "../ReportsBar/ReportsBar";
 import ChargingGraph from "./ChargingGraph";
 import AhGraph from "./AhGraph";
 import { formatToTime } from "../../../services/AppContext";
+import GridOnIcon from '@mui/icons-material/GridOn';
 import { downloadDayWiseBatteryandChargerdetails } from '../../../services/apiService';
 import {
   Table,
@@ -35,7 +36,7 @@ const columnMappings = {
 const DayWise = () => {
   const theme = useTheme();
   const { 
-    data = [] ,  
+    data = [],  
     page, 
     setPage, 
     setRowsPerPage, 
@@ -125,6 +126,9 @@ const DayWise = () => {
     );
   };
 
+  // Check if all required search parameters are present
+  const isDownloadDisabled = !siteId || !serialNumber || !startDate || !endDate || loadingReport;
+
   return (
     <div>
       <div style={{ 
@@ -138,7 +142,7 @@ const DayWise = () => {
           onClick={handleDownloadExcel} 
           color="primary" 
           aria-label="Download Excel"
-          disabled={loadingReport}
+          disabled={isDownloadDisabled}
         >
           <img src={excelIcon} alt="Download Excel" style={{ width: "24px", height: "24px" }} />
         </IconButton>
@@ -217,7 +221,7 @@ const DayWise = () => {
                   </TableHead>
                   <TableBody>
                     {sortedData
-                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                      // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                       .map((row, index) => (
                         <TableRow
                           key={index}
@@ -243,7 +247,7 @@ const DayWise = () => {
               </TableContainer>
 
               <TablePagination
-                rowsPerPageOptions={[50, 100, 500, 1000, 2000]}
+                rowsPerPageOptions={[5, 10, 20, 30]}
                 component="div"
                 count={totalRecords || sortedData.length}
                 rowsPerPage={rowsPerPage}

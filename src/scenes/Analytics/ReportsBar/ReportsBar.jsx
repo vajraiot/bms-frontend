@@ -3,6 +3,7 @@ import { AppContext } from "../../../services/AppContext";
 import {
   Box,
   IconButton,
+  Typography,
   TextField,
   Autocomplete,
   useTheme,
@@ -11,7 +12,8 @@ import SearchIcon from "@mui/icons-material/Search";
 
 const ReportsBar = ({ pageType }) => {
   const theme = useTheme();
-
+  
+  const [errors, setErrors] = useState({ startDate: false, endDate: false });
   const {
     siteOptions,
     serialNumberOptions,
@@ -25,9 +27,10 @@ const ReportsBar = ({ pageType }) => {
     setEndDate,
     handleAnalytics,
     loadingReport,
-    errors,
     page,
-    rowsPerPage,setData
+    rowsPerPage,
+    setData,
+ 
   } = useContext(AppContext);
 
   // Reset search fields when pageType changes
@@ -36,8 +39,16 @@ const ReportsBar = ({ pageType }) => {
     setSerialNumber(""); // Reset Serial Number
     setStartDate(""); // Reset Start Date
     setEndDate("");
-    setData([]);
+    setData({});
   }, [pageType]);
+
+  const clearOptions = () => {
+    setSiteId(""); // Reset Site ID
+    setSerialNumber(""); // Reset Serial Number
+    setStartDate(""); // Reset Start Date
+    setEndDate("");
+    setData([]);
+  };
 
   useEffect(() => {
     if (siteId && serialNumber && startDate && endDate) {
@@ -68,6 +79,13 @@ const ReportsBar = ({ pageType }) => {
           options={siteOptions.map((site) => site.siteId)}
           value={siteId}
           onChange={(event, newValue) => setSiteId(newValue)}
+          filterOptions={(options, { inputValue }) => {
+            if (!inputValue) return [];
+            const lowerInput = inputValue.toLowerCase();
+            return options.filter((option) =>
+              option.toLowerCase().startsWith(lowerInput)
+            );
+          }}
           renderOption={(props, option) =>
             renderHighlightedOption(props, option, siteId)
           }
@@ -131,64 +149,75 @@ const ReportsBar = ({ pageType }) => {
 
         {/* Start Date */}
         <TextField
-          label="Start Date"
-          type="date"
-          value={startDate?.split("%")[0] || ""}
-          onChange={(e) => {
-            const updatedDate = e.target.value + "%2000:00:00";
-            setStartDate(updatedDate);
-          }}
-          fullWidth
-          error={errors.startDate}
-          helperText={errors.startDate ? "Please select Start Date" : ""}
-          sx={{
-            width: 200,
-            "& .MuiInputBase-root": {
-              fontWeight: "bold",
-              height: "35px",
-              marginTop: "5px",
-            },
-            "& .MuiInputLabel-root": {
-              fontWeight: "bold",
-            },
-          }}
-          InputLabelProps={{
-            shrink: true,
-          }}
-        />
+                  label="Start Date"
+                  type="date"
+                  value={startDate?.split('%')[0] || ''}
+                  onChange={(e) => {
+                    const updatedDate = e.target.value + '%2000:00:00';
+                    setStartDate(updatedDate);
+                    setErrors((prev) => ({ ...prev, startDate: false }));
+                  }}
+                  fullWidth
+                  error={errors.startDate}
+                  helperText={errors.startDate ? 'Please select Start Date' : ''}
+                  sx={{
+                    width: 200,
+                    '& .MuiInputBase-root': {
+                      fontWeight: 'bold',
+                      height: '35px',
+                      marginTop: '5px',
+                    },
+                    '& .MuiInputLabel-root': { fontWeight: 'bold' },
+                  }}
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{
+                    max: endDate?.split('%')[0] || undefined
+                  }}
+                />
+                <TextField
+                  label="End Date"
+                  type="date"
+                  value={endDate?.split('%')[0] || ''}
+                  onChange={(e) => {
+                    const updatedDate = e.target.value + '%2023:59:59';
+                    setEndDate(updatedDate);
+                    setErrors((prev) => ({ ...prev, endDate: false }));
+                  }}
+                  fullWidth
+                  error={errors.endDate}
+                  helperText={errors.endDate ? 'Please select End Date' : ''}
+                  sx={{
+                    width: 200,
+                    '& .MuiInputBase-root': {
+                      fontWeight: 'bold',
+                      height: '35px',
+                      marginTop: '5px',
+                    },
+                    '& .MuiInputLabel-root': { fontWeight: 'bold' },
+                  }}
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{
+                    min: startDate?.split('%')[0] || undefined
+                  }}
+                />
 
-        {/* End Date */}
-        <TextField
-          label="End Date"
-          type="date"
-          value={endDate?.split("%")[0] || ""}
-          onChange={(e) => setEndDate(e.target.value + "%2023:59:59")}
-          fullWidth
-          error={errors.endDate}
-          helperText={errors.endDate ? "Please select End Date" : ""}
-          sx={{
-            width: 200,
-            "& .MuiInputBase-root": {
-              fontWeight: "bold",
-              height: "35px",
-              marginTop: "5px",
-            },
-            "& .MuiInputLabel-root": {
-              fontWeight: "bold",
-            },
-          }}
-          InputLabelProps={{
-            shrink: true,
-          }}
-        />
+        {/* Search and Clear Buttons */}
+        <Box display="flex" gap={1} alignItems="center">
+          {/* Search Button */}
+          <IconButton
+            onClick={() => handleAnalytics(pageType)}
+            disabled={loadingReport}
+          >
+            <SearchIcon />
+          </IconButton>
 
-        {/* Search Button */}
-        <IconButton
-          onClick={() => handleAnalytics(pageType)}
-          disabled={loadingReport}
-        >
-          <SearchIcon />
-        </IconButton>
+          {/* Clear Button */}
+          <Box onClick={clearOptions} sx={{ cursor: "pointer" }}>
+            <Typography variant="body1" sx={{ fontSize: 15 }}>
+              ❌
+            </Typography>
+          </Box>
+        </Box>
       </Box>
     </Box>
   );
