@@ -25,12 +25,18 @@ export default function ChargingGraph({ data }) {
     const date = new Date(item.dayWiseDate);
     const month = date.toLocaleString("default", { month: "short" });
     const day = date.getDate();
+
+    const formatToTwoDecimals = (value) =>
+      value !== null && value !== undefined
+        ? parseFloat(value).toFixed(2)
+        : "-";
+
     return {
       date: `${month} ${day}`,
-      totalChargingEnergy: item.totalChargingEnergy,
-      totalDischargingEnergy: item.totalDischargingEnergy,
-      cumulativeTotalAvgTemp: item.cumulativeTotalAvgTemp,
-      totalSoc: item.totalSoc,
+      totalChargingEnergy: formatToTwoDecimals(item.totalChargingEnergy),
+      totalDischargingEnergy: formatToTwoDecimals(item.totalDischargingEnergy),
+      cumulativeTotalAvgTemp: formatToTwoDecimals(item.cumulativeTotalAvgTemp),
+      totalSoc: formatToTwoDecimals(item.totalSoc),
       originalDate: item.dayWiseDate, // Store original date for filtering cycle
     };
   });
@@ -40,6 +46,10 @@ export default function ChargingGraph({ data }) {
     setCycle([]);
     setSelectedCycleData([]);
     const clickedDate = barData.originalDate;
+    const formatToTwoDecimals = (value) =>
+      value !== null && value !== undefined
+        ? parseFloat(value).toFixed(2)
+        : "-";
     const cycleData = await fetchCycleData(siteId, serialNumber, formatDate(clickedDate));
     
     // Filter cycle data for the same date (ignoring time)
@@ -56,9 +66,9 @@ export default function ChargingGraph({ data }) {
       })
       .map((item) => ({
         cycleId: `Cycle-${item.id + 1}`, // Unique X-axis key
-        totalChargingEnergy: item.totalChargingEnergy,
-        totalDischargingEnergy: item.totalDischargingEnergy,
-        cumulativeTotalAvgTemp: item.cumulativeTotalAvgTemp,
+        totalChargingEnergy: formatToTwoDecimals(item.totalChargingEnergy),
+        totalDischargingEnergy:formatToTwoDecimals(item.totalDischargingEnergy),
+        cumulativeTotalAvgTemp: formatToTwoDecimals(item.cumulativeTotalAvgTemp),
         totalSoc: item.totalSoc,
       }));
 
@@ -69,6 +79,24 @@ export default function ChargingGraph({ data }) {
   // Close dialog
   const handleClose = () => {
     setOpen(false);
+  };
+
+  // Custom tooltip for bars
+  const CustomBarTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="custom-tooltip" style={{
+          backgroundColor: '#fff',
+          padding: '10px',
+          border: '1px solid #ccc',
+          borderRadius: '4px',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          <p style={{ margin: 0, color: '#666' }}>Click here to view cycles for this date</p>
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
@@ -134,8 +162,9 @@ export default function ChargingGraph({ data }) {
               dataKey="totalChargingEnergy"
               position="top"
               fill="#000"
-              formatter={(value) => value.toFixed(2)}
+              // formatter={(value) => value.toFixed(2)}
             />
+            <Tooltip content={<CustomBarTooltip />} />
           </Bar>
           <Bar
             yAxisId="left"
@@ -149,8 +178,9 @@ export default function ChargingGraph({ data }) {
               dataKey="totalDischargingEnergy"
               position="top"
               fill="#000"
-              formatter={(value) => value.toFixed(2)}
+              // formatter={(value) => value.toFixed(2)}
             />
+            <Tooltip content={<CustomBarTooltip />} />
           </Bar>
           <Line
             yAxisId="right"
@@ -226,7 +256,7 @@ export default function ChargingGraph({ data }) {
                   dataKey="totalChargingEnergy"
                   position="top"
                   fill="#000"
-                  formatter={(value) => value.toFixed(2)}
+                  // formatter={(value) => value.toFixed(2)}
                 />
               </Bar>
               <Bar
@@ -240,7 +270,7 @@ export default function ChargingGraph({ data }) {
                   dataKey="totalDischargingEnergy"
                   position="top"
                   fill="#000"
-                  formatter={(value) => value.toFixed(2)}
+                  // formatter={(value) => value.toFixed(2)}
                 />
               </Bar>
               <Line

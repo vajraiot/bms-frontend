@@ -23,7 +23,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
-const BASE_URL = "http://localhost:51270";
+const BASE_URL = "http://122.175.45.16:51270";
 
 const apiClient = axios.create({
   baseURL: BASE_URL,

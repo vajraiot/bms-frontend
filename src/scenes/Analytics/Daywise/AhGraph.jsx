@@ -28,12 +28,16 @@ export default function AHGraph({ data }) {
     const date = new Date(item.dayWiseDate);
     const month = date.toLocaleString("default", { month: "short" });
     const day = date.getDate();
+    const formatToTwoDecimals = (value) =>
+      value !== null && value !== undefined
+        ? parseFloat(value).toFixed(2)
+        : "-";
     return {
       date: `${month} ${day}`,
-      cumulativeAHIn: item.cumulativeAHIn,
-      cumulativeAHOut: item.cumulativeAHOut,
-      cumulativeTotalAvgTemp: item.cumulativeTotalAvgTemp,
-      totalSoc: item.totalSoc,
+      cumulativeAHIn: formatToTwoDecimals(item.cumulativeAHIn),
+      cumulativeAHOut: formatToTwoDecimals(item.cumulativeAHOut),
+      cumulativeTotalAvgTemp: formatToTwoDecimals(item.cumulativeTotalAvgTemp),
+      totalSoc: formatToTwoDecimals(item.totalSoc),
       originalDate: item.dayWiseDate, // Store original date for filtering cycle
     };
   });
@@ -43,6 +47,10 @@ export default function AHGraph({ data }) {
     setCycle([])
     setSelectedCycleData([]);
     const clickedDate = barData.originalDate;
+    const formatToTwoDecimals = (value) =>
+      value !== null && value !== undefined
+        ? parseFloat(value).toFixed(2)
+        : "-";
     const cycle= await fetchCycleData(siteId,serialNumber,formatDate(clickedDate))
     // Filter cycle data for the same date (ignoring time)
     setCycle(cycle);
@@ -58,10 +66,10 @@ export default function AHGraph({ data }) {
       })
       .map((item) => ({
         cycleId: `Cycle-${item.id + 1}`, // Unique X-axis key
-        cumulativeAHIn: item.cumulativeAHIn,
-        cumulativeAHOut: item.cumulativeAHOut,
-        cumulativeTotalAvgTemp: item.cumulativeTotalAvgTemp,
-        totalSoc: item.totalSoc,
+        cumulativeAHIn: formatToTwoDecimals(item.cumulativeAHIn),
+        cumulativeAHOut: formatToTwoDecimals(item.cumulativeAHOut),
+        cumulativeTotalAvgTemp: formatToTwoDecimals(item.cumulativeTotalAvgTemp),
+        totalSoc: formatToTwoDecimals(item.totalSoc),
       }));
 
     setSelectedCycleData(sameDateCycleData);
@@ -120,7 +128,7 @@ export default function AHGraph({ data }) {
               dataKey="cumulativeAHIn"
               position="top"
               fill="#000"
-              formatter={(value) => value.toFixed(2)}
+          
             />
           </Bar>
           <Bar
@@ -135,7 +143,7 @@ export default function AHGraph({ data }) {
               dataKey="cumulativeAHOut"
               position="top"
               fill="#000"
-              formatter={(value) => value.toFixed(2)}
+          
             />
           </Bar>
           <Line
@@ -212,7 +220,7 @@ export default function AHGraph({ data }) {
                   dataKey="cumulativeAHIn"
                   position="top"
                   fill="#000"
-                  formatter={(value) => value.toFixed(2)}
+                 
                 />
               </Bar>
               <Bar
@@ -226,7 +234,7 @@ export default function AHGraph({ data }) {
                   dataKey="cumulativeAHOut"
                   position="top"
                   fill="#000"
-                  formatter={(value) => value.toFixed(2)}
+                  
                 />
               </Bar>
               <Line

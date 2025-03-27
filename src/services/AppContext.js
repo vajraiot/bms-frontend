@@ -147,14 +147,16 @@ export const AppProvider = ({ children }) => {
             siteId,
             startDate,
             endDate
+            ,page,rowsPerPage
           );
+          setTotalRecords(result.page.totalElements)
           break;
 
         default:
           throw new Error("Invalid page type");
       }
 
-      setData(result.content); // Update report data
+      setData(result); // Update report data
      
     } catch (error) {
       console.error("Error during search:", error);

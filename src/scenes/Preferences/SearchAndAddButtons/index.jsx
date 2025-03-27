@@ -112,20 +112,17 @@ const SearchAndAddButtons = ({
     <>
       <Grid container alignItems="center" spacing={2} justifyContent="flex-center">
         <Grid item xs={12} sm={6} md={6} display="flex" alignItems="center" gap={2}>
-          <Autocomplete
+        <Autocomplete
             disablePortal
             freeSolo
             options={siteOptions.map((site) => site.siteId)}
             value={siteId}
             onChange={(event, newValue) => setSiteId(newValue)}
             filterOptions={(options, { inputValue }) => {
-              if (!inputValue) return [];
-              if (/^[a-zA-Z]$/.test(inputValue)) return options;
-              if (/^\d$/.test(inputValue)) {
-                return options.filter((option) => option.includes(inputValue));
-              }
+              if (!inputValue) return []; // Return empty array if no input
+              const lowerInput = inputValue.toLowerCase();
               return options.filter((option) =>
-                option.toLowerCase().includes(inputValue.toLowerCase())
+                option.toLowerCase().startsWith(lowerInput)
               );
             }}
             renderInput={(params) => (

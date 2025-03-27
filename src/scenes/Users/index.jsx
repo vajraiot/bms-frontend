@@ -14,8 +14,16 @@ import {
   TablePagination,
   MenuItem,
   IconButton,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  InputAdornment,
 } from "@mui/material";
-import { fetchLoginRoles,fetchUserDetails ,UpdateUser,deleteUser,PostUser} from "../../services/apiService.js";
+import { fetchLoginRoles, fetchUserDetails, UpdateUser, deleteUser, PostUser } from "../../services/apiService.js";
 import { useTheme } from "@mui/material/styles";
 import {
   AdminPanelSettingsOutlined as AdminIcon,
@@ -23,31 +31,45 @@ import {
   LockOpenOutlined as UserIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  Phone as PhoneIcon,
 } from "@mui/icons-material";
-
-import axios from "axios";
-
 
 const Team = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
   const [open, setOpen] = useState(false);
-  const [selectedRow, setSelectedRow] = useState(null); // Track the selected row for editing
+  const [selectedRow, setSelectedRow] = useState(null);
   const [userData, setUserData] = useState([]);
   const [roles, setRoles] = useState([]);
   const [formData, setFormData] = useState({
     uname: "",
     email: "",
     phone: "",
+    countryCode: "+1", // Default country code
     role: "",
     password: "",
   });
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [userError, setUserError] = useState("");
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userIdToDelete, setUserIdToDelete] = useState(null);
 
-  // Fetch roles and user data on component mount
+  // Country codes list (you can expand this as needed)
+  const countryCodes = [
+    { code: "+1", label: "US (+1)" },
+    { code: "+91", label: "India (+91)" },
+    { code: "+44", label: "UK (+44)" },
+    { code: "+33", label: "France (+33)" },
+    { code: "+81", label: "Japan (+81)" },
+  ];
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -64,31 +86,32 @@ const Team = () => {
     fetchData();
   }, []);
 
-  // Pagination handlers
   const handleChangePage = (event, newPage) => setPage(newPage);
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
 
-  // Open modal for add/edit
   const handleOpen = (mode, row = null) => {
     if (mode === "edit" && row) {
-      setSelectedRow(row); // Set the selectedRow state
+      setSelectedRow(row);
+      const [code, number] = row.mobile.match(/(\+\d{1,3})(\d+)/)?.slice(1) || ["+1", row.mobile];
       setFormData({
         loginCredentialsId: row.loginCredentialsId,
         uname: row.userName,
         email: row.email,
-        phone: row.mobile,
+        phone: number || row.mobile,
+        countryCode: code || "+1",
         role: row.role,
         password: row.password,
       });
     } else {
-      setSelectedRow(null); // Reset selectedRow for "add" mode
+      setSelectedRow(null);
       setFormData({
         uname: "",
         email: "",
         phone: "",
+        countryCode: "+1",
         role: "",
         password: "",
       });
@@ -96,23 +119,41 @@ const Team = () => {
     setOpen(true);
   };
 
-  // Close modal
   const handleClose = () => {
     setOpen(false);
     setSelectedRow(null);
     setUserError("");
   };
 
-  // Handle form submission
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const validateForm = () => {
+    const phoneRegex = /^\d{10}$/;
+    const emailRegex = /^[^\s@]+@gmail\.com$/; // Fixed regex
+
+    if (!formData.uname) return "Username is required.";
+    if (!isEditing && !formData.password) return "Password is required.";
+    if (!formData.email) return "Email is required.";
+    if (!emailRegex.test(formData.email)) return "Email must end with @gmail.com.";
+    if (!formData.phone) return "Phone number is required.";
+    if (!phoneRegex.test(formData.phone)) return "Phone number must be exactly 10 digits.";
+    if (!formData.role) return "Role is required.";
+    return "";
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
+    const isEditing = !!selectedRow;
 
-    // Validation
-    if (!formData.uname || !formData.password || !formData.email || !formData.phone || !formData.role) {
-      setUserError("All fields are required.");
+    const validationError = validateForm();
+    if (validationError) {
+      setUserError(validationError);
       return;
     }
 
+    const fullPhoneNumber = `${formData.countryCode}${formData.phone}`;
     const data = {
       role: formData.role,
       lstLoginCredentials: [
@@ -120,7 +161,7 @@ const Team = () => {
           ...(selectedRow && { id: formData.loginCredentialsId }),
           userName: formData.uname,
           password: formData.password,
-          mobile: formData.phone,
+          mobile: fullPhoneNumber,
           email: formData.email,
           accessPermissions: {
             dashBoard: true,
@@ -131,42 +172,60 @@ const Team = () => {
     };
 
     try {
-      const response = selectedRow
-        ? await UpdateUser(data) // Pass data to UpdateUser
-        : await PostUser(data); // Pass data to PostUser
+      const response = selectedRow ? await UpdateUser(data) : await PostUser(data);
 
       if (response.value === 0) {
         setUserError(response.message);
+        setSnackbar({ open: true, message: response.message, severity: "error" });
       } else {
-        fetchUserData(); // Refresh the user data
-        handleClose(); // Close the modal
+        fetchUserData();
+        handleClose();
+        setSnackbar({
+          open: true,
+          message: selectedRow ? "User updated successfully!" : "User added successfully!",
+          severity: "success",
+        });
       }
     } catch (error) {
-      setUserError(error.response?.data?.message || "Error submitting user data");
+      const errorMessage = error.response?.data?.message || "Error submitting user data";
+      setUserError(errorMessage);
+      setSnackbar({ open: true, message: errorMessage, severity: "error" });
     }
   };
 
-  // Handle user deletion
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
-      try {
-        await deleteUser(id);
-        fetchUserData();
-      } catch (error) {
-        console.error("Error deleting user:", error);
-      }
+  const handleDeleteClick = (id) => {
+    setUserIdToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteDialogClose = () => {
+    setDeleteDialogOpen(false);
+    setUserIdToDelete(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await deleteUser(userIdToDelete);
+      fetchUserData();
+      setSnackbar({ open: true, message: "User deleted successfully!", severity: "success" });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      setSnackbar({ open: true, message: "Error deleting user", severity: "error" });
+    } finally {
+      handleDeleteDialogClose();
     }
   };
 
-  // Fetch user data
   const fetchUserData = async () => {
     try {
       const response = await fetchUserDetails();
-      setUserData(response); // Directly set the response to userData
+      setUserData(response);
     } catch (error) {
       console.error("Error fetching user data:", error);
     }
   };
+
+  const isEditing = !!selectedRow;
 
   return (
     <Box m="15px">
@@ -181,7 +240,7 @@ const Team = () => {
       <UserTable
         userData={userData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
         handleOpen={handleOpen}
-        handleDelete={handleDelete}
+        handleDelete={handleDeleteClick}
         colors={colors}
       />
 
@@ -203,21 +262,54 @@ const Team = () => {
         handleSubmit={handleSubmit}
         roles={roles}
         userError={userError}
-        isEditing={!!selectedRow} // Pass whether selectedRow exists
+        isEditing={isEditing}
         colors={colors}
+        countryCodes={countryCodes}
       />
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: "100%" }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteDialogClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Confirm Deletion"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete this user? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteDialogClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteConfirm} color="error" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
 
-// Reusable UserTable component
 const UserTable = ({ userData, handleOpen, handleDelete, colors }) => (
   <Box m="30px 0 0 0" sx={{ border: "1px solid black", borderRadius: "6px", boxShadow: "0 4px 10px rgba(19, 17, 17, 0.5)" }}>
     <Table>
       <TableHead>
         <TableRow>
           {["User ID", "User Name", "Phone Number", "Email", "Access Level", "Actions"].map((header) => (
-            <TableCell key={header} sx={{ fontWeight: "bold", textAlign:"center",  background: "linear-gradient(to bottom, #d82b27, #f09819)", color: "#ffffff", padding: "12px" }}>
+            <TableCell key={header} sx={{ fontWeight: "bold", textAlign: "center", background: "linear-gradient(to bottom, #d82b27, #f09819)", color: "#ffffff", padding: "12px" }}>
               {header}
             </TableCell>
           ))}
@@ -226,11 +318,11 @@ const UserTable = ({ userData, handleOpen, handleDelete, colors }) => (
       <TableBody>
         {userData.map((row) => (
           <TableRow key={row.loginCredentialsId}>
-            <TableCell sx={{textAlign:"center",fontWeight: "bold"}} >{row.loginCredentialsId}</TableCell>
-            <TableCell sx={{textAlign:"center",fontWeight: "bold"}}>{row.userName}</TableCell>
-            <TableCell sx={{textAlign:"center",fontWeight: "bold"}}>{row.mobile}</TableCell>
-            <TableCell sx={{textAlign:"center",fontWeight: "bold"}}>{row.email}</TableCell>
-            <TableCell sx={{textAlign:"center",fontWeight: "bold"}}>
+            <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>{row.loginCredentialsId}</TableCell>
+            <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>{row.userName}</TableCell>
+            <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>{row.mobile}</TableCell>
+            <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>{row.email}</TableCell>
+            <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>
               <Box
                 display="flex"
                 justifyContent="center"
@@ -251,7 +343,7 @@ const UserTable = ({ userData, handleOpen, handleDelete, colors }) => (
                 </Typography>
               </Box>
             </TableCell>
-            <TableCell sx={{textAlign:"center",fontWeight: "bold"}}>
+            <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>
               <IconButton onClick={() => handleOpen("edit", row)}><EditIcon /></IconButton>
               <IconButton color="error" onClick={() => handleDelete(row.loginCredentialsId)}><DeleteIcon /></IconButton>
             </TableCell>
@@ -262,8 +354,7 @@ const UserTable = ({ userData, handleOpen, handleDelete, colors }) => (
   </Box>
 );
 
-// Reusable UserModal component
-const UserModal = ({ open, handleClose, formData, setFormData, handleSubmit, roles, userError, isEditing, colors }) => (
+const UserModal = ({ open, handleClose, formData, setFormData, handleSubmit, roles, userError, isEditing, colors, countryCodes }) => (
   <Modal open={open} onClose={handleClose}>
     <Box
       component="form"
@@ -285,22 +376,86 @@ const UserModal = ({ open, handleClose, formData, setFormData, handleSubmit, rol
         {isEditing ? "Edit User" : "Add User"}
       </Typography>
       {userError && <Typography color="error" sx={{ textAlign: "center" }}>{userError}</Typography>}
-      {["uname", "email", "phone"].map((field) => (
+      <TextField
+        required
+        margin="dense"
+        id="uname"
+        name="uname"
+        label="Username"
+        type="text"
+        fullWidth
+        variant="outlined"
+        value={formData.uname}
+        onChange={(e) => setFormData({ ...formData, uname: e.target.value })}
+        sx={{ marginBottom: "16px" }}
+      />
+      <TextField
+        required
+        margin="dense"
+        id="password"
+        name="password"
+        label="Password"
+        type="text"
+        fullWidth
+        variant="outlined"
+        value={formData.password}
+        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+        disabled={isEditing}
+        sx={{ marginBottom: "16px" }}
+      />
+      <TextField
+        required
+        margin="dense"
+        id="email"
+        name="email"
+        label="Email"
+        type="email"
+        fullWidth
+        variant="outlined"
+        value={formData.email}
+        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        sx={{ marginBottom: "16px" }}
+      />
+      <Box sx={{ display: "flex", gap: "10px", marginBottom: "16px" }}>
         <TextField
-          key={field}
+          select
           required
           margin="dense"
-          id={field}
-          name={field}
-          label={field.charAt(0).toUpperCase() + field.slice(1)}
+          id="countryCode"
+          name="countryCode"
+          label="Code"
+          value={formData.countryCode}
+          onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
+          variant="outlined"
+          sx={{ width: "120px" }}
+        >
+          {countryCodes.map((option) => (
+            <MenuItem key={option.code} value={option.code}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </TextField>
+        <TextField
+          required
+          margin="dense"
+          id="phone"
+          name="phone"
+          label="Phone Number"
           type="text"
           fullWidth
           variant="outlined"
-          value={formData[field]}
-          onChange={(e) => setFormData({ ...formData, [field]: e.target.value })}
-          sx={{ marginBottom: "16px" }}
+          value={formData.phone}
+          onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, "") })} // Allow only digits
+          inputProps={{ maxLength: 10 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <PhoneIcon />
+              </InputAdornment>
+            ),
+          }}
         />
-      ))}
+      </Box>
       <TextField
         select
         required

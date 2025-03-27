@@ -17,7 +17,7 @@ import EventOutlinedIcon from "@mui/icons-material/EventOutlined";
 
 import maha from "../../assets/images/MSEDCLlogo-removebg-preview.png"
 const rolesPermissions = {
-  SUPERADMIN: ['Dashboard', 'Live Data', 'Analytics', "RealTimeView","Alarm","DayWise","Monthly",'Issue Tracking', 'Site Details', 'Users'],
+  SUPERADMIN: ['Dashboard', 'Live Data', 'Analytics', "RealTimeView","Alarm","DayWise","Monthly",'Issue Tracking', 'Site Details', 'Users','PacketViewer'],
   ENGINEER: ['Dashboard', 'Live Data', 'Analytics',"RealTimeView","Alarm","DayWise","Monthly" ,'Issue Tracking'],
   SITE_ENGINEER: ['Dashboard', 'Live Data', 'Analytics',"RealTimeView","Alarm","DayWise","Monthly", 'Issue Tracking', 'Site Details'],
   USER: ['Dashboard', 'Live Data', 'Analytics',"RealTimeView","Alarm","DayWise","Monthly", 'Issue Tracking']
@@ -237,6 +237,14 @@ const Sidebar = () => {
               <Item
                 title="Users"
                 to="/users"
+                icon={<PeopleOutlinedIcon sx={{ fontSize: "20px" }} />}
+                selected={selected}
+                setSelected={setSelected}
+                role={userRole}
+              />
+               <Item
+                title="PacketViewer"
+                to="/packetviewer"
                 icon={<PeopleOutlinedIcon sx={{ fontSize: "20px" }} />}
                 selected={selected}
                 setSelected={setSelected}

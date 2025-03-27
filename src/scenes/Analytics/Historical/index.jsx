@@ -1,8 +1,7 @@
 import React, { useContext, useState } from "react";
-import { useTheme, IconButton,Box } from "@mui/material";
-import { AppContext,formatDate } from "../../../services/AppContext";
+import { useTheme, IconButton, CircularProgress, Box } from "@mui/material";
+import { AppContext, formatDate } from "../../../services/AppContext";
 import ReportsBar from "../ReportsBar/ReportsBar";
-import * as XLSX from "xlsx";
 import excelIcon from "../../../assets/images/png/ExcellTrans100_98.png";
 import {
   Table,
@@ -14,52 +13,60 @@ import {
   Paper,
   Typography,
   TablePagination,
-  TableSortLabel, CircularProgress,
+  TableSortLabel,
 } from "@mui/material";
-import { Box } from "lucide-react";
-import {downloadHistoricalBatteryandChargerdetails} from '../../../services/apiService'
+import { downloadHistoricalBatteryandChargerdetails } from '../../../services/apiService';
 
 const columnMappings = {
-  bmsManufacturerID: "BMS Manufacturer ID",
-  installationDate: "Installation Date",
-  cellsConnectedCount: "Connected Cells Count",
-  problemCells: "Problem Cells",
-  stringVoltage: "String Voltage (V)",
-  systemPeakCurrentInChargeOneCycle: "Peak Current",
-  averageDischargingCurrent: "Avg Discharging(A)",
-  averageChargingCurrent: "Avg Charging(A)",
-  ahInForOneChargeCycle: "Ah In for 1 Charge Cycle",
-  ahOutForOneDischargeCycle: "Ah Out for 1  Discharge Cycle",
-  cumulativeAHIn: "Cumulative Ah In",
-  cumulativeAHOut: "Cumulative Ah Out",
-  chargeTimeCycle: "Charge Time Cycle (s)",
-  dischargeTimeCycle: "Discharge Time Cycle (s)",
-  totalChargingEnergy: "Total Charging Energy (kWh)",
-  totalDischargingEnergy: "Total Discharging Energy (kWh)",
-  everyHourAvgTemp: "Every Hour Avg Temp (°C)",
-  cumulativeTotalAvgTempEveryHour: "Cumulative Avg Temp Every Hour (°C)",
-  chargeOrDischargeCycle: "Charge/Discharge Cycle Count",
-  socLatestValueForEveryCycle: "SOC Latest Value (%)",
-  dodLatestValueForEveryCycle: "DOD Latest Value (%)",
-  systemPeakCurrentInDischargeOneCycle: "System Peak Current (Discharge)",
-  instantaneousCurrent: "Instantaneous Current (A)",
-  ambientTemperature: "Ambient Temperature (°C)",
-  batteryRunHours: "Battery Run Hours (s)",
   serverTime: "Server Date Time",
   packetDateTime: "Packet Date Time",
-  bmsalarmsString: "BMS Alarms String",
+  cellsConnectedCount: "Connected Cells",
+  problemCells: "Problem Cells",
+  stringVoltage: "String Voltage (V)",
+  systemPeakCurrentInChargeOneCycle: "Peak Charge Current (A)",
+  averageDischargingCurrent: "Avg Discharge Current (A)",
+  averageChargingCurrent: "Avg Charge Current (A)",
+  ahInForOneChargeCycle: "Charge Capacity (Ah)",
+  ahOutForOneDischargeCycle: "Discharge Capacity (Ah)",
+  cumulativeAHIn: "Total Charge (Ah)",
+  cumulativeAHOut: "Total Discharge (Ah)",
+  chargeTimeCycle: "Charge Time (s)",
+  dischargeTimeCycle: "Discharge Time (s)",
+  totalChargingEnergy: "Charging Energy (kWh)",
+  totalDischargingEnergy: "Discharging Energy (kWh)",
+  everyHourAvgTemp: "Hourly Avg Temp (°C)",
+  cumulativeTotalAvgTempEveryHour: "Cumulative Avg Temp (°C)",
+  chargeOrDischargeCycle: "Cycle Count",
+  socLatestValueForEveryCycle: "SOC (%)",
+  dodLatestValueForEveryCycle: "DOD (%)",
+  systemPeakCurrentInDischargeOneCycle: "Peak Discharge Current (A)",
+  instantaneousCurrent: "Current (A)",
+  ambientTemperature: "Ambient Temp (°C)",
+  acVoltage: "AC Voltage (V)",
+  acCurrent: "AC Current (A)",
+  frequency: "Frequency (Hz)",
+  energy: "Energy (kWh)",
+  batteryRunHours: "Run Hours",
 };
 
 const Historical = () => {
   const theme = useTheme();
-  const { data = [] ,   page, setPage,rowsPerPage, setRowsPerPage,siteId,
+  const { 
+    data = {}, 
+    page, 
+    setPage, 
+    rowsPerPage, 
+    setRowsPerPage, 
+    siteId,
     serialNumber,
     startDate, 
-    endDate,totalRecords} = useContext(AppContext);
-  // const [rowsPerPage, setRowsPerPage] = React.useState(100);
-  const [order, setOrder] = React.useState("asc");
-  const [orderBy, setOrderBy] = React.useState("date");
-  const [pageType, setPageType] = useState(0);
+    endDate, 
+    totalRecords,
+    loadingReport // Using the loading state from your context
+  } = useContext(AppContext);
+  
+  const [order, setOrder] = useState("desc");
+  const [orderBy, setOrderBy] = useState("packetDateTime");
 
   const handleRequestSort = (property) => {
     const isAscending = orderBy === property && order === "asc";
@@ -67,27 +74,21 @@ const Historical = () => {
     setOrderBy(property);
   };
 
-  function TimeFormat(dateString) {
-    if (dateString == null) {
-      return "";
-    }
-    const utcDate = new Date(dateString);
-
-    const year = utcDate.getFullYear();
-    const month = String(utcDate.getMonth() + 1).padStart(2, '0');
-    const day = String(utcDate.getDate()).padStart(2, '0');
-    const hours = String(utcDate.getHours()).padStart(2, '0');
-    const minutes = String(utcDate.getMinutes()).padStart(2, '0');
-    const seconds = String(utcDate.getSeconds()).padStart(2, '0');
-    const milliseconds = String(utcDate.getMilliseconds()).padStart(3, '0');
-
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`;
-  }
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
+  const formatTimeStamp = (dateString) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleString("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false
+    });
   };
-  const formatToTime = (seconds) => {
+
+  const formatDuration = (seconds) => {
+    if (!seconds) return "00:00:00";
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
@@ -95,84 +96,81 @@ const Historical = () => {
       .toString()
       .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
+
+  const formatNumber = (value, decimals = 2) => {
+    if (value === null || value === undefined) return "N/A";
+    return Number(value).toFixed(decimals);
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0); // Reset to first page when rows per page changes
+    setPage(0);
   };
 
-  const dataArray = data;
+  const dataArray = Array.isArray(data.content) ? data.content : [data];
 
-  const combineAlarmsData = (dataArray) => {
-    if (!dataArray || dataArray.length === 0) return [];
-
-    const combinedData = {};
-
-    dataArray.forEach((current) => {
-      const { id, bmsalarmsString, deviceId, bmsManufacturerID, installationDate, cellsConnectedCount, problemCells, siteId, serialNumber, ...rest } = current;
-      if (!combinedData[current.id]) {
-        combinedData[current.id] = { ...rest };
-      } else {
-        combinedData[current.id] = { ...combinedData[current.id], ...rest };
-      }
-    });
-
-    const rows = Object.values(combinedData);
-
-    return rows.map((row) => {
-      const { packetDateTime, serverTime, ...rest } = row;
-      return { packetDateTime, serverTime, ...rest };
-    });
-  };
-
-  const sortedData = (dataArray) => {
+  const sortedData = React.useMemo(() => {
     return [...dataArray].sort((a, b) => {
+      const valueA = a[orderBy];
+      const valueB = b[orderBy];
+      
       if (order === "asc") {
-        return a[orderBy] > b[orderBy] ? 1 : -1;
+        return valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
       }
-      return a[orderBy] < b[orderBy] ? 1 : -1;
+      return valueA < valueB ? 1 : valueA > valueB ? -1 : 0;
     });
-  };
+  }, [dataArray, order, orderBy]);
 
-  const formattedData = combineAlarmsData(dataArray);
- // const displayedData = sortedData(formattedData);
-
-  // Get all unique keys from the data
-  const allKeys = formattedData.reduce((keys, row) => {
-    Object.keys(row).forEach((key) => {
-      if (!keys.includes(key)) {
-        keys.push(key);
-      }
-    });
-    return keys;
-  }, []);
-
-  // Reorder columns to place "serverTime" beside "packetDateTime"
-  const reorderedKeys = [...allKeys];
-  const packetDateTimeIndex = reorderedKeys.indexOf("packetDateTime");
-  const serverTimeIndex = reorderedKeys.indexOf("serverTime");
-
-  if (packetDateTimeIndex !== -1 && serverTimeIndex !== -1) {
-    // Remove "serverTime" from its current position
-    reorderedKeys.splice(serverTimeIndex, 1);
-    // Insert "serverTime" beside "packetDateTime"
-    reorderedKeys.splice(packetDateTimeIndex + 1, 0, "serverTime");
-  }
+  const displayedColumns = Object.keys(columnMappings);
 
   const handleDownloadExcel = () => {
-    downloadHistoricalBatteryandChargerdetails(siteId,serialNumber,formatDate(startDate),formatDate(endDate))
+    downloadHistoricalBatteryandChargerdetails(
+      siteId,
+      serialNumber,
+      formatDate(startDate),
+      formatDate(endDate)
+    );
   };
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "space-between", 
+        alignItems: "center", 
+        marginBottom: "10px" 
+      }}>
         <ReportsBar pageType="historical" />
-        <IconButton onClick={handleDownloadExcel} color="primary" aria-label="Download Excel">
+        <IconButton 
+          onClick={handleDownloadExcel} 
+          color="primary" 
+          aria-label="Download Excel"
+          disabled={loadingReport}
+        >
           <img src={excelIcon} alt="Download Excel" style={{ width: "24px", height: "24px" }} />
         </IconButton>
       </div>
 
-      {formattedData && formattedData.length > 0 ? (
-         <>
+      {loadingReport ? (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "379px",
+            flexDirection: "column",
+            gap: 2
+          }}
+        >
+          <CircularProgress />
+          <Typography variant="body1">Loading historical data...</Typography>
+        </Box>
+      ) : sortedData.length > 0 && Object.keys(data).length > 0 ? (
+        <>
           <TableContainer
             component={Paper}
             sx={{
@@ -180,77 +178,62 @@ const Historical = () => {
               overflowX: "auto",
               border: "1px solid black",
               borderRadius: "8px",
-              paddingBottom: 3,
-              height: '379px',
+              maxHeight: "379px",
             }}
           >
-            <Table stickyHeader aria-label="sticky table">
+            <Table stickyHeader aria-label="battery monitoring table">
               <TableHead>
                 <TableRow>
-                  {reorderedKeys.map((key) => (
+                  {displayedColumns.map((key) => (
                     <TableCell
                       key={key}
                       sx={{
                         fontWeight: "bold",
-                        background: "linear-gradient(to bottom, #d82b27, #f09819) !important",
+                        background: "linear-gradient(to bottom, #d82b27, #f09819)",
                         color: "#ffffff",
-                        padding: '3px',
+                        padding: "3px",
                         minWidth: "150px",
                         whiteSpace: "nowrap",
-                        textAlign:"center"
+                        textAlign: "center"
                       }}
                     >
                       <TableSortLabel
                         active={orderBy === key}
                         direction={orderBy === key ? order : "asc"}
                         onClick={() => handleRequestSort(key)}
-                        aria-label={`Sort by ${columnMappings[key] || key}`}
                       >
-                        {columnMappings[key] || key}
+                        {columnMappings[key]}
                       </TableSortLabel>
                     </TableCell>
                   ))}
                 </TableRow>
               </TableHead>
-
-              <TableBody sx={{ overflowY: 'auto' }}>
-                {formattedData
-                  //.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              <TableBody>
+                {sortedData
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => (
                     <TableRow
                       key={index}
-                      sx={{
-                        "&:hover": { backgroundColor: "#e1e2fe" },
-                      }}
+                      sx={{ "&:hover": { backgroundColor: "#e1e2fe" } }}
                     >
-                      {reorderedKeys.map((key) => (
+                      {displayedColumns.map((key) => (
                         <TableCell
                           key={key}
-                          sx={{ 
-                            border: '1px solid #ccc',
-                            padding: '3px',
-                            fontWeight: 'bold',
+                          sx={{
+                            border: "1px solid #ccc",
+                            padding: "3px",
+                            fontWeight: "bold",
                             whiteSpace: "nowrap",
-                            textAlign:"center"
+                            textAlign: "center"
                           }}
                         >
-                          {key === 'dcVoltageOLN'
-                            ? (row[key] === 0
-                                ? 'Low'
-                                : row[key] === 1
-                                ? 'Normal'
-                                : row[key] === 2
-                                ? 'Over'
-                                : row[key])
-                            : typeof row[key] === 'boolean'
-                            ? row[key]
-                              ? 'Fail'
-                              : 'Normal'
-                            : key === 'packetDateTime' || key === 'serverTime'
-                            ? TimeFormat(row[key])
-                            : row[key] !== undefined && row[key] !== null
-                            ? row[key]
-                            : 'No Data'}
+                          {key === "packetDateTime" || key === "serverTime"
+                            ? formatTimeStamp(row[key])
+                            : (key === "chargeTimeCycle" || 
+                               key === "dischargeTimeCycle" || 
+                               key === "batteryRunHours")
+                            ? formatDuration(row[key])
+                            : formatNumber(row[key])}
                         </TableCell>
                       ))}
                     </TableRow>
@@ -260,9 +243,9 @@ const Historical = () => {
           </TableContainer>
 
           <TablePagination
-            rowsPerPageOptions={[5, 100, 200,300,500]}
+            rowsPerPageOptions={[5, 100, 200, 300, 500]}
             component="div"
-            count={totalRecords}
+            count={totalRecords || sortedData.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -270,7 +253,7 @@ const Historical = () => {
           />
         </>
       ) : (
-        <Typography variant="body1" sx={{ marginTop: 2 }}>
+        <Typography variant="body1" sx={{ marginTop: 2, textAlign: "center" }}>
           No data available
         </Typography>
       )}

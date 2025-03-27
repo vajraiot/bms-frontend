@@ -13,6 +13,7 @@ import Historical from "./scenes/Analytics/Historical/index.jsx";
 import Alarms from "./scenes/Analytics/Alarms/index.jsx";
 import Daywise from "./scenes/Analytics/Daywise/index.jsx";
 import Monthly from "./scenes/Analytics/Monthly/index.jsx";
+import PacketViewer from "./scenes/PacketViewer/index.jsx";
 import SiteDetails from "./scenes/Preferences/SiteDetails/index.jsx";
 import IssueTracking from "./scenes/Issuetracking/index.jsx";
 import Users from "./scenes/Users/index.jsx";
@@ -65,6 +66,7 @@ function App() {
         { path: "/siteDetails", element: <SiteDetails /> },
         { path: "/issuetracking", element: <IssueTracking /> },
         { path: "/users", element: <Users /> },
+        { path: "/packetviewer", element: <PacketViewer /> },
       ],
     },
     {

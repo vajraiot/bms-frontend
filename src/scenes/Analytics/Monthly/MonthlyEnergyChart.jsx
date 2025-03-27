@@ -62,14 +62,15 @@ const MonthlyEnergyChart = ({ data = [] }) => {
                 offset: -5,
               }}
             />
-            <Tooltip
+             <Tooltip
               formatter={(value, name) => {
+                const formattedValue = parseFloat(value).toFixed(2); // Parse and fix to 2 decimal places
                 if (name === "Temperature") {
-                  return [`${value} °C`, "Temperature"];
+                  return [`${formattedValue} °C`, "Temperature"];
                 } else if (name === "SOC") {
-                  return [`${value} %`, "SOC"];
+                  return [`${formattedValue} %`, "SOC"];
                 } else {
-                  return [`${value} kWh`, name];
+                  return [`${formattedValue} AH`, name];
                 }
               }}
             />

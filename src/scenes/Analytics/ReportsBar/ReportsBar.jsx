@@ -7,11 +7,6 @@ import {
   Autocomplete,
   useTheme,
 } from "@mui/material";
-import {
-  fetchHistoricalBatteryandChargerdetails,
-  fetchDaywiseBatteryandChargerdetails,
-  fetchAlarmsBatteryandChargerdetails,
-} from "../../../services/apiService";
 import SearchIcon from "@mui/icons-material/Search";
 
 const ReportsBar = ({ pageType }) => {
@@ -22,19 +17,33 @@ const ReportsBar = ({ pageType }) => {
     serialNumberOptions,
     siteId,
     serialNumber,
-    startDate, 
+    startDate,
     endDate,
     setSiteId,
     setSerialNumber,
     setStartDate,
     setEndDate,
-    handleAnalytics,loadingReport,errors,page,rowsPerPage
+    handleAnalytics,
+    loadingReport,
+    errors,
+    page,
+    rowsPerPage,setData
   } = useContext(AppContext);
 
- useEffect(()=>{
-  if(siteId&&serialNumber&&startDate&&endDate)
-  handleAnalytics(pageType)
-},[page,rowsPerPage])
+  // Reset search fields when pageType changes
+  useEffect(() => {
+    setSiteId(""); // Reset Site ID
+    setSerialNumber(""); // Reset Serial Number
+    setStartDate(""); // Reset Start Date
+    setEndDate("");
+    setData([]);
+  }, [pageType]);
+
+  useEffect(() => {
+    if (siteId && serialNumber && startDate && endDate) {
+      handleAnalytics(pageType);
+    }
+  }, [page, rowsPerPage]);
 
   const renderHighlightedOption = (props, option, value) => (
     <li
@@ -174,7 +183,10 @@ const ReportsBar = ({ pageType }) => {
         />
 
         {/* Search Button */}
-        <IconButton onClick={() => handleAnalytics(pageType)} disabled={loadingReport}>
+        <IconButton
+          onClick={() => handleAnalytics(pageType)}
+          disabled={loadingReport}
+        >
           <SearchIcon />
         </IconButton>
       </Box>

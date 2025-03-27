@@ -80,12 +80,19 @@ const Topbar = ({ liveTime="", vendorName, locationName = "" }) => {
   
     {/* Search Options */}
     <Grid item xs="auto" sx={{ flexShrink: 0, minWidth: 160 }}>
-      <Autocomplete
+    <Autocomplete
         disablePortal
         disableClearable
         options={siteOptions.map((site) => site.siteId)}
         value={siteId}
         onChange={(event, newValue) => setSiteId(newValue)}
+        filterOptions={(options, { inputValue }) => {
+          if (!inputValue) return []; // Return empty array if no input
+          const lowerInput = inputValue.toLowerCase();
+          return options.filter((option) =>
+            option.toLowerCase().startsWith(lowerInput)
+          );
+        }}
         renderInput={(params) => (
           <TextField
             {...params}

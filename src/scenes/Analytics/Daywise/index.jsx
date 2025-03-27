@@ -1,14 +1,12 @@
 import React, { useContext, useState } from "react";
-import { useTheme, IconButton, Box } from "@mui/material";
-import { ColorModeContext, tokens } from "../../../theme";
-import { AppContext,formatDate } from "../../../services/AppContext";
+import { useTheme, IconButton, Box, CircularProgress } from "@mui/material";
+import { AppContext, formatDate } from "../../../services/AppContext";
 import excelIcon from "../../../assets/images/png/ExcellTrans100_98.png";
 import ReportsBar from "../ReportsBar/ReportsBar";
 import ChargingGraph from "./ChargingGraph";
 import AhGraph from "./AhGraph";
 import { formatToTime } from "../../../services/AppContext";
-import {downloadDayWiseBatteryandChargerdetails} from '../../../services/apiService'
-import * as XLSX from "xlsx";
+import { downloadDayWiseBatteryandChargerdetails } from '../../../services/apiService';
 import {
   Table,
   TableBody,
@@ -25,28 +23,33 @@ import {
 const columnMappings = {
   dayWiseDate: "Date",
   chargeOrDischargeCycle: "Charge/Discharge Cycle",
-  cumulativeAHIn: "Cumulative AH In",
-  cumulativeAHOut: "Cumulative AH Out",
-  totalChargingEnergy: "Total Charging Energy",
-  totalDischargingEnergy: "Total Discharging Energy",
+  cumulativeAHIn: "Cumulative AH In (AH)",
+  cumulativeAHOut: "Cumulative AH Out (AH)",
+  totalChargingEnergy: "Total Charging Energy (KWH)",
+  totalDischargingEnergy: "Total Discharging Energy (KWH)",
   batteryRunHours: "Battery Run Hours",
-  totalSoc:"SOC",
-  cumulativeTotalAvgTemp:"Temperature",
+  totalSoc: "SOC (%)",
+  cumulativeTotalAvgTemp: "Temperature(°C)",
 };
 
 const DayWise = () => {
   const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
-  const colorMode = useContext(ColorModeContext);
-  const { data = [] ,   page, setPage,rowsPerPage, setRowsPerPage,siteId,
-      serialNumber,
-      startDate, 
-      endDate,totalRecords} = useContext(AppContext);
-  // const [page, setPage] = React.useState(0);
-  // const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [order, setOrder] = React.useState("asc");
-  const [orderBy, setOrderBy] = React.useState("dayWiseDate");
-  const [pageType, setPageType] = useState(0);
+  const { 
+    data = [] ,  
+    page, 
+    setPage, 
+    setRowsPerPage, 
+    rowsPerPage,
+    siteId,
+    serialNumber,
+    startDate, 
+    endDate, 
+    totalRecords,
+    loadingReport 
+  } = useContext(AppContext);
+
+  const [order, setOrder] = useState("asc");
+  const [orderBy, setOrderBy] = useState("dayWiseDate");
 
   const handleRequestSort = (property) => {
     const isAscending = orderBy === property && order === "asc";
@@ -58,26 +61,21 @@ const DayWise = () => {
     setPage(newPage);
   };
 
-  const handleDownloadExcel = () => {
-    downloadDayWiseBatteryandChargerdetails(siteId,serialNumber,formatDate(startDate),formatDate(endDate))
-  };
-
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10)); 
+    setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
 
+  const formatNumber = (value, decimals = 2) => {
+    if (value === null || value === undefined) return "-";
+    return Number(value).toFixed(decimals);
+  };
+
   const formatData = (data) => {
-    if (!Array.isArray(data) || data.length === 0) return [];
+    const dataArray = Array.isArray(data) ? data : data.content || [];
+    if (!dataArray.length) return [];
 
-    
-
-    const formatToTwoDecimals = (value) =>
-      value !== null && value !== undefined
-        ? parseFloat(value).toFixed(2)
-        : "-";
-
-    const formattedData = data.map((row) => {
+    return dataArray.map((row) => {
       const {
         dayWiseDate,
         batteryRunHours,
@@ -95,143 +93,168 @@ const DayWise = () => {
       return {
         dayWiseDate: formattedDate,
         batteryRunHours: formatToTime(batteryRunHours || 0),
-        chargeOrDischargeCycle: chargeOrDischargeCycle,
-        cumulativeAHIn: formatToTwoDecimals(cumulativeAHIn),
-        cumulativeAHOut: formatToTwoDecimals(cumulativeAHOut),
-        totalChargingEnergy: formatToTwoDecimals(totalChargingEnergy),
-        totalDischargingEnergy: formatToTwoDecimals(totalDischargingEnergy),
-        totalSoc: totalSoc,
-        cumulativeTotalAvgTemp: formatToTwoDecimals(cumulativeTotalAvgTemp),
-
+        chargeOrDischargeCycle: chargeOrDischargeCycle || "-",
+        cumulativeAHIn: formatNumber(cumulativeAHIn),
+        cumulativeAHOut: formatNumber(cumulativeAHOut),
+        totalChargingEnergy: formatNumber(totalChargingEnergy),
+        totalDischargingEnergy: formatNumber(totalDischargingEnergy),
+        totalSoc: formatNumber(totalSoc),
+        cumulativeTotalAvgTemp: formatNumber(cumulativeTotalAvgTemp),
       };
     });
-
-    return formattedData;
   };
 
-  // const sortedData = (data) => {
-  //   return [...data].sort((a, b) => {
-  //     if (order === "asc") {
-  //       return a[orderBy] > b[orderBy] ? 1 : -1;
-  //     }
-  //     return a[orderBy] < b[orderBy] ? 1 : -1;
-  //   });
-  // };
+  const sortedData = React.useMemo(() => {
+    const formatted = formatData(data);
+    return [...formatted].sort((a, b) => {
+      const valueA = a[orderBy];
+      const valueB = b[orderBy];
+      if (order === "asc") {
+        return valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
+      }
+      return valueA < valueB ? 1 : valueA > valueB ? -1 : 0;
+    });
+  }, [data, order, orderBy]);
 
-  const formattedData = formatData(data);
-  //const displayedData = sortedData(formattedData);
+  const handleDownloadExcel = () => {
+    downloadDayWiseBatteryandChargerdetails(
+      siteId,
+      serialNumber,
+      formatDate(startDate),
+      formatDate(endDate)
+    );
+  };
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "space-between", 
+        alignItems: "center", 
+        marginBottom: "10px" 
+      }}>
         <ReportsBar pageType="daywise" />
-        <IconButton onClick={handleDownloadExcel} color="primary" aria-label="Download Excel">
+        <IconButton 
+          onClick={handleDownloadExcel} 
+          color="primary" 
+          aria-label="Download Excel"
+          disabled={loadingReport}
+        >
           <img src={excelIcon} alt="Download Excel" style={{ width: "24px", height: "24px" }} />
         </IconButton>
       </div>
 
-      {/* Scrollable Content */}
       <Box
         sx={{
-          height: "calc(100vh - 200px)", // Adjust height as needed
-          overflowY: "auto", // Enable vertical scrolling
+          height: "calc(100vh - 200px)",
+          overflowY: "auto",
           padding: "10px",
         }}
       >
-        {/* Graphs Section */}
-        <div style={{paddingBottom:"10px"}}>
-        <Box paddingBottom={2}>
-        <Paper elevation={10}  >
-          {formattedData && formattedData.length > 0 ? <AhGraph data={data}  /> : ""}
-          </Paper>
+        {loadingReport ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
+              flexDirection: "column",
+              gap: 2
+            }}
+          >
+            <CircularProgress />
+            <Typography variant="body1">Loading day-wise data...</Typography>
           </Box>
-          <Paper elevation={10} >
-          {formattedData && formattedData.length > 0 ? <ChargingGraph data={data}  /> : ""}
-          </Paper>
-        </div>
+        ) : sortedData.length > 0 ? (
+          <>
+            <div style={{ paddingBottom: "10px" }}>
+              <Box paddingBottom={2}>
+                <Paper elevation={10}>
+                  <AhGraph data={data.content || []} />
+                </Paper>
+              </Box>
+              <Paper elevation={10}>
+                <ChargingGraph data={data.content || []} />
+              </Paper>
+            </div>
 
-        {/* Table Section */}
-        {formattedData && formattedData.length > 0 ? (
-          <Box padding="0px 10px 0px 10px">
-            <TableContainer
-              component={Paper}
-              sx={{
-                marginTop: 1,
-                overflowX: "auto",
-                border: "1px solid black",
-                borderRadius: "8px",
-              }}
-            >
-              <Table stickyHeader aria-label="sticky table">
-                <TableHead>
-                  <TableRow>
-                    {Object.keys(formattedData[0]).map((key) => (
-                      <TableCell
-                        key={key}
-                        sx={{
-                          fontWeight: "bold",
-                          background: "linear-gradient(to bottom, #d82b27, #f09819) !important",
-                          color: "#ffffff",
-                          padding: '3px',
-                          minWidth: "150px",
-                          whiteSpace: "nowrap",
-                          textAlign:"center"
-                        }}
-                      >
-                        <TableSortLabel
-                          active={orderBy === key}
-                          direction={orderBy === key ? order : "asc"}
-                          onClick={() => handleRequestSort(key)}
-                          aria-label={`Sort by ${columnMappings[key] || key}`}
+            <Box padding="0px 10px 0px 10px">
+              <TableContainer
+                component={Paper}
+                sx={{
+                  marginTop: 1,
+                  overflowX: "auto",
+                  border: "1px solid black",
+                  borderRadius: "8px",
+                }}
+              >
+                <Table stickyHeader aria-label="daywise table">
+                  <TableHead>
+                    <TableRow>
+                      {Object.keys(columnMappings).map((key) => (
+                        <TableCell
+                          key={key}
+                          sx={{
+                            fontWeight: "bold",
+                            background: "linear-gradient(to bottom, #d82b27, #f09819)",
+                            color: "#ffffff",
+                            padding: "3px",
+                            minWidth: "150px",
+                            whiteSpace: "nowrap",
+                            textAlign: "center"
+                          }}
                         >
-                          {columnMappings[key] || key}
-                        </TableSortLabel>
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {formattedData
-                    //.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((row, index) => (
-                      <TableRow
-                        key={index}
-                        sx={{
-                          "&:hover": { backgroundColor: "#e1e2fe" },
-                        }}
-                      >
-                        {Object.values(row).map((value, idx) => (
-                          <TableCell
-                            key={idx}
-                            sx={{
-                              border: '1px solid #ccc',
-                              padding: '5px',
-                              fontWeight: 'bold',
-                              textAlign:"center"
-                            }}
+                          <TableSortLabel
+                            active={orderBy === key}
+                            direction={orderBy === key ? order : "asc"}
+                            onClick={() => handleRequestSort(key)}
                           >
-                            {value}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                            {columnMappings[key]}
+                          </TableSortLabel>
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {sortedData
+                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                      .map((row, index) => (
+                        <TableRow
+                          key={index}
+                          sx={{ "&:hover": { backgroundColor: "#e1e2fe" } }}
+                        >
+                          {Object.values(row).map((value, idx) => (
+                            <TableCell
+                              key={idx}
+                              sx={{
+                                border: "1px solid #ccc",
+                                padding: "5px",
+                                fontWeight: "bold",
+                                textAlign: "center"
+                              }}
+                            >
+                              {value}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
 
-            {/* Pagination */}
-           <TablePagination
-              rowsPerPageOptions={[5, 100, 200,300,500]}
-              component="div"
-              count={totalRecords}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
-          </Box>
+              <TablePagination
+                rowsPerPageOptions={[50, 100, 500, 1000, 2000]}
+                component="div"
+                count={totalRecords || sortedData.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+              />
+            </Box>
+          </>
         ) : (
-          <Typography variant="body1" sx={{ marginTop: 2 }}>
+          <Typography variant="body1" sx={{ marginTop: 2, textAlign: "center" }}>
             No data available
           </Typography>
         )}
