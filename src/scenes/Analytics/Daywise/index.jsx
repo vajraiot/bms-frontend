@@ -196,7 +196,7 @@ const DayWise = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {sortedData
+                    {formattedData
                       // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
 
                       .map((row, index) => (

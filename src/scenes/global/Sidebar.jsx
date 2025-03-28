@@ -16,6 +16,7 @@ import AlarmOutlinedIcon from "@mui/icons-material/AlarmOutlined";
 import EventOutlinedIcon from "@mui/icons-material/EventOutlined";
 
 import maha from "../../assets/images/MSEDCLlogo-removebg-preview.png"
+import { getUserRole } from "../../utils/ProtectedRoutes";
 const rolesPermissions = {
   SUPERADMIN: ['Dashboard', 'Live Data', 'Analytics', "RealTimeView","Alarm","DayWise","Monthly",'Issue Tracking', 'Site Details', 'Users','PacketViewer'],
   ENGINEER: ['Dashboard', 'Live Data', 'Analytics',"RealTimeView","Alarm","DayWise","Monthly" ,'Issue Tracking'],
@@ -53,7 +54,9 @@ const Item = ({ title, to, icon, selected, setSelected, role }) => {
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState("Dashboard");
-  const { userRole } = useContext(AppContext);
+  //const { userRole } = useContext(AppContext);
+  const token = localStorage.getItem("token");
+  const userRole = getUserRole(token);
 
   return (
     <Box

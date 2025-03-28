@@ -18,7 +18,7 @@ import SiteDetails from "./scenes/Preferences/SiteDetails/index.jsx";
 import IssueTracking from "./scenes/Issuetracking/index.jsx";
 import Users from "./scenes/Users/index.jsx";
 import './index.css';
-
+import { ProtectedRoute } from "./utils/ProtectedRoutes.js";
 const AuthenticatedLayout = ({ isSidebar, setIsSidebar }) => {
   return (
     <div className="app">
@@ -34,14 +34,6 @@ const AuthenticatedLayout = ({ isSidebar, setIsSidebar }) => {
   );
 };
 
-const AuthenticatedRoute = ({ children }) => {
-  const { token } = React.useContext(AppContext);
-  if (token) {
-    return children;
-  }
-  return <Navigate to="/login" replace />;
-};
-
 function App() {
   const [theme, colorMode] = useMode();
   const [isSidebar, setIsSidebar] = useState(true);
@@ -51,9 +43,9 @@ function App() {
       path: "/",
       element: (
         <AppProvider>
-          <AuthenticatedRoute>
+          <ProtectedRoute>
             <AuthenticatedLayout isSidebar={isSidebar} setIsSidebar={setIsSidebar} />
-          </AuthenticatedRoute>
+          </ProtectedRoute>
         </AppProvider>
       ),
       children: [
@@ -74,6 +66,14 @@ function App() {
       element: (
         <AppProvider>
           <LoginPage />
+        </AppProvider>
+      ),
+    },
+    {
+      path: "/unauthorized",
+      element: (
+        <AppProvider>
+          <div>Unauthorized Access - You don’t have permission to view this page.</div>
         </AppProvider>
       ),
     },
