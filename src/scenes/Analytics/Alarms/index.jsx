@@ -40,7 +40,7 @@ const columnMappings = {
   filterFuse: "Filter Fuse",
   dcVoltageOLN: "DC Voltage OLN",
   outputFuse: "Output Fuse",
-  acVoltageULN: "AC Voltage ULN",
+  acVoltageULN: "AC Voltage LNO",
   chargerLoad: "Charger Load",
   alarmSupplyFuse: "Alarm Supply Fuse",
   chargerTrip: "Charger Trip",

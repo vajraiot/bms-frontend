@@ -329,57 +329,86 @@ const Dashboard = () => {
       // Define conditions and chart data generation logic for each case
       switch (data.name) {
         case 'Most Critical Alarm':
-        filteredData = filterData(response, (bmsAlarms, chargerMonitoring, Threshold, cellVoltageTemperatureData) => {
-          const batteryAboutToDieThreshold = parseFloat(Threshold?.batteryAboutToDie);
-          const openBatteryThreshold = parseFloat(Threshold?.openBattery);
-          const lowVoltageThreshold = parseFloat(Threshold?.lowVoltage);
-
-          // Check "about to die" condition
-          const isBatteryAboutToDie = cellVoltageTemperatureData?.some(cell =>
-            cell.cellVoltage <= batteryAboutToDieThreshold &&
-            cell.cellVoltage > openBatteryThreshold &&
-            cell.cellVoltage < lowVoltageThreshold
-          );
-
-          // Check "open battery" condition
-          const isOpenBattery = cellVoltageTemperatureData?.some(cell =>
-            cell.cellVoltage <= openBatteryThreshold
-          );
-          const isCellVoltageLow = bmsAlarms?.cellVoltageLN === true &&
-          cellVoltageData?.some(cell => cell.cellVoltage === lowVoltageThreshold);
-          return (
-            bmsAlarms?.stringVoltageLNH === 0 || // String Voltage Low
-            isCellVoltageLow || // Cell Voltage Low
-            bmsAlarms?.socLN === true || // SOC Low
-            isOpenBattery || // Open Battery
-            isBatteryAboutToDie || // Battery About to Die
-            chargerMonitoring?.chargerTrip === true // Charger Trip
-          );
-        });
-
-        chartData = [
-          generateChartData(filteredData, "String(V) Low", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.stringVoltageLNH === 0),
-          generateChartData(filteredData, "Cell(V) Low", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.cellVoltageLN === true),
-          generateChartData(filteredData, "SOC Low", (item) => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.socLN === true),
-          generateChartData(filteredData, "Battery Open", (item) => {
-            const openBatteryThreshold = parseFloat(item?.siteLocationDTO?.manufacturerDTO?.openBattery);
-            return item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.some(cell =>
-              cell.cellVoltage <= openBatteryThreshold
-            );
-          }),
-          generateChartData(filteredData, "Battery AboutToDie", (item) => {
-            const batteryAboutToDieThreshold = parseFloat(item?.siteLocationDTO?.manufacturerDTO?.batteryAboutToDie);
-            const openBatteryThreshold = parseFloat(item?.siteLocationDTO?.manufacturerDTO?.openBattery);
-            const lowVoltageThreshold = parseFloat(item?.siteLocationDTO?.manufacturerDTO?.lowVoltage);
-            return item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.some(cell =>
+          filteredData = filterData(response, (bmsAlarms, chargerMonitoring, Threshold, cellVoltageTemperatureData) => {
+            // Parse thresholds with fallback values to avoid NaN issues
+            const batteryAboutToDieThreshold = parseFloat(Threshold?.batteryAboutToDie) || 0;
+            const openBatteryThreshold = parseFloat(Threshold?.openBattery) || 0;
+            const lowVoltageThreshold = parseFloat(Threshold?.lowVoltage) || 0;
+        
+            // Ensure cellVoltageTemperatureData exists and is an array
+            const hasCellData = Array.isArray(cellVoltageTemperatureData) && cellVoltageTemperatureData.length > 0;
+        
+            // Check "about to die" condition
+            const isBatteryAboutToDie = hasCellData && cellVoltageTemperatureData.some(cell =>
               cell.cellVoltage <= batteryAboutToDieThreshold &&
               cell.cellVoltage > openBatteryThreshold &&
               cell.cellVoltage < lowVoltageThreshold
             );
-          }),
-          generateChartData(filteredData, "Charger Trip", (item) => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.chargerTrip === true),
-        ];
-        break;
+        
+            // Check "open battery" condition
+            const isOpenBattery = hasCellData && cellVoltageTemperatureData.some(cell =>
+              cell.cellVoltage <= openBatteryThreshold
+            );
+        
+            // Check "cell voltage low" condition with threshold
+            const isCellVoltageLow = bmsAlarms?.cellVoltageLN === true && hasCellData &&
+              cellVoltageTemperatureData.some(cell => cell.cellVoltage === lowVoltageThreshold);
+        
+            // Log for debugging
+            console.log({
+              isBatteryAboutToDie,
+              isOpenBattery,
+              isCellVoltageLow,
+              stringVoltageLow: bmsAlarms?.stringVoltageLNH === 0,
+              socLow: bmsAlarms?.socLN === true,
+              chargerTrip: chargerMonitoring?.chargerTrip === true
+            });
+        
+            return (
+              bmsAlarms?.stringVoltageLNH === 0 || // String Voltage Low
+              isCellVoltageLow ||                  // Cell Voltage Low
+              bmsAlarms?.socLN === true ||         // SOC Low
+              isOpenBattery ||                     // Open Battery
+              isBatteryAboutToDie ||               // Battery About to Die
+              chargerMonitoring?.chargerTrip === true // Charger Trip
+            );
+          });
+        
+          chartData = [
+            generateChartData(filteredData, "String(V) Low", (item) => 
+              item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.stringVoltageLNH === 0
+            ),
+            generateChartData(filteredData, "Cell(V) Low", (item) => {
+              const lowVoltageThreshold = parseFloat(item?.siteLocationDTO?.manufacturerDTO?.lowVoltage) || 0;
+              return item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.cellVoltageLN === true &&
+                item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.some(cell => 
+                  cell.cellVoltage === lowVoltageThreshold
+                );
+            }),
+            generateChartData(filteredData, "SOC Low", (item) => 
+              item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.socLN === true
+            ),
+            generateChartData(filteredData, "Battery Open", (item) => {
+              const openBatteryThreshold = parseFloat(item?.siteLocationDTO?.manufacturerDTO?.openBattery) || 0;
+              return item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.some(cell =>
+                cell.cellVoltage <= openBatteryThreshold
+              );
+            }),
+            generateChartData(filteredData, "Battery AboutToDie", (item) => {
+              const batteryAboutToDieThreshold = parseFloat(item?.siteLocationDTO?.manufacturerDTO?.batteryAboutToDie) || 0;
+              const openBatteryThreshold = parseFloat(item?.siteLocationDTO?.manufacturerDTO?.openBattery) || 0;
+              const lowVoltageThreshold = parseFloat(item?.siteLocationDTO?.manufacturerDTO?.lowVoltage) || 0;
+              return item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.some(cell =>
+                cell.cellVoltage <= batteryAboutToDieThreshold &&
+                cell.cellVoltage > openBatteryThreshold &&
+                cell.cellVoltage < lowVoltageThreshold
+              );
+            }),
+            generateChartData(filteredData, "Charger Trip", (item) => 
+              item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.chargerTrip === true
+            ),
+          ];
+          break;
   
         case 'Critical Alarm':
           filteredData = filterData(response, (bmsAlarms, chargerMonitoring) => (

@@ -81,6 +81,7 @@ const Topbar = ({ liveTime="", vendorName, locationName = "" }) => {
     {/* Search Options */}
     <Grid item xs="auto" sx={{ flexShrink: 0, minWidth: 160 }}>
     <Autocomplete
+        freeSolo
         disablePortal
         disableClearable
         options={siteOptions.map((site) => site.siteId)}
