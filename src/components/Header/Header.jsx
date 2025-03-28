@@ -14,11 +14,13 @@ import BMS from "../../assets/images/jpeg/BMS.jpg"; // Importing the image
 import { AppContext } from '../../services/AppContext';
 import { useNavigate } from "react-router-dom"; 
 import login from "../../assets/images/png/vajra.png";
+import { getUsername } from '../../utils/ProtectedRoutes';
 const Header = () => {
-  const { handleLogout, username } = useContext(AppContext); // Use AppContext for logout
+  const { handleLogout } = useContext(AppContext); // Use AppContext for logout
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
-
+  const token = localStorage.getItem("token");
+  const username = getUsername(token);
   const navigate = useNavigate();
 
   const handleMenuOpen = (event) => {
