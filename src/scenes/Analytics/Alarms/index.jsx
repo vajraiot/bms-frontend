@@ -1,10 +1,9 @@
 import React, { useContext, useState } from "react";
-import { useTheme, IconButton, Box, CircularProgress } from "@mui/material";
-import { AppContext, formatDate } from "../../../services/AppContext";
-import ReportsBar from "../ReportsBar/ReportsBar";
-import excelIcon from "../../../assets/images/png/ExcellTrans100_98.png";
-import * as XLSX from "xlsx";
-import {
+import { 
+  useTheme, 
+  IconButton, 
+  Box, 
+  CircularProgress,
   Table,
   TableBody,
   TableCell,
@@ -15,11 +14,16 @@ import {
   Typography,
   TablePagination,
   TableSortLabel,
+  Tooltip
 } from "@mui/material";
+import { AppContext, formatDate } from "../../../services/AppContext";
+import ReportsBar from "../ReportsBar/ReportsBar";
+import GridOnIcon from '@mui/icons-material/GridOn';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import * as XLSX from "xlsx";
+import { downloadBatteryAlarms } from "../../../services/apiService";
 
 const columnMappings = {
-  // siteId: "Site ID",
-  // serialNumber: "Serial Number",
   packetDateTime: "Packet Date Time",
   serverTime: "Server Date Time",
   bankCycle: "Bank Status",
@@ -48,8 +52,6 @@ const columnMappings = {
   batteryCondition: "Battery Condition",
   testPushButton: "Test Push Button",
   resetPushButton: "Reset Push Button",
-  packetDateTime: "Packet DateTime",
-  serverTime: "Server DateTime",
 };
 
 const Alarms = () => {
@@ -67,6 +69,9 @@ const Alarms = () => {
     startDate,
     endDate
   } = useContext(AppContext);
+
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadComplete, setDownloadComplete] = useState(false);
 
   const formatTimeStamp = (dateString) => {
     if (!dateString) return "N/A";
@@ -93,26 +98,25 @@ const Alarms = () => {
   const dataArray = Array.isArray(alarmsData.content) ? alarmsData.content : [alarmsData];
   const displayedColumns = Object.keys(columnMappings);
 
-  const handleDownloadExcel = () => {
-    if (dataArray.length === 0 || Object.keys(data).length === 0) {
-      alert("No data available for download.");
-      return;
-    }
+  
+  const handleDownloadExcel = async () => {
 
-    const workbook = XLSX.utils.book_new();
-    const excelData = dataArray.map((row) => 
-      displayedColumns.map((key) => {
-        if (key === "packetDateTime" || key === "serverTime") {
-          return formatTimeStamp(row[key]);
-        }
-        return row[key] || "N/A";
-      })
-    );
-    const headers = displayedColumns.map((key) => columnMappings[key]);
-    excelData.unshift(headers);
-    const worksheet = XLSX.utils.aoa_to_sheet(excelData);
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Alarms Data");
-    XLSX.writeFile(workbook, `Alarms_${siteId}_${serialNumber}_${formatDate(startDate)}_to_${formatDate(endDate)}.xlsx`);
+    try {
+      setIsDownloading(true);
+      setDownloadComplete(false);
+
+    await downloadBatteryAlarms(siteId,serialNumber,formatDate(startDate),formatDate(endDate));
+
+      setIsDownloading(false);
+      setDownloadComplete(true);
+
+      setTimeout(() => {
+        setDownloadComplete(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Download failed:", error);
+      setIsDownloading(false);
+    }
   };
 
   return (
@@ -124,14 +128,39 @@ const Alarms = () => {
         marginBottom: "10px" 
       }}>
         <ReportsBar pageType="alarms" />
-        <IconButton 
-          onClick={handleDownloadExcel} 
-          color="primary" 
-          aria-label="Download Excel"
-          disabled={loadingReport}
-        >
-          <img src={excelIcon} alt="Download Excel" style={{ width: "24px", height: "24px" }} />
-        </IconButton>
+        <Tooltip title="Export to Excel">
+          <Box sx={{ position: 'relative', marginRight: '20px' }}>
+            <IconButton
+              onClick={handleDownloadExcel}
+              disabled={loadingReport || isDownloading || !siteId || !startDate || !endDate }
+              sx={{
+                backgroundColor: '#4caf50',
+                color: 'white',
+                '&:hover': { backgroundColor: '#388e3c' },
+                '&.Mui-disabled': { backgroundColor: '#4caf50', opacity: 0.5 },
+              }}
+            >
+              {downloadComplete ? (
+                <CheckCircleIcon />
+              ) : (
+                <GridOnIcon />
+              )}
+            </IconButton>
+            {isDownloading && (
+              <CircularProgress
+                size={40}
+                sx={{
+                  color: '#4caf50',
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  marginTop: '-20px',
+                  marginLeft: '-20px',
+                }}
+              />
+            )}
+          </Box>
+        </Tooltip>
       </div>
 
       {loadingReport ? (
@@ -182,39 +211,35 @@ const Alarms = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-
-                {dataArray
-                  // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-
-                  .map((row, index) => (
-                    <TableRow
-                      key={index}
-                      sx={{ "&:hover": { backgroundColor: "#e1e2fe" } }}
-                    >
-                      {displayedColumns.map((key) => (
-                        <TableCell
-                          key={key}
-                          sx={{
-                            border: "1px solid #ccc",
-                            padding: "3px",
-                            fontWeight: "bold",
-                            whiteSpace: "nowrap",
-                            textAlign: "center"
-                          }}
-                        >
-                          {key === "packetDateTime" || key === "serverTime"
-                            ? formatTimeStamp(row[key])
-                            : key === "dcVoltageOLN"
-                            ? row[key] === "Normal" ? "Normal" : 
-                              row[key] === "Low" ? "Low" : 
-                              row[key] === "Over" ? "Over" : row[key]
-                            : row[key] === "Fail" ? "Fail" :
-                              row[key] === "Normal" ? "Normal" :
-                              row[key] || "N/A"}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
+                {dataArray.map((row, index) => (
+                  <TableRow
+                    key={index}
+                    sx={{ "&:hover": { backgroundColor: "#e1e2fe" } }}
+                  >
+                    {displayedColumns.map((key) => (
+                      <TableCell
+                        key={key}
+                        sx={{
+                          border: "1px solid #ccc",
+                          padding: "3px",
+                          fontWeight: "bold",
+                          whiteSpace: "nowrap",
+                          textAlign: "center"
+                        }}
+                      >
+                        {key === "packetDateTime" || key === "serverTime"
+                          ? formatTimeStamp(row[key])
+                          : key === "dcVoltageOLN"
+                          ? row[key] === "Normal" ? "Normal" : 
+                            row[key] === "Low" ? "Low" : 
+                            row[key] === "Over" ? "Over" : row[key]
+                          : row[key] === "Fail" ? "Fail" :
+                            row[key] === "Normal" ? "Normal" :
+                            row[key] || "N/A"}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>

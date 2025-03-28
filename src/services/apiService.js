@@ -181,11 +181,13 @@ export const fetchAlarmsBatteryandChargerdetails = async (
   serialNumber,
   siteId,
   strStartDate,
-  strEndDate
+  strEndDate,
+  page,
+  size
 ) => {
   try {
     const response = await apiClient.get(
-      `/getHistoricalAlarmsDataBySiteidAndSerialNumberBetweenDateswithPg?siteId=${siteId}&serialNumber=${serialNumber}&strStartDate=${strStartDate}&strEndDate=${strEndDate}`
+      `/getHistoricalAlarmsDataBySiteidAndSerialNumberBetweenDateswithPg?siteId=${siteId}&serialNumber=${serialNumber}&strStartDate=${strStartDate}&strEndDate=${strEndDate}page=${page}&size=${size}`
     );
     return response.data;
   } catch (error) {
@@ -210,7 +212,34 @@ export const fetchMonthlyBatteryandChargerdetails = async (
     throw error;
   }
 };
+export const downloadBatteryAlarms=async(siteId,serialNumber,strStartDate,strEndDate)=>{
 
+  try {
+   
+    const params = {
+        siteId,
+        serialNumber,
+        strStartDate,
+        strEndDate,
+    };
+    const response = await apiClient.get(`${BASE_URL}/downloadHistoricalAlarmsReport`, {
+        params, 
+        responseType: 'blob', 
+    });
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `AlarmsReport_${siteId}.xls`; 
+    document.body.appendChild(a); 
+    a.click();
+    window.URL.revokeObjectURL(url); 
+    document.body.removeChild(a); 
+} catch (error) {
+    console.error('Error downloading the Excel file:', error);
+}
+
+  }
 export const fetchSiteDetailsBatteryandChargerdetails = async (
   siteId,
   serialNumber
@@ -401,7 +430,7 @@ export const deleteUser = async (id) => {
 };
 export const PostUser = async (userData) => {
   try {
-    const response = await axios.post(`${BASE_URL}/PostCreateNewLoginUser`, userData);
+    const response = await apiClient.post(`${BASE_URL}/PostCreateNewLoginUser`, userData);
     return response.data;
   } catch (error) {
     console.error('Error creating user:', error);
