@@ -16,6 +16,7 @@ import {
   TablePagination,
   TableSortLabel,
 } from "@mui/material";
+import { downloadBatteryAlarms } from "../../../services/apiService";
 
 const columnMappings = {
   // siteId: "Site ID",
@@ -94,26 +95,8 @@ const Alarms = () => {
   const displayedColumns = Object.keys(columnMappings);
 
   const handleDownloadExcel = () => {
-    if (dataArray.length === 0 || Object.keys(data).length === 0) {
-      alert("No data available for download.");
-      return;
-    }
-
-    const workbook = XLSX.utils.book_new();
-    const excelData = dataArray.map((row) => 
-      displayedColumns.map((key) => {
-        if (key === "packetDateTime" || key === "serverTime") {
-          return formatTimeStamp(row[key]);
-        }
-        return row[key] || "N/A";
-      })
-    );
-    const headers = displayedColumns.map((key) => columnMappings[key]);
-    excelData.unshift(headers);
-    const worksheet = XLSX.utils.aoa_to_sheet(excelData);
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Alarms Data");
-    XLSX.writeFile(workbook, `Alarms_${siteId}_${serialNumber}_${formatDate(startDate)}_to_${formatDate(endDate)}.xlsx`);
-  };
+    downloadBatteryAlarms(siteId,serialNumber,formatDate(startDate),formatDate(endDate));
+  }
 
   return (
     <div>

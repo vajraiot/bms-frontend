@@ -276,7 +276,7 @@ const Topbar = ({ liveTime="", vendorName, locationName = "" }) => {
             }}
           />
           <Typography fontSize="12px" fontWeight="bold" color="red">
-            Failure/high/Tripped
+            On Event
           </Typography>
         </Box>
         <Box
@@ -298,26 +298,6 @@ const Topbar = ({ liveTime="", vendorName, locationName = "" }) => {
           />
           <Typography fontSize="12px" fontWeight="bold" color="green">
             Normal
-          </Typography>
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Box
-            sx={{
-              width: "20px",
-              height: "20px",
-              borderRadius: "50%",
-              backgroundColor: "Orange", // Warning
-            }}
-          />
-          <Typography fontSize="12px" fontWeight="bold" color="orange">
-            Low
           </Typography>
         </Box>
       </Box>

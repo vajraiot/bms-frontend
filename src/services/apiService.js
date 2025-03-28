@@ -13,7 +13,7 @@ const apiClient = axios.create({
 // Add JWT token to every request via interceptor
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -151,6 +151,41 @@ export const fetchHistoricalBatteryandChargerdetails =async (serialNumber,siteId
   }
 
     }
+    export const downloadBatteryAlarms=async(siteId,serialNumber,strStartDate,strEndDate)=>{
+
+      try {
+        // Construct the query parameters
+        const params = {
+            siteId,
+            serialNumber,
+            strStartDate,
+            strEndDate,
+        };
+  
+        // Make a GET request to the backend endpoint using Axios
+        const response = await apiClient.get(`${BASE_URL}/downloadHistoricalAlarmsReport`, {
+            params, // Pass query parameters
+            responseType: 'blob', // Ensure the response is treated as a Blob (binary data)
+        });
+  
+        // Create a temporary URL for the Blob
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+  
+        // Create a temporary anchor element to trigger the download
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `AlarmsReport_${siteId}.xls`; // Set the file name
+        document.body.appendChild(a); // Append the anchor to the DOM
+        a.click(); // Programmatically click the anchor to trigger the download
+  
+        // Clean up
+        window.URL.revokeObjectURL(url); // Release the object URL
+        document.body.removeChild(a); // Remove the anchor from the DOM
+    } catch (error) {
+        console.error('Error downloading the Excel file:', error);
+    }
+  
+      }
 
   export const fetchDaywiseBatteryandChargerdetails =async (serialNumber,siteId,strStartDate,strEndDate,page,size)=>{
     try{
@@ -181,11 +216,11 @@ export const fetchAlarmsBatteryandChargerdetails = async (
   serialNumber,
   siteId,
   strStartDate,
-  strEndDate
+  strEndDate,page,rowsPerPage
 ) => {
   try {
     const response = await apiClient.get(
-      `/getHistoricalAlarmsDataBySiteidAndSerialNumberBetweenDateswithPg?siteId=${siteId}&serialNumber=${serialNumber}&strStartDate=${strStartDate}&strEndDate=${strEndDate}`
+      `/getHistoricalAlarmsDataBySiteidAndSerialNumberBetweenDateswithPg?page=${page}&size=${rowsPerPage}&siteId=${siteId}&serialNumber=${serialNumber}&strStartDate=${strStartDate}&strEndDate=${strEndDate}`
     );
     return response.data;
   } catch (error) {
