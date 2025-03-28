@@ -55,7 +55,7 @@ const columnMappings = {
 const Alarms = () => {
   const theme = useTheme();
   const { 
-    data = {}, 
+    alarmsData = {}, 
     page, 
     setPage, 
     rowsPerPage, 
@@ -67,9 +67,6 @@ const Alarms = () => {
     startDate,
     endDate
   } = useContext(AppContext);
-  
-  const [order, setOrder] = useState("desc");
-  const [orderBy, setOrderBy] = useState("packetDateTime");
 
   const formatTimeStamp = (dateString) => {
     if (!dateString) return "N/A";
@@ -84,12 +81,6 @@ const Alarms = () => {
     });
   };
 
-  const handleRequestSort = (property) => {
-    const isAscending = orderBy === property && order === "asc";
-    setOrder(isAscending ? "desc" : "asc");
-    setOrderBy(property);
-  };
-
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -99,30 +90,17 @@ const Alarms = () => {
     setPage(0);
   };
 
-  const dataArray = Array.isArray(data.content) ? data.content : [data];
-
-  const sortedData = React.useMemo(() => {
-    return [...dataArray].sort((a, b) => {
-      const valueA = a[orderBy];
-      const valueB = b[orderBy];
-      
-      if (order === "asc") {
-        return valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
-      }
-      return valueA < valueB ? 1 : valueA > valueB ? -1 : 0;
-    });
-  }, [dataArray, order, orderBy]);
-
+  const dataArray = Array.isArray(alarmsData.content) ? alarmsData.content : [alarmsData];
   const displayedColumns = Object.keys(columnMappings);
 
   const handleDownloadExcel = () => {
-    if (sortedData.length === 0 || Object.keys(data).length === 0) {
+    if (dataArray.length === 0 || Object.keys(data).length === 0) {
       alert("No data available for download.");
       return;
     }
 
     const workbook = XLSX.utils.book_new();
-    const excelData = sortedData.map((row) => 
+    const excelData = dataArray.map((row) => 
       displayedColumns.map((key) => {
         if (key === "packetDateTime" || key === "serverTime") {
           return formatTimeStamp(row[key]);
@@ -170,7 +148,7 @@ const Alarms = () => {
           <CircularProgress />
           <Typography variant="body1">Loading alarms data...</Typography>
         </Box>
-      ) : sortedData.length > 0 && Object.keys(data).length > 0 ? (
+      ) : dataArray.length > 0 && Object.keys(alarmsData).length > 0 ? (
         <Box padding="0px 10px 0px 10px">
           <TableContainer
             component={Paper}
@@ -198,20 +176,14 @@ const Alarms = () => {
                         textAlign: "center"
                       }}
                     >
-                      <TableSortLabel
-                        active={orderBy === key}
-                        direction={orderBy === key ? order : "asc"}
-                        onClick={() => handleRequestSort(key)}
-                      >
-                        {columnMappings[key]}
-                      </TableSortLabel>
+                      {columnMappings[key]}
                     </TableCell>
                   ))}
                 </TableRow>
               </TableHead>
               <TableBody>
-                {sortedData
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                {dataArray
+                 // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => (
                     <TableRow
                       key={index}
@@ -248,7 +220,7 @@ const Alarms = () => {
           <TablePagination
             rowsPerPageOptions={[100, 200, 500, 1000, 1500, 2000]}
             component="div"
-            count={totalRecords || sortedData.length}
+            count={totalRecords || dataArray.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

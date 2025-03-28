@@ -35,7 +35,7 @@ const columnMappings = {
 const DayWise = () => {
   const theme = useTheme();
   const { 
-    data = [] ,  
+    dayDaywiseData = [],  
     page, 
     setPage, 
     setRowsPerPage, 
@@ -47,15 +47,6 @@ const DayWise = () => {
     totalRecords,
     loadingReport 
   } = useContext(AppContext);
-
-  const [order, setOrder] = useState("asc");
-  const [orderBy, setOrderBy] = useState("dayWiseDate");
-
-  const handleRequestSort = (property) => {
-    const isAscending = orderBy === property && order === "asc";
-    setOrder(isAscending ? "desc" : "asc");
-    setOrderBy(property);
-  };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -104,17 +95,7 @@ const DayWise = () => {
     });
   };
 
-  const sortedData = React.useMemo(() => {
-    const formatted = formatData(data);
-    return [...formatted].sort((a, b) => {
-      const valueA = a[orderBy];
-      const valueB = b[orderBy];
-      if (order === "asc") {
-        return valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
-      }
-      return valueA < valueB ? 1 : valueA > valueB ? -1 : 0;
-    });
-  }, [data, order, orderBy]);
+  const formattedData = formatData(dayDaywiseData);
 
   const handleDownloadExcel = () => {
     downloadDayWiseBatteryandChargerdetails(
@@ -165,16 +146,16 @@ const DayWise = () => {
             <CircularProgress />
             <Typography variant="body1">Loading day-wise data...</Typography>
           </Box>
-        ) : sortedData.length > 0 ? (
+        ) : formattedData.length > 0 ? (
           <>
             <div style={{ paddingBottom: "10px" }}>
               <Box paddingBottom={2}>
                 <Paper elevation={10}>
-                  <AhGraph data={data.content || []} />
+                  <AhGraph data={dayDaywiseData.content || []} />
                 </Paper>
               </Box>
               <Paper elevation={10}>
-                <ChargingGraph data={data.content || []} />
+                <ChargingGraph data={dayDaywiseData.content || []} />
               </Paper>
             </div>
 
@@ -204,19 +185,13 @@ const DayWise = () => {
                             textAlign: "center"
                           }}
                         >
-                          <TableSortLabel
-                            active={orderBy === key}
-                            direction={orderBy === key ? order : "asc"}
-                            onClick={() => handleRequestSort(key)}
-                          >
-                            {columnMappings[key]}
-                          </TableSortLabel>
+                          {columnMappings[key]}
                         </TableCell>
                       ))}
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {sortedData
+                    {formattedData
                       .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                       .map((row, index) => (
                         <TableRow
@@ -245,7 +220,7 @@ const DayWise = () => {
               <TablePagination
                 rowsPerPageOptions={[50, 100, 500, 1000, 2000]}
                 component="div"
-                count={totalRecords || sortedData.length}
+                count={totalRecords || formattedData.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={handleChangePage}
@@ -262,5 +237,4 @@ const DayWise = () => {
     </div>
   );
 };
-
 export default DayWise;
