@@ -55,7 +55,7 @@ const[realTimeData,setrealTimeData]=useState([])
     fetchOptions();
   }, [token]); // Depend on token instead of isAuthenticated
   useEffect(() => {
-    if (siteId && serialNumber && startDate && endDate && data.content.length>0) {
+    if (siteId && serialNumber && startDate && endDate ) {
       handleAnalytics(pageType);
     }
   }, [page, rowsPerPage]);
@@ -136,7 +136,7 @@ const[realTimeData,setrealTimeData]=useState([])
             startDate,
             endDate,page,rowsPerPage
           );
-          //setrealTimeData(result)
+          setrealTimeData(result)
           setTotalRecords(result.page.totalElements)
           break;
 

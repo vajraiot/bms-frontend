@@ -183,7 +183,7 @@ const Historical = () => {
               </TableHead>
               <TableBody>
 
-                {sortedData
+                {dataArray
                 //  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
 
                   .map((row, index) => (

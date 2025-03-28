@@ -27,7 +27,7 @@ const ReportsBar = ({ pageType }) => {
     setEndDate,
     handleAnalytics,
     loadingReport,
-    errors,setPageType,
+    setPageType,
     page,
     rowsPerPage,setData,data,setDayWiseData,setAlarmsData,setrealTimeData
 
@@ -77,6 +77,7 @@ const handleFunction=async()=>{
         {/* Site ID */}
         <Autocomplete
           disablePortal
+          freeSolo
           disableClearable
           options={siteOptions.map((site) => site.siteId)}
           value={siteId}
