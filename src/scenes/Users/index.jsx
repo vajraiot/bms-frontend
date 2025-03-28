@@ -46,7 +46,7 @@ const Team = () => {
     uname: "",
     email: "",
     phone: "",
-    countryCode: "+1", // Default country code
+    countryCode: "+1",
     role: "",
     password: "",
   });
@@ -61,7 +61,6 @@ const Team = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userIdToDelete, setUserIdToDelete] = useState(null);
 
-  // Country codes list (you can expand this as needed)
   const countryCodes = [
     { code: "+1", label: "US (+1)" },
     { code: "+91", label: "India (+91)" },
@@ -95,15 +94,18 @@ const Team = () => {
   const handleOpen = (mode, row = null) => {
     if (mode === "edit" && row) {
       setSelectedRow(row);
-      const [code, number] = row.mobile.match(/(\+\d{1,3})(\d+)/)?.slice(1) || ["+1", row.mobile];
+      const mobileMatch = row.mobile.match(/(\+\d{1,3})(\d+)/);
+      const countryCode = mobileMatch ? mobileMatch[1] : "+1";
+      const phoneNumber = mobileMatch ? mobileMatch[2] : row.mobile;
+      
       setFormData({
         loginCredentialsId: row.loginCredentialsId,
         uname: row.userName,
         email: row.email,
-        phone: number || row.mobile,
-        countryCode: code || "+1",
+        phone: phoneNumber,
+        countryCode: countryCode,
         role: row.role,
-        password: row.password,
+        password: "",
       });
     } else {
       setSelectedRow(null);
@@ -131,7 +133,7 @@ const Team = () => {
 
   const validateForm = () => {
     const phoneRegex = /^\d{10}$/;
-    const emailRegex = /^[^\s@]+@gmail\.com$/; // Fixed regex
+    const emailRegex = /^[^\s@]+@gmail\.com$/;
 
     if (!formData.uname) return "Username is required.";
     if (!isEditing && !formData.password) return "Password is required.";
@@ -376,6 +378,7 @@ const UserModal = ({ open, handleClose, formData, setFormData, handleSubmit, rol
         {isEditing ? "Edit User" : "Add User"}
       </Typography>
       {userError && <Typography color="error" sx={{ textAlign: "center" }}>{userError}</Typography>}
+      
       <TextField
         required
         margin="dense"
@@ -389,20 +392,23 @@ const UserModal = ({ open, handleClose, formData, setFormData, handleSubmit, rol
         onChange={(e) => setFormData({ ...formData, uname: e.target.value })}
         sx={{ marginBottom: "16px" }}
       />
-      <TextField
-        required
-        margin="dense"
-        id="password"
-        name="password"
-        label="Password"
-        type="text"
-        fullWidth
-        variant="outlined"
-        value={formData.password}
-        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-        disabled={isEditing}
-        sx={{ marginBottom: "16px" }}
-      />
+      
+      {!isEditing && (
+        <TextField
+          required
+          margin="dense"
+          id="password"
+          name="password"
+          label="Password"
+          type="password"
+          fullWidth
+          variant="outlined"
+          value={formData.password}
+          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+          sx={{ marginBottom: "16px" }}
+        />
+      )}
+      
       <TextField
         required
         margin="dense"
@@ -416,6 +422,7 @@ const UserModal = ({ open, handleClose, formData, setFormData, handleSubmit, rol
         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
         sx={{ marginBottom: "16px" }}
       />
+      
       <Box sx={{ display: "flex", gap: "10px", marginBottom: "16px" }}>
         <TextField
           select
@@ -445,7 +452,7 @@ const UserModal = ({ open, handleClose, formData, setFormData, handleSubmit, rol
           fullWidth
           variant="outlined"
           value={formData.phone}
-          onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, "") })} // Allow only digits
+          onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, "") })}
           inputProps={{ maxLength: 10 }}
           InputProps={{
             startAdornment: (
@@ -456,6 +463,7 @@ const UserModal = ({ open, handleClose, formData, setFormData, handleSubmit, rol
           }}
         />
       </Box>
+      
       <TextField
         select
         required
@@ -473,6 +481,7 @@ const UserModal = ({ open, handleClose, formData, setFormData, handleSubmit, rol
           <MenuItem key={index} value={role}>{role}</MenuItem>
         ))}
       </TextField>
+      
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
         <Button onClick={handleClose} variant="outlined" sx={{ background: "linear-gradient(to bottom, #d82b27, #f09819)", color: "white" }}>
           Cancel

@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext , useEffect} from "react";
 import { useTheme } from "@mui/material";
 import { ColorModeContext, tokens } from "../../../theme";
 import { Box, IconButton, TextField, Autocomplete, Paper } from "@mui/material";
@@ -57,6 +57,15 @@ const Monthly = () => {
     setMonth,
     setData,
   } = useContext(AppContext);
+  useEffect(() => {
+    if (location.pathname === "/monthly") { // Adjust path based on your route
+      setSiteId(""); // Clear Site ID
+      setSerialNumber(""); // Clear Serial Number
+      setYear(""); // Clear Year
+      setMonth(""); // Clear Month
+      setData([]); // Clear data/content
+    }
+  }, [location.pathname]);
 
   const handleSearch = async () => {
     if (siteId && serialNumber && year && month) {
@@ -77,7 +86,12 @@ const Monthly = () => {
       setData([]); // Fallback to empty array if fields are missing
     }
   };
-
+  const clearOptions = () => {
+    setSiteId(""); // Reset Site ID
+    setSerialNumber(""); // Reset Serial Number
+    setYear("");
+    setMonth("");
+  };
   const handleRequestSort = (property) => {
     const isAscending = orderBy === property && order === "asc";
     setOrder(isAscending ? "desc" : "asc");
@@ -172,6 +186,13 @@ const Monthly = () => {
           options={siteOptions.map((site) => site.siteId)}
           value={siteId}
           onChange={(event, newValue) => setSiteId(newValue)}
+          filterOptions={(options, { inputValue }) => {
+            if (!inputValue) return [];
+            const lowerInput = inputValue.toLowerCase();
+            return options.filter((option) =>
+              option.toLowerCase().startsWith(lowerInput)
+            );
+          }}
           renderInput={(params) => (
             <TextField {...params} label="Substation ID"   InputLabelProps={{
               sx: {
@@ -216,22 +237,42 @@ const Monthly = () => {
         )}
         sx={{ width: "150px" }}
       />
-        <TextField
+       <TextField
           label="Month"
           type="month"
           value={month ? `${year}-${month}` : ""}
           onChange={(e) => {
-            const [selectedYear, selectedMonth] = e.target.value.split("-");
-            setYear(selectedYear);
+            const selectedDate = e.target.value;
+            const selectedMonth = selectedDate.split("-")[1];
             setMonth(selectedMonth);
+            setYear(selectedDate.split("-")[0]);
           }}
-          sx={{ width: 200 }}
-          InputLabelProps={{ shrink: true }}
+          fullWidth
+          sx={{
+            width: 200,
+            "& .MuiInputBase-root": {
+              fontWeight: "bold",
+              height: "35px",
+              marginTop: "5px",
+            },
+            "& .MuiInputLabel-root": {
+              fontWeight: "bold",
+            },
+          }}
+          InputLabelProps={{
+            shrink: true,
+          }}
         />
-        <IconButton onClick={handleSearch}>
+        <IconButton onClick={handleSearch} disabled={!siteId || !serialNumber|| !year|| !month}>
           <SearchIcon />
         </IconButton>
+        <Box onClick={clearOptions} sx={{ cursor: "pointer" }}>
+          <Typography variant="body1" sx={{ fontSize: 15 ,marginTop:1}}>
+            ❌
+          </Typography>
       </Box>
+      </Box>
+       
 
       {/* Excel Download */}
       <Box display="flex" justifyContent="flex-end" alignItems="center">

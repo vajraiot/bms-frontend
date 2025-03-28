@@ -182,8 +182,10 @@ const Alarms = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {dataArray
-                 // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+
+                {sortedData
+                  // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+
                   .map((row, index) => (
                     <TableRow
                       key={index}

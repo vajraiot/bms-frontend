@@ -182,8 +182,10 @@ const Historical = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {dataArray
-                 // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+
+                {sortedData
+                //  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+
                   .map((row, index) => (
                     <TableRow
                       key={index}
@@ -216,9 +218,11 @@ const Historical = () => {
           </TableContainer>
 
           <TablePagination
+
             rowsPerPageOptions={[50, 100, 200, 300, 500]}
             component="div"
             count={totalRecords || dataArray.length}
+
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

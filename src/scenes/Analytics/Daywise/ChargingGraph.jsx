@@ -41,6 +41,17 @@ export default function ChargingGraph({ data }) {
     };
   });
 
+  // Calculate max value for YAxis domain to add gap (main graph)
+  const maxEnergy = Math.max(
+    ...formattedData.map((d) =>
+      Math.max(
+        parseFloat(d.totalChargingEnergy),
+        parseFloat(d.totalDischargingEnergy)
+      )
+    )
+  );
+  const yAxisMax = maxEnergy * 1.2; // Add 20% extra space above the max value
+
   // Handle bar click
   const handleBarClick = async (barData) => {
     setCycle([]);
@@ -50,8 +61,12 @@ export default function ChargingGraph({ data }) {
       value !== null && value !== undefined
         ? parseFloat(value).toFixed(2)
         : "-";
-    const cycleData = await fetchCycleData(siteId, serialNumber, formatDate(clickedDate));
-    
+    const cycleData = await fetchCycleData(
+      siteId,
+      serialNumber,
+      formatDate(clickedDate)
+    );
+
     // Filter cycle data for the same date (ignoring time)
     setCycle(cycleData);
     const sameDateCycleData = cycleData
@@ -67,7 +82,7 @@ export default function ChargingGraph({ data }) {
       .map((item) => ({
         cycleId: `Cycle-${item.id + 1}`, // Unique X-axis key
         totalChargingEnergy: formatToTwoDecimals(item.totalChargingEnergy),
-        totalDischargingEnergy:formatToTwoDecimals(item.totalDischargingEnergy),
+        totalDischargingEnergy: formatToTwoDecimals(item.totalDischargingEnergy),
         cumulativeTotalAvgTemp: formatToTwoDecimals(item.cumulativeTotalAvgTemp),
         totalSoc: item.totalSoc,
       }));
@@ -85,20 +100,38 @@ export default function ChargingGraph({ data }) {
   const CustomBarTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="custom-tooltip" style={{
-          backgroundColor: '#fff',
-          padding: '10px',
-          border: '1px solid #ccc',
-          borderRadius: '4px',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-        }}>
-          <p style={{ margin: 0, color: '#666' }}>Click here to view cycles for this date</p>
+        <div
+          className="custom-tooltip"
+          style={{
+            backgroundColor: "#fff",
+            padding: "10px",
+            border: "1px solid #ccc",
+            borderRadius: "4px",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+          }}
+        >
+          <p style={{ margin: 0, color: "#666" }}>
+            Click here to view cycles for this date
+          </p>
         </div>
       );
     }
     return null;
   };
 
+  // Calculate max value for dialog YAxis domain (dialog graph)
+  const maxCycleEnergy =
+    selectedCycleData.length > 0
+      ? Math.max(
+          ...selectedCycleData.map((d) =>
+            Math.max(
+              parseFloat(d.totalChargingEnergy),
+              parseFloat(d.totalDischargingEnergy)
+            )
+          )
+        )
+      : 0;
+  const cycleYAxisMax = maxCycleEnergy * 1.5; 
   return (
     <>
       {/* Main Graph */}
@@ -108,6 +141,7 @@ export default function ChargingGraph({ data }) {
           <YAxis
             yAxisId="left"
             hide={true}
+            domain={[0, yAxisMax]} // Set domain to add gap above bars
             tick={{ fontSize: 0, color: "black", fontWeight: 500 }}
             tickCount={10}
             label={{
@@ -161,8 +195,8 @@ export default function ChargingGraph({ data }) {
             <LabelList
               dataKey="totalChargingEnergy"
               position="top"
+              offset={10} // Add offset to move labels further above bars
               fill="#000"
-              // formatter={(value) => value.toFixed(2)}
             />
             <Tooltip content={<CustomBarTooltip />} />
           </Bar>
@@ -177,8 +211,8 @@ export default function ChargingGraph({ data }) {
             <LabelList
               dataKey="totalDischargingEnergy"
               position="top"
+              offset={10} // Add offset to move labels further above bars
               fill="#000"
-              // formatter={(value) => value.toFixed(2)}
             />
             <Tooltip content={<CustomBarTooltip />} />
           </Bar>
@@ -208,7 +242,9 @@ export default function ChargingGraph({ data }) {
           {selectedCycleData.length > 0 &&
             new Date(
               cycle.find(
-                (item) => item.id === parseInt(selectedCycleData[0].cycleId.split("-")[1]) - 1
+                (item) =>
+                  item.id ===
+                  parseInt(selectedCycleData[0].cycleId.split("-")[1]) - 1
               ).dayWiseDate
             ).toDateString()}
         </DialogTitle>
@@ -219,17 +255,29 @@ export default function ChargingGraph({ data }) {
               <YAxis
                 yAxisId="left"
                 hide={true}
-                label={{ value: "Energy (KWH)", angle: -90, position: "insideLeft", offset: -5 }}
+                domain={[0, cycleYAxisMax]} // Set domain to add gap above bars
+                label={{
+                  value: "Energy (KWH)",
+                  angle: -90,
+                  position: "insideLeft",
+                  offset: -5,
+                }}
               />
               <YAxis
                 yAxisId="right"
                 hide={true}
                 orientation="right"
-                label={{ value: "Temperature (°C) / SOC (%)", angle: 90, position: "insideRight", offset: -5 }}
+                label={{
+                  value: "Temperature (°C) / SOC (%)",
+                  angle: 90,
+                  position: "insideRight",
+                  offset: -5,
+                }}
               />
               <Tooltip
                 formatter={(value, name) => {
-                  if (name === "Temperature") return [`${value} °C`, "Temperature"];
+                  if (name === "Temperature")
+                    return [`${value} °C`, "Temperature"];
                   if (name === "SOC") return [`${value} %`, "SOC"];
                   return [`${value} KWH`, name];
                 }}
@@ -255,8 +303,8 @@ export default function ChargingGraph({ data }) {
                 <LabelList
                   dataKey="totalChargingEnergy"
                   position="top"
+                  offset={10} // Add offset to move labels further above bars
                   fill="#000"
-                  // formatter={(value) => value.toFixed(2)}
                 />
               </Bar>
               <Bar
@@ -269,8 +317,8 @@ export default function ChargingGraph({ data }) {
                 <LabelList
                   dataKey="totalDischargingEnergy"
                   position="top"
+                  offset={10} // Add offset to move labels further above bars
                   fill="#000"
-                  // formatter={(value) => value.toFixed(2)}
                 />
               </Bar>
               <Line

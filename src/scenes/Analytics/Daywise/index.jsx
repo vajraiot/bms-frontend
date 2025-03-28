@@ -6,6 +6,7 @@ import ReportsBar from "../ReportsBar/ReportsBar";
 import ChargingGraph from "./ChargingGraph";
 import AhGraph from "./AhGraph";
 import { formatToTime } from "../../../services/AppContext";
+import GridOnIcon from '@mui/icons-material/GridOn';
 import { downloadDayWiseBatteryandChargerdetails } from '../../../services/apiService';
 import {
   Table,
@@ -106,6 +107,9 @@ const DayWise = () => {
     );
   };
 
+  // Check if all required search parameters are present
+  const isDownloadDisabled = !siteId || !serialNumber || !startDate || !endDate || loadingReport;
+
   return (
     <div>
       <div style={{ 
@@ -119,7 +123,7 @@ const DayWise = () => {
           onClick={handleDownloadExcel} 
           color="primary" 
           aria-label="Download Excel"
-          disabled={loadingReport}
+          disabled={isDownloadDisabled}
         >
           <img src={excelIcon} alt="Download Excel" style={{ width: "24px", height: "24px" }} />
         </IconButton>
@@ -164,7 +168,8 @@ const DayWise = () => {
                 component={Paper}
                 sx={{
                   marginTop: 1,
-                  overflowX: "auto",
+                  height:"400px",
+                  overflow: "auto",
                   border: "1px solid black",
                   borderRadius: "8px",
                 }}
@@ -191,8 +196,9 @@ const DayWise = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {formattedData
-                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    {sortedData
+                      // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+
                       .map((row, index) => (
                         <TableRow
                           key={index}
@@ -218,7 +224,7 @@ const DayWise = () => {
               </TableContainer>
 
               <TablePagination
-                rowsPerPageOptions={[50, 100, 500, 1000, 2000]}
+                rowsPerPageOptions={[5, 10, 20, 30]}
                 component="div"
                 count={totalRecords || formattedData.length}
                 rowsPerPage={rowsPerPage}

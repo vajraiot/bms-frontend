@@ -1,4 +1,4 @@
-import React, { useContext, useState,useContext } from "react";
+import React, { useContext, useState } from "react";
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -11,20 +11,17 @@ import {
   LabelList,
 } from "recharts";
 import { Dialog, DialogTitle, DialogContent } from "@mui/material";
-import { AppContext ,formatDate} from "../../../services/AppContext";
-import {fetchCycleData} from "../../../services/apiService"
-
-// Hardcoded cycle data (replace with prop or fetch in real app)
-
+import { AppContext, formatDate } from "../../../services/AppContext";
+import { fetchCycleData } from "../../../services/apiService";
 
 export default function AHGraph({ data }) {
-  const {serialNumber,siteId,startDate}=useContext(AppContext);
+  const { serialNumber, siteId, startDate } = useContext(AppContext);
   const [open, setOpen] = useState(false);
   const [selectedCycleData, setSelectedCycleData] = useState([]);
-  const[cycle,setCycle]=useState([]);
+  const [cycle, setCycle] = useState([]);
 
   // Format data for the main graph
-    const formattedData = data.map((item) => {
+  const formattedData = data.map((item) => {
     const date = new Date(item.dayWiseDate);
     const month = date.toLocaleString("default", { month: "short" });
     const day = date.getDate();
@@ -42,17 +39,25 @@ export default function AHGraph({ data }) {
     };
   });
 
+  // Calculate max value for YAxis domain with extra buffer
+  const maxAH = Math.max(
+    ...formattedData.map((d) =>
+      Math.max(parseFloat(d.cumulativeAHIn), parseFloat(d.cumulativeAHOut))
+    ),
+    0 // Ensure max is at least 0
+  );
+  const yAxisMax = Math.max(maxAH * 1.3, 10); // 30% buffer + minimum value of 10
+
   // Handle bar click
-  const handleBarClick =async (barData) => {
-    setCycle([])
+  const handleBarClick = async (barData) => {
+    setCycle([]);
     setSelectedCycleData([]);
     const clickedDate = barData.originalDate;
     const formatToTwoDecimals = (value) =>
       value !== null && value !== undefined
         ? parseFloat(value).toFixed(2)
         : "-";
-    const cycle= await fetchCycleData(siteId,serialNumber,formatDate(clickedDate))
-    // Filter cycle data for the same date (ignoring time)
+    const cycle = await fetchCycleData(siteId, serialNumber, formatDate(clickedDate));
     setCycle(cycle);
     const sameDateCycleData = cycle
       .filter((item) => {
@@ -81,22 +86,47 @@ export default function AHGraph({ data }) {
     setOpen(false);
   };
 
+  // Calculate max value for dialog YAxis domain with extra buffer
+  const maxCycleAH =
+    selectedCycleData.length > 0
+      ? Math.max(
+          ...selectedCycleData.map((d) =>
+            Math.max(parseFloat(d.cumulativeAHIn), parseFloat(d.cumulativeAHOut))
+          )
+        )
+      : 0;
+  const cycleYAxisMax = Math.max(maxCycleAH * 1.5, 10); // 30% buffer + minimum value of 10
+
   return (
     <>
       {/* Main Graph */}
-      <ResponsiveContainer width="100%" height={300} padding="10px">
-        <ComposedChart data={formattedData}>
+      <ResponsiveContainer width="100%" height={350}> {/* Increased height */}
+        <ComposedChart
+          data={formattedData}
+          margin={{ top: 50, right: 20, bottom: 20, left: 20 }} // Added top margin
+        >
           <XAxis dataKey="date" />
           <YAxis
             yAxisId="left"
             hide={true}
-            label={{ value: "Amp Hours", angle: -90, position: "insideLeft", offset: -5 }}
+            domain={[0, yAxisMax]} // Keep domain for scaling
+            label={{
+              value: "Amp Hours",
+              angle: -90,
+              position: "insideLeft",
+              offset: -5,
+            }}
           />
           <YAxis
             yAxisId="right"
             hide={true}
             orientation="right"
-            label={{ value: "Temperature (°C) / SOC (%)", angle: -90, position: "insideRight", offset: -5 }}
+            label={{
+              value: "Temperature (°C) / SOC (%)",
+              angle: -90,
+              position: "insideRight",
+              offset: -5,
+            }}
           />
           <Tooltip
             formatter={(value, name) => {
@@ -127,8 +157,8 @@ export default function AHGraph({ data }) {
             <LabelList
               dataKey="cumulativeAHIn"
               position="top"
+              offset={15} // Keep offset for label spacing
               fill="#000"
-          
             />
           </Bar>
           <Bar
@@ -142,8 +172,8 @@ export default function AHGraph({ data }) {
             <LabelList
               dataKey="cumulativeAHOut"
               position="top"
+              offset={15} // Keep offset for label spacing
               fill="#000"
-          
             />
           </Bar>
           <Line
@@ -172,24 +202,39 @@ export default function AHGraph({ data }) {
           {selectedCycleData.length > 0 &&
             new Date(
               cycle.find(
-                (item) => item.id === parseInt(selectedCycleData[0].cycleId.split("-")[1]) - 1
+                (item) =>
+                  item.id === parseInt(selectedCycleData[0].cycleId.split("-")[1]) - 1
               ).dayWiseDate
             ).toDateString()}
         </DialogTitle>
         <DialogContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <ComposedChart data={selectedCycleData}>
+          <ResponsiveContainer width="100%" height={350}> {/* Increased height */}
+            <ComposedChart
+              data={selectedCycleData}
+              margin={{ top: 50, right: 20, bottom: 20, left: 20 }} // Added top margin
+            >
               <XAxis dataKey="cycleId" />
               <YAxis
-              hide={true}
+                hide={true}
                 yAxisId="left"
-                label={{ value: "Amp Hours", angle: -90, position: "insideLeft", offset: -5 }}
+                domain={[0, cycleYAxisMax]} // Keep domain for scaling
+                label={{
+                  value: "Amp Hours",
+                  angle: -90,
+                  position: "insideLeft",
+                  offset: -5,
+                }}
               />
               <YAxis
-              hide={true}
+                hide={true}
                 yAxisId="right"
                 orientation="right"
-                label={{ value: "Temperature (°C) / SOC (%)", angle: 90, position: "insideRight", offset: -5 }}
+                label={{
+                  value: "Temperature (°C) / SOC (%)",
+                  angle: 90,
+                  position: "insideRight",
+                  offset: -5,
+                }}
               />
               <Tooltip
                 formatter={(value, name) => {
@@ -219,8 +264,8 @@ export default function AHGraph({ data }) {
                 <LabelList
                   dataKey="cumulativeAHIn"
                   position="top"
+                  offset={15} // Keep offset for label spacing
                   fill="#000"
-                 
                 />
               </Bar>
               <Bar
@@ -233,8 +278,8 @@ export default function AHGraph({ data }) {
                 <LabelList
                   dataKey="cumulativeAHOut"
                   position="top"
+                  offset={15} // Keep offset for label spacing
                   fill="#000"
-                  
                 />
               </Bar>
               <Line
