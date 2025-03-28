@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { tokens } from "../../theme";
 import {
   Modal,
@@ -37,6 +37,7 @@ import {
 const Team = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const tableRef = useRef(null);
 
   const [open, setOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
@@ -85,10 +86,27 @@ const Team = () => {
     fetchData();
   }, []);
 
-  const handleChangePage = (event, newPage) => setPage(newPage);
+  const handleChangePage = (event, newPage) => {
+    const currentPosition = tableRef.current?.getBoundingClientRect().top + window.scrollY;
+    setPage(newPage);
+    setTimeout(() => {
+      window.scrollTo({
+        top: currentPosition - 50,
+        behavior: "smooth",
+      });
+    }, 0);
+  };
+
   const handleChangeRowsPerPage = (event) => {
+    const currentPosition = tableRef.current?.getBoundingClientRect().top + window.scrollY;
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+    setPage(0); // Reset to first page
+    setTimeout(() => {
+      window.scrollTo({
+        top: currentPosition - 50,
+        behavior: "smooth",
+      });
+    }, 0);
   };
 
   const handleOpen = (mode, row = null) => {
@@ -97,7 +115,7 @@ const Team = () => {
       const mobileMatch = row.mobile.match(/(\+\d{1,3})(\d+)/);
       const countryCode = mobileMatch ? mobileMatch[1] : "+1";
       const phoneNumber = mobileMatch ? mobileMatch[2] : row.mobile;
-      
+
       setFormData({
         loginCredentialsId: row.loginCredentialsId,
         uname: row.userName,
@@ -239,12 +257,14 @@ const Team = () => {
         Add User
       </Button>
 
-      <UserTable
-        userData={userData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
-        handleOpen={handleOpen}
-        handleDelete={handleDeleteClick}
-        colors={colors}
-      />
+      <div ref={tableRef}>
+        <UserTable
+          userData={userData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
+          handleOpen={handleOpen}
+          handleDelete={handleDeleteClick}
+          colors={colors}
+        />
+      </div>
 
       <TablePagination
         rowsPerPageOptions={[5, 10, 25]}
@@ -305,12 +325,13 @@ const Team = () => {
   );
 };
 
+// UserTable with "User ID" removed
 const UserTable = ({ userData, handleOpen, handleDelete, colors }) => (
-  <Box m="30px 0 0 0" sx={{ border: "1px solid black", borderRadius: "6px", boxShadow: "0 4px 10px rgba(19, 17, 17, 0.5)" }}>
+  <Box m="30px 0 0 0" sx={{ border: "1px solid black", height:"400px",overflowY:"auto", borderRadius: "6px", boxShadow: "0 4px 10px rgba(19, 17, 17, 0.5)" }}>
     <Table>
       <TableHead>
         <TableRow>
-          {["User ID", "User Name", "Phone Number", "Email", "Access Level", "Actions"].map((header) => (
+          {["User Name", "Phone Number", "Email", "Access Level", "Actions"].map((header) => (
             <TableCell key={header} sx={{ fontWeight: "bold", textAlign: "center", background: "linear-gradient(to bottom, #d82b27, #f09819)", color: "#ffffff", padding: "12px" }}>
               {header}
             </TableCell>
@@ -320,7 +341,6 @@ const UserTable = ({ userData, handleOpen, handleDelete, colors }) => (
       <TableBody>
         {userData.map((row) => (
           <TableRow key={row.loginCredentialsId}>
-            <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>{row.loginCredentialsId}</TableCell>
             <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>{row.userName}</TableCell>
             <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>{row.mobile}</TableCell>
             <TableCell sx={{ textAlign: "center", fontWeight: "bold" }}>{row.email}</TableCell>

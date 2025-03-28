@@ -10,7 +10,7 @@ import {
   Line,
   LabelList,
 } from "recharts";
-import { Dialog, DialogTitle, DialogContent } from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, Typography } from "@mui/material";
 import { AppContext, formatDate } from "../../../services/AppContext";
 import { fetchCycleData } from "../../../services/apiService";
 
@@ -20,7 +20,6 @@ export default function AHGraph({ data }) {
   const [selectedCycleData, setSelectedCycleData] = useState([]);
   const [cycle, setCycle] = useState([]);
 
-  // Format data for the main graph
   const formattedData = data.map((item) => {
     const date = new Date(item.dayWiseDate);
     const month = date.toLocaleString("default", { month: "short" });
@@ -35,20 +34,18 @@ export default function AHGraph({ data }) {
       cumulativeAHOut: formatToTwoDecimals(item.cumulativeAHOut),
       cumulativeTotalAvgTemp: formatToTwoDecimals(item.cumulativeTotalAvgTemp),
       totalSoc: formatToTwoDecimals(item.totalSoc),
-      originalDate: item.dayWiseDate, // Store original date for filtering cycle
+      originalDate: item.dayWiseDate,
     };
   });
 
-  // Calculate max value for YAxis domain with extra buffer
   const maxAH = Math.max(
     ...formattedData.map((d) =>
       Math.max(parseFloat(d.cumulativeAHIn), parseFloat(d.cumulativeAHOut))
     ),
-    0 // Ensure max is at least 0
+    0
   );
-  const yAxisMax = Math.max(maxAH * 1.3, 10); // 30% buffer + minimum value of 10
+  const yAxisMax = Math.max(maxAH * 1.3, 10);
 
-  // Handle bar click
   const handleBarClick = async (barData) => {
     setCycle([]);
     setSelectedCycleData([]);
@@ -70,7 +67,7 @@ export default function AHGraph({ data }) {
         );
       })
       .map((item) => ({
-        cycleId: `Cycle-${item.id + 1}`, // Unique X-axis key
+        cycleId: `Cycle-${item.id + 1}`,
         cumulativeAHIn: formatToTwoDecimals(item.cumulativeAHIn),
         cumulativeAHOut: formatToTwoDecimals(item.cumulativeAHOut),
         cumulativeTotalAvgTemp: formatToTwoDecimals(item.cumulativeTotalAvgTemp),
@@ -81,12 +78,10 @@ export default function AHGraph({ data }) {
     setOpen(true);
   };
 
-  // Close dialog
   const handleClose = () => {
     setOpen(false);
   };
 
-  // Calculate max value for dialog YAxis domain with extra buffer
   const maxCycleAH =
     selectedCycleData.length > 0
       ? Math.max(
@@ -95,211 +90,316 @@ export default function AHGraph({ data }) {
           )
         )
       : 0;
-  const cycleYAxisMax = Math.max(maxCycleAH * 1.5, 10); // 30% buffer + minimum value of 10
+  const cycleYAxisMax = Math.max(maxCycleAH * 1.5, 10);
+
+  // Custom Tooltip component
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          padding: '10px 15px',
+          borderRadius: '8px',
+          border: '1px solid #e0e0e0',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          <p style={{ margin: '0 0 5px', fontWeight: 'bold', color: '#333' }}>{label}</p>
+          {payload.map((entry, index) => (
+            <p key={index} style={{ margin: '2px 0', color: entry.color }}>
+              {entry.name}: {entry.value}{entry.name === 'Temperature' ? '°C' : entry.name === 'SOC' ? '%' : 'AH'}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const chartStyle = {
+    background: '#ffffff',
+    borderRadius: '12px',
+    padding: '20px',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+  };
 
   return (
     <>
-      {/* Main Graph */}
-      <ResponsiveContainer width="100%" height={350}> {/* Increased height */}
-        <ComposedChart
-          data={formattedData}
-          margin={{ top: 50, right: 20, bottom: 20, left: 20 }} // Added top margin
-        >
-          <XAxis dataKey="date" />
-          <YAxis
-            yAxisId="left"
-            hide={true}
-            domain={[0, yAxisMax]} // Keep domain for scaling
-            label={{
-              value: "Amp Hours",
-              angle: -90,
-              position: "insideLeft",
-              offset: -5,
-            }}
-          />
-          <YAxis
-            yAxisId="right"
-            hide={true}
-            orientation="right"
-            label={{
-              value: "Temperature (°C) / SOC (%)",
-              angle: -90,
-              position: "insideRight",
-              offset: -5,
-            }}
-          />
-          <Tooltip
-            formatter={(value, name) => {
-              if (name === "Temperature") return [`${value} °C`, "Temperature"];
-              if (name === "SOC") return [`${value} %`, "SOC"];
-              return [`${value} AH`, name];
-            }}
-          />
-          <Legend />
-          <defs>
-            <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#003366" stopOpacity={1} />
-              <stop offset="100%" stopColor="#0f52ba" stopOpacity={1} />
-            </linearGradient>
-            <linearGradient id="orange" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#d82b27" />
-              <stop offset="100%" stopColor="#f09819" />
-            </linearGradient>
-          </defs>
-          <Bar
-            yAxisId="left"
-            dataKey="cumulativeAHIn"
-            name="AH In"
-            fill="url(#blueGradient)"
-            barSize={40}
-            onClick={handleBarClick}
+      <div style={chartStyle}>
+        <ResponsiveContainer width="100%" height={400}>
+          <ComposedChart
+            data={formattedData}
+            margin={{ top: 20, right: 30, bottom: 20, left: 30 }}
           >
-            <LabelList
+            <XAxis 
+              dataKey="date"
+              tick={{ fill: '#666', fontSize: 12 }}
+              tickLine={{ stroke: '#e0e0e0' }}
+              axisLine={{ stroke: '#e0e0e0' }}
+            />
+            <YAxis
+              yAxisId="left"
+              domain={[0, yAxisMax]}
+              tick={{ fill: '#666', fontSize: 12 }}
+              tickLine={{ stroke: '#e0e0e0' }}
+              axisLine={{ stroke: '#e0e0e0' }}
+              label={{
+                value: "Amp Hours",
+                angle: -90,
+                position: "insideLeft",
+                offset: 10,
+                fill: '#666',
+                fontSize: 14,
+              }}
+            />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              tick={{ fill: '#666', fontSize: 12 }}
+              tickLine={{ stroke: '#e0e0e0' }}
+              axisLine={{ stroke: '#e0e0e0' }}
+              label={{
+                value: "Temp (°C) / SOC (%)",
+                angle: 90,
+                position: "insideRight",
+                offset: 10,
+                fill: '#666',
+                fontSize: 14,
+              }}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend 
+              wrapperStyle={{
+                paddingTop: '20px',
+                fontSize: 14,
+              }}
+            />
+            <defs>
+              <linearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#4a90e2" stopOpacity={0.9} />
+                <stop offset="100$" stopColor="#2b6cb0" stopOpacity={0.9} />
+              </linearGradient>
+              <linearGradient id="orangeGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#ff7f50" stopOpacity={0.9} />
+                <stop offset="100%" stopColor="#e64a19" stopOpacity={0.9} />
+              </linearGradient>
+            </defs>
+            <Bar
+              yAxisId="left"
               dataKey="cumulativeAHIn"
-              position="top"
-              offset={15} // Keep offset for label spacing
-              fill="#000"
-            />
-          </Bar>
-          <Bar
-            yAxisId="left"
-            dataKey="cumulativeAHOut"
-            name="AH Out"
-            fill="url(#orange)"
-            barSize={40}
-            onClick={handleBarClick}
-          >
-            <LabelList
-              dataKey="cumulativeAHOut"
-              position="top"
-              offset={15} // Keep offset for label spacing
-              fill="#000"
-            />
-          </Bar>
-          <Line
-            yAxisId="right"
-            dataKey="cumulativeTotalAvgTemp"
-            name="Temperature"
-            stroke="#8884d8"
-            strokeWidth={2}
-            dot={false}
-          />
-          <Line
-            yAxisId="right"
-            dataKey="totalSoc"
-            name="SOC"
-            stroke="#82ca9d"
-            strokeWidth={2}
-            dot={false}
-          />
-        </ComposedChart>
-      </ResponsiveContainer>
-
-      {/* Dialog with Cycle Bar Graph */}
-      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-        <DialogTitle>
-          Cycle Data for{" "}
-          {selectedCycleData.length > 0 &&
-            new Date(
-              cycle.find(
-                (item) =>
-                  item.id === parseInt(selectedCycleData[0].cycleId.split("-")[1]) - 1
-              ).dayWiseDate
-            ).toDateString()}
-        </DialogTitle>
-        <DialogContent>
-          <ResponsiveContainer width="100%" height={350}> {/* Increased height */}
-            <ComposedChart
-              data={selectedCycleData}
-              margin={{ top: 50, right: 20, bottom: 20, left: 20 }} // Added top margin
+              name="AH In"
+              fill="url(#blueGradient)"
+              barSize={30}
+              radius={[4, 4, 0, 0]}
+              onClick={handleBarClick}
+              style={{ cursor: 'pointer' }}
             >
-              <XAxis dataKey="cycleId" />
-              <YAxis
-                hide={true}
-                yAxisId="left"
-                domain={[0, cycleYAxisMax]} // Keep domain for scaling
-                label={{
-                  value: "Amp Hours",
-                  angle: -90,
-                  position: "insideLeft",
-                  offset: -5,
-                }}
-              />
-              <YAxis
-                hide={true}
-                yAxisId="right"
-                orientation="right"
-                label={{
-                  value: "Temperature (°C) / SOC (%)",
-                  angle: 90,
-                  position: "insideRight",
-                  offset: -5,
-                }}
-              />
-              <Tooltip
-                formatter={(value, name) => {
-                  if (name === "Temperature") return [`${value} °C`, "Temperature"];
-                  if (name === "SOC") return [`${value} %`, "SOC"];
-                  return [`${value} AH`, name];
-                }}
-              />
-              <Legend />
-              <defs>
-                <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#003366" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#0f52ba" stopOpacity={1} />
-                </linearGradient>
-                <linearGradient id="orange" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#d82b27" />
-                  <stop offset="100%" stopColor="#f09819" />
-                </linearGradient>
-              </defs>
-              <Bar
-                yAxisId="left"
+              <LabelList
                 dataKey="cumulativeAHIn"
-                name="AH In"
-                fill="url(#blueGradient)"
-                barSize={40}
-              >
-                <LabelList
-                  dataKey="cumulativeAHIn"
-                  position="top"
-                  offset={15} // Keep offset for label spacing
-                  fill="#000"
-                />
-              </Bar>
-              <Bar
-                yAxisId="left"
+                position="top"
+                offset={10}
+                fill="#333"
+                fontSize={12}
+                fontWeight="bold"
+              />
+            </Bar>
+            <Bar
+              yAxisId="left"
+              dataKey="cumulativeAHOut"
+              name="AH Out"
+              fill="url(#orangeGradient)"
+              barSize={30}
+              radius={[4, 4, 0, 0]}
+              onClick={handleBarClick}
+              style={{ cursor: 'pointer' }}
+            >
+              <LabelList
                 dataKey="cumulativeAHOut"
-                name="AH Out"
-                fill="url(#orange)"
-                barSize={40}
+                position="top"
+                offset={10}
+                fill="#333"
+                fontSize={12}
+                fontWeight="bold"
+              />
+            </Bar>
+            <Line
+              yAxisId="right"
+              dataKey="cumulativeTotalAvgTemp"
+              name="Temperature"
+              stroke="#9b59b6"
+              strokeWidth={3}
+              dot={false}
+              activeDot={{ r: 6 }}
+            />
+            <Line
+              yAxisId="right"
+              dataKey="totalSoc"
+              name="SOC"
+              stroke="#2ecc71"
+              strokeWidth={3}
+              dot={false}
+              activeDot={{ r: 6 }}
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+
+      <Dialog 
+        open={open} 
+        onClose={handleClose} 
+        maxWidth="md" 
+        fullWidth
+        PaperProps={{
+          style: {
+            borderRadius: '12px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+          }
+        }}
+      >
+        <DialogTitle style={{ 
+          background: '#f8f9fa',
+          borderBottom: '1px solid #e0e0e0',
+          padding: '15px 24px'
+        }}>
+          <Typography variant="h6" style={{ color: '#333' }}>
+            Cycle Data for{" "}
+            {selectedCycleData.length > 0 &&
+              new Date(
+                cycle.find(
+                  (item) =>
+                    item.id === parseInt(selectedCycleData[0].cycleId.split("-")[1]) - 1
+                ).dayWiseDate
+              ).toDateString()}
+          </Typography>
+        </DialogTitle>
+        <DialogContent style={{ padding: '20px' }}>
+          {selectedCycleData.length === 0 ? (
+            <Typography 
+              variant="h6" 
+              align="center" 
+              style={{ 
+                padding: '40px 20px',
+                color: '#666',
+                background: '#f8f9fa',
+                borderRadius: '8px',
+                margin: '20px 0'
+              }}
+            >
+              No cycles available for this date
+            </Typography>
+          ) : (
+            <ResponsiveContainer width="100%" height={400}>
+              <ComposedChart
+                data={selectedCycleData}
+                margin={{ top: 20, right: 30, bottom: 20, left: 30 }}
               >
-                <LabelList
-                  dataKey="cumulativeAHOut"
-                  position="top"
-                  offset={15} // Keep offset for label spacing
-                  fill="#000"
+                <XAxis 
+                  dataKey="cycleId"
+                  tick={{ fill: '#666', fontSize: 12 }}
+                  tickLine={{ stroke: '#e0e0e0' }}
+                  axisLine={{ stroke: '#e0e0e0' }}
                 />
-              </Bar>
-              <Line
-                yAxisId="right"
-                dataKey="cumulativeTotalAvgTemp"
-                name="Temperature"
-                stroke="#8884d8"
-                strokeWidth={2}
-                dot={false}
-              />
-              <Line
-                yAxisId="right"
-                dataKey="totalSoc"
-                name="SOC"
-                stroke="#82ca9d"
-                strokeWidth={2}
-                dot={false}
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
+                <YAxis
+                  yAxisId="left"
+                  domain={[0, cycleYAxisMax]}
+                  tick={{ fill: '#666', fontSize: 12 }}
+                  tickLine={{ stroke: '#e0e0e0' }}
+                  axisLine={{ stroke: '#e0e0e0' }}
+                  label={{
+                    value: "Amp Hours",
+                    angle: -90,
+                    position: "insideLeft",
+                    offset: 10,
+                    fill: '#666',
+                    fontSize: 14,
+                  }}
+                />
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  tick={{ fill: '#666', fontSize: 12 }}
+                  tickLine={{ stroke: '#e0e0e0' }}
+                  axisLine={{ stroke: '#e0e0e0' }}
+                  label={{
+                    value: "Temp (°C) / SOC (%)",
+                    angle: 90,
+                    position: "insideRight",
+                    offset: 10,
+                    fill: '#666',
+                    fontSize: 14,
+                  }}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend 
+                  wrapperStyle={{
+                    paddingTop: '20px',
+                    fontSize: 14,
+                  }}
+                />
+                <defs>
+                  <linearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#4a90e2" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#2b6cb0" stopOpacity={0.9} />
+                  </linearGradient>
+                  <linearGradient id="orangeGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#ff7f50" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#e64a19" stopOpacity={0.9} />
+                  </linearGradient>
+                </defs>
+                <Bar
+                  yAxisId="left"
+                  dataKey="cumulativeAHIn"
+                  name="AH In"
+                  fill="url(#blueGradient)"
+                  barSize={30}
+                  radius={[4, 4, 0, 0]}
+                >
+                  <LabelList
+                    dataKey="cumulativeAHIn"
+                    position="top"
+                    offset={10}
+                    fill="#333"
+                    fontSize={12}
+                    fontWeight="bold"
+                  />
+                </Bar>
+                <Bar
+                  yAxisId="left"
+                  dataKey="cumulativeAHOut"
+                  name="AH Out"
+                  fill="url(#orangeGradient)"
+                  barSize={30}
+                  radius={[4, 4, 0, 0]}
+                >
+                  <LabelList
+                    dataKey="cumulativeAHOut"
+                    position="top"
+                    offset={10}
+                    fill="#333"
+                    fontSize={12}
+                    fontWeight="bold"
+                  />
+                </Bar>
+                <Line
+                  yAxisId="right"
+                  dataKey="cumulativeTotalAvgTemp"
+                  name="Temperature"
+                  stroke="#9b59b6"
+                  strokeWidth={3}
+                  dot={false}
+                  activeDot={{ r: 6 }}
+                />
+                <Line
+                  yAxisId="right"
+                  dataKey="totalSoc"
+                  name="SOC"
+                  stroke="#2ecc71"
+                  strokeWidth={3}
+                  dot={false}
+                  activeDot={{ r: 6 }}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          )}
         </DialogContent>
       </Dialog>
     </>

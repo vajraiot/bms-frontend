@@ -1,19 +1,18 @@
 import React from "react";
 import {
-  ComposedChart, // Use ComposedChart to combine Bar and Line charts
+  ComposedChart,
   Bar,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   Legend,
   ResponsiveContainer,
   LabelList,
-  Line, // Add Line component for temperature and SOC
+  Line,
 } from "recharts";
 
 const MonthlyEnergyChart = ({ data = [] }) => {
-  console.log("Chart Data:", data); // Debugging: Check the data being passed
+  console.log("Chart Data:", data);
 
   if (!data || data.length === 0) {
     return (
@@ -23,107 +22,170 @@ const MonthlyEnergyChart = ({ data = [] }) => {
     );
   }
 
+  // Calculate max value for YAxis domain
+  const maxEnergy = Math.max(
+    ...data.map((d) =>
+      Math.max(
+        parseFloat(d.totalChargingEnergy),
+        parseFloat(d.totalDischargingEnergy)
+      )
+    )
+  );
+  const yAxisMax = Math.max(maxEnergy * 1.3, 10);
+
+  // Custom Tooltip
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div
+          style={{
+            backgroundColor: "rgba(255, 255, 255, 0.95)",
+            padding: "10px 15px",
+            borderRadius: "8px",
+            border: "1px solid #e0e0e0",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+          }}
+        >
+          <p style={{ margin: "0 0 5px", fontWeight: "bold", color: "#333" }}>
+            {label}
+          </p>
+          {payload.map((entry, index) => (
+            <p key={index} style={{ margin: "2px 0", color: entry.color }}>
+              {entry.name}: {parseFloat(entry.value).toFixed(2)}
+              {entry.name === "Temperature"
+                ? "°C"
+                : entry.name === "SOC"
+                ? "%"
+                : " kWh"}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const chartStyle = {
+    background: "#ffffff",
+    borderRadius: "12px",
+    padding: "20px",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+  };
+
   return (
     <div className="w-full h-96 mt-8">
-      <div className="w-full h-full p-4 bg-white rounded-lg shadow-lg">
-        <ResponsiveContainer width="100%" height={300}>
+      <div style={chartStyle}>
+        <ResponsiveContainer width="100%" height={300}> {/* Decreased height from 400 to 300 */}
           <ComposedChart
             data={data}
-            barSize={40}
-            margin={{ bottom: 40 }} // Adjust bottom margin to fit rotated labels
-            barGap={1}
-            sx={{
-              marginTop: 2,
-            }}
-            scale="linear"
+            margin={{ top: 20, right: 10, bottom: 10, left: 10 }}
           >
-            {/* <CartesianGrid strokeDasharray="3 3" /> */}
-            <XAxis dataKey="month" />
+            <XAxis
+              dataKey="month"
+              tick={{ fill: "#666", fontSize: 12 }}
+              tickLine={{ stroke: "#e0e0e0" }}
+              axisLine={{ stroke: "#e0e0e0" }}
+            />
             <YAxis
               yAxisId="left"
-              hide={true}
-              tick={{ fontSize: 0, color: "black", fontWeight: 500 }}
-              tickCount={10}
+              domain={[0, yAxisMax]}
+              tick={{ fill: "#666", fontSize: 12 }}
+              tickLine={{ stroke: "#e0e0e0" }}
+              axisLine={{ stroke: "#e0e0e0" }}
               label={{
                 value: "Energy (kWh)",
                 angle: -90,
-                position: "insideLeft",
-                offset: -5,
+                position: "outsideLeft",
+                offset: 10,
+                fill: "#666",
+                fontSize: 14,
               }}
             />
             <YAxis
               yAxisId="right"
-              hide={true}
               orientation="right"
+              tick={{ fill: "#666", fontSize: 12 }}
+              tickLine={{ stroke: "#e0e0e0" }}
+              axisLine={{ stroke: "#e0e0e0" }}
               label={{
-                value: "Temperature (°C) / SOC (%)",
-                angle: -90,
-                position: "insideRight",
-                offset: -5,
+                value: "Temp (°C) / SOC (%)",
+                angle: 90,
+                position: "outsideRight",
+                offset: 10,
+                fill: "#666",
+                fontSize: 14,
               }}
             />
-             <Tooltip
-              formatter={(value, name) => {
-                const formattedValue = parseFloat(value).toFixed(2); // Parse and fix to 2 decimal places
-                if (name === "Temperature") {
-                  return [`${formattedValue} °C`, "Temperature"];
-                } else if (name === "SOC") {
-                  return [`${formattedValue} %`, "SOC"];
-                } else {
-                  return [`${formattedValue} AH`, name];
-                }
+            <Tooltip content={<CustomTooltip />} />
+            <Legend
+              wrapperStyle={{
+                paddingTop: "20px",
+                fontSize: 14,
               }}
             />
-            <Legend />
             <defs>
-              <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#003366" stopOpacity={1} />
-                <stop offset="100%" stopColor="#0f52ba" stopOpacity={1} />
+              <linearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#4a90e2" stopOpacity={0.9} />
+                <stop offset="100%" stopColor="#2b6cb0" stopOpacity={0.9} />
               </linearGradient>
-              <linearGradient id="orange" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#d82b27" />
-                <stop offset="100%" stopColor="#f09819" />
+              <linearGradient id="orangeGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#ff7f50" stopOpacity={0.9} />
+                <stop offset="100%" stopColor="#e64a19" stopOpacity={0.9} />
               </linearGradient>
             </defs>
             <Bar
               yAxisId="left"
               dataKey="totalChargingEnergy"
+              name="Charging Energy"
               fill="url(#blueGradient)"
+              barSize={30}
+              radius={[4, 4, 0, 0]}
             >
               <LabelList
                 dataKey="totalChargingEnergy"
                 position="top"
-                fill="#000"
-                formatter={(value) => value.toFixed(2)} // Format the value to 2 decimal places
+                offset={10}
+                fill="#333"
+                fontSize={12}
+                fontWeight="bold"
+                formatter={(value) => parseFloat(value).toFixed(2)}
               />
             </Bar>
             <Bar
               yAxisId="left"
               dataKey="totalDischargingEnergy"
-              fill="url(#orange)"
+              name="Discharging Energy"
+              fill="url(#orangeGradient)"
+              barSize={30}
+              radius={[4, 4, 0, 0]}
             >
               <LabelList
                 dataKey="totalDischargingEnergy"
                 position="top"
-                fill="#000"
-                formatter={(value) => value.toFixed(2)} // Format the value to 2 decimal places
+                offset={10}
+                fill="#333"
+                fontSize={12}
+                fontWeight="bold"
+                formatter={(value) => parseFloat(value).toFixed(2)}
               />
             </Bar>
             <Line
               yAxisId="right"
               dataKey="sumCumulativeTotalAvgTemp"
               name="Temperature"
-              stroke="#8884d8"
-              strokeWidth={2}
+              stroke="#9b59b6"
+              strokeWidth={3}
               dot={false}
+              activeDot={{ r: 6 }}
             />
             <Line
               yAxisId="right"
               dataKey="sumTotalSoc"
               name="SOC"
-              stroke="#82ca9d" // Green color for SOC
-              strokeWidth={2}
+              stroke="#2ecc71"
+              strokeWidth={3}
               dot={false}
+              activeDot={{ r: 6 }}
             />
           </ComposedChart>
         </ResponsiveContainer>

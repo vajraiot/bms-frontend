@@ -1,7 +1,14 @@
-import React, { useContext , useEffect} from "react";
+import React, { useContext, useEffect, useState } from "react"; // Added useState
 import { useTheme } from "@mui/material";
 import { ColorModeContext, tokens } from "../../../theme";
-import { Box, IconButton, TextField, Autocomplete, Paper } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  TextField,
+  Autocomplete,
+  Paper,
+  CircularProgress, // Added CircularProgress
+} from "@mui/material";
 import { AppContext } from "../../../services/AppContext";
 import { fetchMonthlyBatteryandChargerdetails } from "../../../services/apiService";
 import * as XLSX from "xlsx";
@@ -17,8 +24,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TablePagination,
-  TableSortLabel,
   Typography,
 } from "@mui/material";
 
@@ -37,12 +42,9 @@ const columnMappings = {
 const Monthly = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const { data: contextData = [] , errors} = useContext(AppContext); // Default to empty array
+  const { data: contextData = [], errors } = useContext(AppContext); // Default to empty array
   const data = Array.isArray(contextData) ? contextData : []; // Ensure data is always an array
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [order, setOrder] = React.useState("asc");
-  const [orderBy, setOrderBy] = React.useState("month");
+  const [loading, setLoading] = useState(false); // Added loading state
 
   const {
     siteOptions,
@@ -57,6 +59,7 @@ const Monthly = () => {
     setMonth,
     setData,
   } = useContext(AppContext);
+
   useEffect(() => {
     if (location.pathname === "/monthly") { // Adjust path based on your route
       setSiteId(""); // Clear Site ID
@@ -69,6 +72,7 @@ const Monthly = () => {
 
   const handleSearch = async () => {
     if (siteId && serialNumber && year && month) {
+      setLoading(true); // Set loading to true before fetching
       try {
         const result = await fetchMonthlyBatteryandChargerdetails(
           serialNumber,
@@ -80,31 +84,21 @@ const Monthly = () => {
       } catch (error) {
         console.error("Error during search:", error);
         setData([]); // Fallback to empty array on error
+      } finally {
+        setLoading(false); // Set loading to false after fetching (success or error)
       }
     } else {
       console.error("Please select all fields.");
       setData([]); // Fallback to empty array if fields are missing
     }
   };
+
   const clearOptions = () => {
     setSiteId(""); // Reset Site ID
     setSerialNumber(""); // Reset Serial Number
     setYear("");
     setMonth("");
-  };
-  const handleRequestSort = (property) => {
-    const isAscending = orderBy === property && order === "asc";
-    setOrder(isAscending ? "desc" : "asc");
-    setOrderBy(property);
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+    setData([]);
   };
 
   const formatData = (data) => {
@@ -151,21 +145,11 @@ const Monthly = () => {
     });
   };
 
-  const sortedData = (data) => {
-    return [...data].sort((a, b) => {
-      if (order === "asc") {
-        return a[orderBy] > b[orderBy] ? 1 : -1;
-      }
-      return a[orderBy] < b[orderBy] ? 1 : -1;
-    });
-  };
-
   const formattedData = formatData(data);
-  const displayedData = sortedData(formattedData);
 
   const handleDownloadExcel = () => {
     const workbook = XLSX.utils.book_new();
-    const excelData = displayedData.map((row) =>
+    const excelData = formattedData.map((row) =>
       Object.keys(row).map((key) => row[key] ?? "No Data")
     );
     const headers = Object.keys(formattedData[0] || {}).map(
@@ -183,6 +167,7 @@ const Monthly = () => {
       {/* Search Inputs */}
       <Box display="grid" gridTemplateColumns="repeat(5, 1fr)" gap={2}>
         <Autocomplete
+          freeSolo
           options={siteOptions.map((site) => site.siteId)}
           value={siteId}
           onChange={(event, newValue) => setSiteId(newValue)}
@@ -194,50 +179,56 @@ const Monthly = () => {
             );
           }}
           renderInput={(params) => (
-            <TextField {...params} label="Substation ID"   InputLabelProps={{
-              sx: {
-                fontWeight: "bold",
-              },
-            }}
-            fullWidth
-            error={errors.siteId}
-            helperText={errors.siteId ? "Please enter Site ID" : ""}
-            sx={{
-              "& .MuiInputBase-root": {
-                fontWeight: "bold",
-                height: "35px",
-                marginTop: "5px",
-              },
-            }}
-          />
-        )}
-        sx={{ width: "150px" }}
+            <TextField
+              {...params}
+              label="Substation ID"
+              InputLabelProps={{
+                sx: {
+                  fontWeight: "bold",
+                },
+              }}
+              fullWidth
+              error={errors.siteId}
+              helperText={errors.siteId ? "Please enter Site ID" : ""}
+              sx={{
+                "& .MuiInputBase-root": {
+                  fontWeight: "bold",
+                  height: "35px",
+                  marginTop: "5px",
+                },
+              }}
+            />
+          )}
+          sx={{ width: "150px" }}
         />
         <Autocomplete
           options={serialNumberOptions}
           value={serialNumber}
           onChange={(event, newValue) => setSerialNumber(newValue)}
           renderInput={(params) => (
-            <TextField {...params} label="Serial Number"   InputLabelProps={{
-              sx: {
-                fontWeight: "bold",
-              },
-            }}
-            fullWidth
-            error={errors.serialNumber}
-            helperText={errors.serialNumber ? "Please enter Serial Number" : ""}
-            sx={{
-              "& .MuiInputBase-root": {
-                fontWeight: "bold",
-                height: "35px",
-                marginTop: "5px",
-              },
-            }}
-          />
-        )}
-        sx={{ width: "150px" }}
-      />
-       <TextField
+            <TextField
+              {...params}
+              label="Serial Number"
+              InputLabelProps={{
+                sx: {
+                  fontWeight: "bold",
+                },
+              }}
+              fullWidth
+              error={errors.serialNumber}
+              helperText={errors.serialNumber ? "Please enter Serial Number" : ""}
+              sx={{
+                "& .MuiInputBase-root": {
+                  fontWeight: "bold",
+                  height: "35px",
+                  marginTop: "5px",
+                },
+              }}
+            />
+          )}
+          sx={{ width: "150px" }}
+        />
+        <TextField
           label="Month"
           type="month"
           value={month ? `${year}-${month}` : ""}
@@ -263,106 +254,106 @@ const Monthly = () => {
             shrink: true,
           }}
         />
-        <IconButton onClick={handleSearch} disabled={!siteId || !serialNumber|| !year|| !month}>
+        <IconButton onClick={handleSearch} disabled={!siteId || !serialNumber || !year || !month || loading}>
           <SearchIcon />
         </IconButton>
         <Box onClick={clearOptions} sx={{ cursor: "pointer" }}>
-          <Typography variant="body1" sx={{ fontSize: 15 ,marginTop:1}}>
+          <Typography variant="body1" sx={{ fontSize: 15, marginTop: 1 }}>
             ❌
           </Typography>
+        </Box>
       </Box>
-      </Box>
-       
 
       {/* Excel Download */}
       <Box display="flex" justifyContent="flex-end" alignItems="center">
-        <IconButton onClick={handleDownloadExcel}>
+        <IconButton onClick={handleDownloadExcel} disabled={loading}>
           <img src={excelIcon} alt="Download Excel" style={{ width: "24px", height: "24px" }} />
         </IconButton>
       </Box>
 
-      {/* Charts */}
-      <Box gridColumn="span 2" display="flex" flexDirection="row" gap={2}>
-        <Box flex={1} height={200}>
-          <Paper elevation={8}>
-            <MonthlyAHChart data={data} />
-          </Paper>
-        </Box>
-        <Box flex={1}>
-          <Paper elevation={8}>
-            <MonthlyEnergyChart data={data} />
-          </Paper>
-        </Box>
-      </Box>
-
-      {/* Table */}
-      {formattedData.length > 0 ? (
-        <Box padding="0px 10px" gridColumn="span 2">
-          <TableContainer component={Paper} 
-          sx={{
-              marginTop: 1,
-              overflowX: "auto",
-              borderRadius: "8px",
-              width: "100%",
-              border: "1px solid black",
-              
-            }}>
-            <Table stickyHeader>
-              <TableHead>
-                <TableRow>
-                  {Object.keys(formattedData[0]).map((key) => (
-                    <TableCell key={key}
-                     sx={{
-                      fontWeight: "bold",
-                      background: "linear-gradient(to bottom, #d82b27, #f09819) !important",
-                      color: "#ffffff",
-                      padding: '3px',
-                      minWidth: "150px",
-                      whiteSpace: "nowrap",
-                      textAlign:"center"
-                    }}>
-                      <TableSortLabel
-                        active={orderBy === key}
-                        direction={orderBy === key ? order : "asc"}
-                        onClick={() => handleRequestSort(key)}
-                      >
-                        {columnMappings[key] || key}
-                      </TableSortLabel>
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {displayedData
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((row, index) => (
-                    <TableRow key={index}>
-                      {Object.values(row).map((value, idx) => (
-                        <TableCell key={idx} sx={{ 
-                          border: '1px solid #ccc',
-                          padding: '5px',
-                          fontWeight: 'bold',
-                          textAlign:"center"
-                        }}>{value}</TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 15]}
-            count={formattedData.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
+      {/* Loading Indicator or Content */}
+      {loading ? (
+        <Box gridColumn="span 2" display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <CircularProgress />
         </Box>
       ) : (
-        <Typography variant="body1" sx={{ marginTop: 2 }}>
-          No data available
-        </Typography>
+        <>
+          {/* Charts */}
+          <Box gridColumn="span 2" display="flex" flexDirection="row" gap={2}>
+            <Box flex={1} height={200}>
+              <Paper elevation={8}>
+                <MonthlyAHChart data={data} />
+              </Paper>
+            </Box>
+            <Box flex={1}>
+              <Paper elevation={8}>
+                <MonthlyEnergyChart data={data} />
+              </Paper>
+            </Box>
+          </Box>
+
+          {/* Table */}
+          {formattedData.length > 0 ? (
+            <Box padding="0px 10px" gridColumn="span 2">
+              <TableContainer
+                component={Paper}
+                sx={{
+                  marginTop: 1,
+                  overflowX: "auto",
+                  borderRadius: "8px",
+                  width: "100%",
+                  border: "1px solid black",
+                }}
+              >
+                <Table stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      {Object.keys(formattedData[0]).map((key) => (
+                        <TableCell
+                          key={key}
+                          sx={{
+                            fontWeight: "bold",
+                            background: "linear-gradient(to bottom, #d82b27, #f09819) !important",
+                            color: "#ffffff",
+                            padding: "3px",
+                            minWidth: "150px",
+                            whiteSpace: "nowrap",
+                            textAlign: "center",
+                          }}
+                        >
+                          {columnMappings[key] || key}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {formattedData.map((row, index) => (
+                      <TableRow key={index}>
+                        {Object.values(row).map((value, idx) => (
+                          <TableCell
+                            key={idx}
+                            sx={{
+                              border: "1px solid #ccc",
+                              padding: "5px",
+                              fontWeight: "bold",
+                              textAlign: "center",
+                            }}
+                          >
+                            {value}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          ) : (
+            <Typography variant="body1" sx={{ marginTop: 2, gridColumn: "span 2" }}>
+              No data available
+            </Typography>
+          )}
+        </>
       )}
     </Box>
   );
