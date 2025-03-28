@@ -34,7 +34,11 @@ export const AppProvider = ({ children }) => {
     startDate: false,
     endDate: false,
   });
+  const[pageType,setPageType]=useState("")
 
+const[dayDaywiseData,setDayWiseData]=useState([])
+const[alarmsData,setAlarmsData]=useState([])
+const[realTimeData,setrealTimeData]=useState([])
   useEffect(() => {
     const fetchOptions = async () => {
       if (!token) return; // Only fetch options if the token exists
@@ -50,7 +54,11 @@ export const AppProvider = ({ children }) => {
     };
     fetchOptions();
   }, [token]); // Depend on token instead of isAuthenticated
-
+  useEffect(() => {
+    if (siteId && serialNumber && startDate && endDate && data.content.length>0) {
+      handleAnalytics(pageType);
+    }
+  }, [page, rowsPerPage]);
   const handleSiteIdChange = (selectedSiteId) => {
     setSiteId(selectedSiteId);
     setSerialNumber("");
@@ -99,7 +107,7 @@ export const AppProvider = ({ children }) => {
       console.error("Please select both Site ID and Serial Number.");
     }
   };
-  const handleAnalytics = async (pageType) => {
+  const handleAnalytics = async () => {
     // Check for empty fields and update errors state
     const newErrors = {
       siteId: !siteId,
@@ -115,10 +123,10 @@ export const AppProvider = ({ children }) => {
     }
 
     try {
-   
+      setDayWiseData([])
+      setAlarmsData([])
+      setrealTimeData([])
       setLoadingReport(true);
-      setData([])
-
       let result;
       switch (pageType) {
         case "historical":
@@ -128,6 +136,7 @@ export const AppProvider = ({ children }) => {
             startDate,
             endDate,page,rowsPerPage
           );
+          //setrealTimeData(result)
           setTotalRecords(result.page.totalElements)
           break;
 
@@ -138,6 +147,7 @@ export const AppProvider = ({ children }) => {
             startDate,
             endDate,page,rowsPerPage
           );
+          setDayWiseData(result);
           setTotalRecords(result.totalElements)
           break;
 
@@ -149,6 +159,7 @@ export const AppProvider = ({ children }) => {
             endDate
             ,page,rowsPerPage
           );
+          setAlarmsData(result)
           setTotalRecords(result.page.totalElements)
           break;
 
@@ -156,7 +167,7 @@ export const AppProvider = ({ children }) => {
           throw new Error("Invalid page type");
       }
 
-      setData(result); // Update report data
+      return result;
      
     } catch (error) {
       console.error("Error during search:", error);
@@ -209,9 +220,10 @@ export const AppProvider = ({ children }) => {
     setLiveTime,
     mapMarkers,
     setMapMarkers,
-    token,
-    setToken,
-    page, setPage,rowsPerPage, setRowsPerPage,loadingReport,errors,totalRecords, setTotalRecords,handleAnalytics
+    token,pageType,setPageType,
+    setToken,dayDaywiseData,alarmsData,realTimeData,setDayWiseData,setAlarmsData,setrealTimeData,
+    page, setPage,rowsPerPage, setRowsPerPage,loadingReport,errors,totalRecords, setTotalRecords,
+    handleAnalytics
   };
 
   return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;

@@ -16,7 +16,6 @@ import {
   TableSortLabel,
 } from "@mui/material";
 import { downloadHistoricalBatteryandChargerdetails } from '../../../services/apiService';
-
 const columnMappings = {
   serverTime: "Server Date Time",
   packetDateTime: "Packet Date Time",
@@ -52,7 +51,7 @@ const columnMappings = {
 const Historical = () => {
   const theme = useTheme();
   const { 
-    data = {}, 
+    realTimeData = {}, 
     page, 
     setPage, 
     rowsPerPage, 
@@ -62,18 +61,9 @@ const Historical = () => {
     startDate, 
     endDate, 
     totalRecords,
-    loadingReport // Using the loading state from your context
+    loadingReport
   } = useContext(AppContext);
   
-  const [order, setOrder] = useState("desc");
-  const [orderBy, setOrderBy] = useState("packetDateTime");
-
-  const handleRequestSort = (property) => {
-    const isAscending = orderBy === property && order === "asc";
-    setOrder(isAscending ? "desc" : "asc");
-    setOrderBy(property);
-  };
-
   const formatTimeStamp = (dateString) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleString("en-US", {
@@ -111,29 +101,18 @@ const Historical = () => {
     setPage(0);
   };
 
-  const dataArray = Array.isArray(data.content) ? data.content : [data];
-
-  const sortedData = React.useMemo(() => {
-    return [...dataArray].sort((a, b) => {
-      const valueA = a[orderBy];
-      const valueB = b[orderBy];
-      
-      if (order === "asc") {
-        return valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
-      }
-      return valueA < valueB ? 1 : valueA > valueB ? -1 : 0;
-    });
-  }, [dataArray, order, orderBy]);
-
+  const dataArray = Array.isArray(realTimeData.content) ? realTimeData.content : [realTimeData];
   const displayedColumns = Object.keys(columnMappings);
 
   const handleDownloadExcel = () => {
-    downloadHistoricalBatteryandChargerdetails(
-      siteId,
-      serialNumber,
-      formatDate(startDate),
-      formatDate(endDate)
-    );
+    if(siteId && serialNumber && startDate && endDate){
+      downloadHistoricalBatteryandChargerdetails(
+        siteId,
+        serialNumber,
+        formatDate(startDate),
+        formatDate(endDate)
+      );
+    }
   };
 
   return (
@@ -169,7 +148,7 @@ const Historical = () => {
           <CircularProgress />
           <Typography variant="body1">Loading historical data...</Typography>
         </Box>
-      ) : sortedData.length > 0 && Object.keys(data).length > 0 ? (
+      ) : dataArray.length > 0 && Object.keys(realTimeData).length > 0 ? (
         <>
           <TableContainer
             component={Paper}
@@ -197,20 +176,16 @@ const Historical = () => {
                         textAlign: "center"
                       }}
                     >
-                      <TableSortLabel
-                        active={orderBy === key}
-                        direction={orderBy === key ? order : "asc"}
-                        onClick={() => handleRequestSort(key)}
-                      >
-                        {columnMappings[key]}
-                      </TableSortLabel>
+                      {columnMappings[key]}
                     </TableCell>
                   ))}
                 </TableRow>
               </TableHead>
               <TableBody>
+
                 {sortedData
                 //  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+
                   .map((row, index) => (
                     <TableRow
                       key={index}
@@ -243,9 +218,11 @@ const Historical = () => {
           </TableContainer>
 
           <TablePagination
-            rowsPerPageOptions={[5, 100, 200,300,500]}
+
+            rowsPerPageOptions={[50, 100, 200, 300, 500]}
             component="div"
-            count={totalRecords}
+            count={totalRecords || dataArray.length}
+
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

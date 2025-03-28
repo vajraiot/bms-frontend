@@ -27,23 +27,24 @@ const ReportsBar = ({ pageType }) => {
     setEndDate,
     handleAnalytics,
     loadingReport,
+    errors,setPageType,
     page,
-    rowsPerPage,
-    setData,data
- 
+    rowsPerPage,setData,data,setDayWiseData,setAlarmsData,setrealTimeData
+
   } = useContext(AppContext);
 
   // Reset search fields when pageType changes
   useEffect(() => {
+    setPageType(pageType)
     setSiteId(""); // Reset Site ID
     setSerialNumber(""); // Reset Serial Number
     setStartDate(""); // Reset Start Date
     setEndDate("");
-    setData([]);
-
+    setDayWiseData([]);
+    setAlarmsData([]);
+    setrealTimeData([])
   }, [pageType]);
-
-  const clearOptions = () => {
+ const clearOptions = () => {
     setSiteId(""); // Reset Site ID
     setSerialNumber(""); // Reset Serial Number
     setStartDate(""); // Reset Start Date
@@ -51,11 +52,11 @@ const ReportsBar = ({ pageType }) => {
     setData([]);
   };
 
-  useEffect(() => {
-    if (siteId && serialNumber && startDate && endDate) {
-      handleAnalytics(pageType);
-    }
-  }, [page, rowsPerPage]);
+const handleFunction=async()=>{
+  const result =await handleAnalytics()
+ 
+}
+
 
   const renderHighlightedOption = (props, option, value) => (
     <li
@@ -203,7 +204,7 @@ const ReportsBar = ({ pageType }) => {
                 />
 
         {/* Search and Clear Buttons */}
-        <Box display="flex" gap={1} alignItems="center">
+         <Box display="flex" gap={1} alignItems="center">
           {/* Search Button */}
           <IconButton
             onClick={() => handleAnalytics(pageType)}
