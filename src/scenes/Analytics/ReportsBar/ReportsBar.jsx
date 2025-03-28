@@ -29,7 +29,7 @@ const ReportsBar = ({ pageType }) => {
     loadingReport,
     page,
     rowsPerPage,
-    setData,
+    setData,data
  
   } = useContext(AppContext);
 
@@ -39,7 +39,8 @@ const ReportsBar = ({ pageType }) => {
     setSerialNumber(""); // Reset Serial Number
     setStartDate(""); // Reset Start Date
     setEndDate("");
-    setData({});
+    setData([]);
+
   }, [pageType]);
 
   const clearOptions = () => {
@@ -206,13 +207,14 @@ const ReportsBar = ({ pageType }) => {
           {/* Search Button */}
           <IconButton
             onClick={() => handleAnalytics(pageType)}
-            disabled={loadingReport}
+            disabled={loadingReport && !siteId || !startDate || !endDate}
+           
           >
             <SearchIcon />
           </IconButton>
 
           {/* Clear Button */}
-          <Box onClick={clearOptions} sx={{ cursor: "pointer" }}>
+          <Box onClick={clearOptions}  disabled={!siteId || !startDate || !endDate} sx={{ cursor: "pointer" }}>
             <Typography variant="body1" sx={{ fontSize: 15 }}>
               ❌
             </Typography>

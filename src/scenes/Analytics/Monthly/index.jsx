@@ -263,7 +263,7 @@ const Monthly = () => {
             shrink: true,
           }}
         />
-        <IconButton onClick={handleSearch}>
+        <IconButton onClick={handleSearch} disabled={!siteId || !serialNumber|| !year|| !month}>
           <SearchIcon />
         </IconButton>
         <Box onClick={clearOptions} sx={{ cursor: "pointer" }}>

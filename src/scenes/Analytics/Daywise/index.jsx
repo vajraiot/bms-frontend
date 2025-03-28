@@ -187,7 +187,8 @@ const DayWise = () => {
                 component={Paper}
                 sx={{
                   marginTop: 1,
-                  overflowX: "auto",
+                  height:"400px",
+                  overflow: "auto",
                   border: "1px solid black",
                   borderRadius: "8px",
                 }}
