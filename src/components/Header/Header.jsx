@@ -19,7 +19,7 @@ const Header = () => {
   const { handleLogout } = useContext(AppContext); // Use AppContext for logout
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
   const username = getUsername(token);
   const navigate = useNavigate();
 

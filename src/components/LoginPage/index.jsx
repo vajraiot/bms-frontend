@@ -117,7 +117,7 @@ const LoginPage = () => {
       if (!data || !data.jwt) {
         setValidationMessages(["Invalid credentials. Please try again."]);
       } else {
-        localStorage.setItem("token", data.jwt);
+        sessionStorage.setItem("token", data.jwt);
         setToken(data.jwt);
         setUserRole(role);
         navigate("/"); // Redirect to home page

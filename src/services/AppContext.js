@@ -26,7 +26,7 @@ export const AppProvider = ({ children }) => {
   const[rowsPerPage, setRowsPerPage]=useState(50);
  const [totalRecords, setTotalRecords] = useState(0)
   const [marginMinutes, setMarginMinutes] = useState(15);
-  const [token, setToken] = useState(localStorage.getItem("token") || "");
+  const [token, setToken] = useState(sessionStorage.getItem("token") || "");
   const [loadingReport, setLoadingReport] = useState(false);
   const [errors, setErrors] = useState({
     siteId: false,
@@ -176,7 +176,7 @@ const[realTimeData,setrealTimeData]=useState([])
     }
   };
   const handleLogout = (navigate) => {
-    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
     setToken("");
     setUserRole("");
     setUsername("");

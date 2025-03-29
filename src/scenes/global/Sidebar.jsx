@@ -55,7 +55,7 @@ const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState("Dashboard");
   //const { userRole } = useContext(AppContext);
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
   const userRole = getUserRole(token);
 
   return (

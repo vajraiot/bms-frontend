@@ -73,7 +73,7 @@ const pageAccessRules = {
   import { Navigate, useLocation } from "react-router-dom";
 
 export const ProtectedRoute = ({ children, allowedPath }) => {
-  const token = localStorage.getItem("token"); // Get token from localStorage
+  const token = sessionStorage.getItem("token"); // Get token from sessionStorage
   const location = useLocation(); // Get the current route path
   const currentPath = location.pathname;
 
