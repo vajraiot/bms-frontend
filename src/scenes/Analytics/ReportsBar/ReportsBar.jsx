@@ -6,9 +6,10 @@ import {
   Typography,
   TextField,
   Autocomplete,
-  useTheme,
+  useTheme
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+
 
 const ReportsBar = ({ pageType }) => {
   const theme = useTheme();

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react"; // Added useState
+import React, { useContext, useEffect, useState } from "react";
 import { useTheme } from "@mui/material";
 import { ColorModeContext, tokens } from "../../../theme";
 import {
@@ -7,13 +7,15 @@ import {
   TextField,
   Autocomplete,
   Paper,
-  CircularProgress, // Added CircularProgress
+  CircularProgress,
+  Tooltip
 } from "@mui/material";
 import { AppContext } from "../../../services/AppContext";
 import { fetchMonthlyBatteryandChargerdetails } from "../../../services/apiService";
 import * as XLSX from "xlsx";
 import SearchIcon from "@mui/icons-material/Search";
-import excelIcon from "../../../assets/images/png/ExcellTrans100_98.png";
+import GridOnIcon from '@mui/icons-material/GridOn';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import MonthlyAHChart from "./MonthlyAHChart";
 import MonthlyEnergyChart from "./MonthlyEnergyChart";
 import "react-datetime/css/react-datetime.css";
@@ -42,9 +44,11 @@ const columnMappings = {
 const Monthly = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const { data: contextData = [], errors } = useContext(AppContext); // Default to empty array
-  const data = Array.isArray(contextData) ? contextData : []; // Ensure data is always an array
-  const [loading, setLoading] = useState(false); // Added loading state
+  const { data: contextData = [], errors } = useContext(AppContext);
+  const data = Array.isArray(contextData) ? contextData : [];
+  const [loading, setLoading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadComplete, setDownloadComplete] = useState(false);
 
   const {
     siteOptions,
@@ -61,18 +65,18 @@ const Monthly = () => {
   } = useContext(AppContext);
 
   useEffect(() => {
-    if (location.pathname === "/monthly") { // Adjust path based on your route
-      setSiteId(""); // Clear Site ID
-      setSerialNumber(""); // Clear Serial Number
-      setYear(""); // Clear Year
-      setMonth(""); // Clear Month
-      setData([]); // Clear data/content
+    if (location.pathname === "/monthly") {
+      setSiteId("");
+      setSerialNumber("");
+      setYear("");
+      setMonth("");
+      setData([]);
     }
   }, [location.pathname]);
 
   const handleSearch = async () => {
     if (siteId && serialNumber && year && month) {
-      setLoading(true); // Set loading to true before fetching
+      setLoading(true);
       try {
         const result = await fetchMonthlyBatteryandChargerdetails(
           serialNumber,
@@ -80,22 +84,22 @@ const Monthly = () => {
           year,
           month
         );
-        setData(Array.isArray(result) ? result : []); // Ensure result is an array
+        setData(Array.isArray(result) ? result : []);
       } catch (error) {
         console.error("Error during search:", error);
-        setData([]); // Fallback to empty array on error
+        setData([]);
       } finally {
-        setLoading(false); // Set loading to false after fetching (success or error)
+        setLoading(false);
       }
     } else {
       console.error("Please select all fields.");
-      setData([]); // Fallback to empty array if fields are missing
+      setData([]);
     }
   };
 
   const clearOptions = () => {
-    setSiteId(""); // Reset Site ID
-    setSerialNumber(""); // Reset Serial Number
+    setSiteId("");
+    setSerialNumber("");
     setYear("");
     setMonth("");
     setData([]);
@@ -147,19 +151,38 @@ const Monthly = () => {
 
   const formattedData = formatData(data);
 
-  const handleDownloadExcel = () => {
-    const workbook = XLSX.utils.book_new();
-    const excelData = formattedData.map((row) =>
-      Object.keys(row).map((key) => row[key] ?? "No Data")
-    );
-    const headers = Object.keys(formattedData[0] || {}).map(
-      (key) => columnMappings[key] || key
-    );
-    excelData.unshift(headers);
+  const handleDownloadExcel = async () => {
+    if (formattedData.length === 0) {
+      return;
+    }
 
-    const worksheet = XLSX.utils.aoa_to_sheet(excelData);
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Monthly Data");
-    XLSX.writeFile(workbook, "Monthly_Data.xlsx");
+    try {
+      setIsDownloading(true);
+      setDownloadComplete(false);
+
+      const workbook = XLSX.utils.book_new();
+      const excelData = formattedData.map((row) =>
+        Object.keys(row).map((key) => row[key] ?? "No Data")
+      );
+      const headers = Object.keys(formattedData[0] || {}).map(
+        (key) => columnMappings[key] || key
+      );
+      excelData.unshift(headers);
+
+      const worksheet = XLSX.utils.aoa_to_sheet(excelData);
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Monthly Data");
+      XLSX.writeFile(workbook, "Monthly_Data.xlsx");
+
+      setIsDownloading(false);
+      setDownloadComplete(true);
+
+      setTimeout(() => {
+        setDownloadComplete(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Download failed:", error);
+      setIsDownloading(false);
+    }
   };
 
   return (
@@ -183,9 +206,7 @@ const Monthly = () => {
               {...params}
               label="Substation ID"
               InputLabelProps={{
-                sx: {
-                  fontWeight: "bold",
-                },
+                sx: { fontWeight: "bold" },
               }}
               fullWidth
               error={errors.siteId}
@@ -210,9 +231,7 @@ const Monthly = () => {
               {...params}
               label="Serial Number"
               InputLabelProps={{
-                sx: {
-                  fontWeight: "bold",
-                },
+                sx: { fontWeight: "bold" },
               }}
               fullWidth
               error={errors.serialNumber}
@@ -246,13 +265,9 @@ const Monthly = () => {
               height: "35px",
               marginTop: "5px",
             },
-            "& .MuiInputLabel-root": {
-              fontWeight: "bold",
-            },
+            "& .MuiInputLabel-root": { fontWeight: "bold" },
           }}
-          InputLabelProps={{
-            shrink: true,
-          }}
+          InputLabelProps={{ shrink: true }}
         />
         <IconButton onClick={handleSearch} disabled={!siteId || !serialNumber || !year || !month || loading}>
           <SearchIcon />
@@ -266,9 +281,39 @@ const Monthly = () => {
 
       {/* Excel Download */}
       <Box display="flex" justifyContent="flex-end" alignItems="center">
-        <IconButton onClick={handleDownloadExcel} disabled={loading}>
-          <img src={excelIcon} alt="Download Excel" style={{ width: "24px", height: "24px" }} />
-        </IconButton>
+        <Tooltip title="Export to Excel">
+          <Box sx={{ position: 'relative' }}>
+            <IconButton
+              onClick={handleDownloadExcel}
+              disabled={loading || isDownloading || formattedData.length === 0}
+              sx={{
+                backgroundColor: '#4caf50',
+                color: 'white',
+                '&:hover': { backgroundColor: '#388e3c' },
+                '&.Mui-disabled': { backgroundColor: '#4caf50', opacity: 0.5 },
+              }}
+            >
+              {downloadComplete ? (
+                <CheckCircleIcon />
+              ) : (
+                <GridOnIcon />
+              )}
+            </IconButton>
+            {isDownloading && (
+              <CircularProgress
+                size={40}
+                sx={{
+                  color: '#4caf50',
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  marginTop: '-20px',
+                  marginLeft: '-20px',
+                }}
+              />
+            )}
+          </Box>
+        </Tooltip>
       </Box>
 
       {/* Loading Indicator or Content */}

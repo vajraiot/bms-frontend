@@ -1,9 +1,9 @@
 import React, { useContext, useState } from "react";
-import { useTheme, IconButton, CircularProgress, Box } from "@mui/material";
-import { AppContext, formatDate } from "../../../services/AppContext";
-import ReportsBar from "../ReportsBar/ReportsBar";
-import excelIcon from "../../../assets/images/png/ExcellTrans100_98.png";
 import {
+  useTheme,
+  IconButton,
+  CircularProgress,
+  Box,
   Table,
   TableBody,
   TableCell,
@@ -11,11 +11,16 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Tooltip,
   Typography,
   TablePagination,
-  TableSortLabel,
 } from "@mui/material";
+import { AppContext, formatDate } from "../../../services/AppContext";
+import ReportsBar from "../ReportsBar/ReportsBar";
+import GridOnIcon from '@mui/icons-material/GridOn';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { downloadHistoricalBatteryandChargerdetails } from '../../../services/apiService';
+
 const columnMappings = {
   serverTime: "Server Date Time",
   packetDateTime: "Packet Date Time",
@@ -64,6 +69,9 @@ const Historical = () => {
     loadingReport
   } = useContext(AppContext);
   
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadComplete, setDownloadComplete] = useState(false);
+
   const formatTimeStamp = (dateString) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleString("en-US", {
@@ -101,19 +109,34 @@ const Historical = () => {
     setPage(0);
   };
 
-  const dataArray = Array.isArray(realTimeData.content) ? realTimeData.content : [realTimeData];
-  const displayedColumns = Object.keys(columnMappings);
-
-  const handleDownloadExcel = () => {
-    if(siteId && serialNumber && startDate && endDate){
-      downloadHistoricalBatteryandChargerdetails(
-        siteId,
-        serialNumber,
-        formatDate(startDate),
-        formatDate(endDate)
-      );
+  const handleDownloadExcel = async () => {
+    if (siteId && serialNumber && startDate && endDate) {
+      try {
+        setIsDownloading(true);
+        setDownloadComplete(false);
+        
+        await downloadHistoricalBatteryandChargerdetails(
+          siteId,
+          serialNumber,
+          formatDate(startDate),
+          formatDate(endDate)
+        );
+        
+        setIsDownloading(false);
+        setDownloadComplete(true);
+        
+        setTimeout(() => {
+          setDownloadComplete(false);
+        }, 2000);
+      } catch (error) {
+        console.error("Download failed:", error);
+        setIsDownloading(false);
+      }
     }
   };
+
+  const dataArray = Array.isArray(realTimeData.content) ? realTimeData.content : [realTimeData];
+  const displayedColumns = Object.keys(columnMappings);
 
   return (
     <div>
@@ -124,14 +147,39 @@ const Historical = () => {
         marginBottom: "10px" 
       }}>
         <ReportsBar pageType="historical" />
-        <IconButton 
-          onClick={handleDownloadExcel} 
-          color="primary" 
-          aria-label="Download Excel"
-          disabled={loadingReport}
-        >
-          <img src={excelIcon} alt="Download Excel" style={{ width: "24px", height: "24px" }} />
-        </IconButton>
+        <Tooltip title="Export to Excel">
+          <Box sx={{ position: 'relative', marginRight: '20px' }}>
+            <IconButton
+              onClick={handleDownloadExcel}
+              disabled={loadingReport || !siteId || !startDate || !endDate || isDownloading}
+              sx={{
+                backgroundColor: '#4caf50',
+                color: 'white',
+                '&:hover': { backgroundColor: '#388e3c' },
+                '&.Mui-disabled': { backgroundColor: '#4caf50', opacity: 0.5 },
+              }}
+            >
+              {downloadComplete ? (
+                <CheckCircleIcon />
+              ) : (
+                <GridOnIcon />
+              )}
+            </IconButton>
+            {isDownloading && (
+              <CircularProgress
+                size={40}
+                sx={{
+                  color: '#4caf50',
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  marginTop: '-20px',
+                  marginLeft: '-20px',
+                }}
+              />
+            )}
+          </Box>
+        </Tooltip>
       </div>
 
       {loadingReport ? (
@@ -182,47 +230,41 @@ const Historical = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-
-                {dataArray
-                //  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-
-                  .map((row, index) => (
-                    <TableRow
-                      key={index}
-                      sx={{ "&:hover": { backgroundColor: "#e1e2fe" } }}
-                    >
-                      {displayedColumns.map((key) => (
-                        <TableCell
-                          key={key}
-                          sx={{
-                            border: "1px solid #ccc",
-                            padding: "3px",
-                            fontWeight: "bold",
-                            whiteSpace: "nowrap",
-                            textAlign: "center"
-                          }}
-                        >
-                          {key === "packetDateTime" || key === "serverTime"
-                            ? formatTimeStamp(row[key])
-                            : (key === "chargeTimeCycle" || 
-                               key === "dischargeTimeCycle" || 
-                               key === "batteryRunHours")
-                            ? formatDuration(row[key])
-                            : formatNumber(row[key])}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
+                {dataArray.map((row, index) => (
+                  <TableRow
+                    key={index}
+                    sx={{ "&:hover": { backgroundColor: "#e1e2fe" } }}
+                  >
+                    {displayedColumns.map((key) => (
+                      <TableCell
+                        key={key}
+                        sx={{
+                          border: "1px solid #ccc",
+                          padding: "3px",
+                          fontWeight: "bold",
+                          whiteSpace: "nowrap",
+                          textAlign: "center"
+                        }}
+                      >
+                        {key === "packetDateTime" || key === "serverTime"
+                          ? formatTimeStamp(row[key])
+                          : (key === "chargeTimeCycle" || 
+                             key === "dischargeTimeCycle" || 
+                             key === "batteryRunHours")
+                          ? formatDuration(row[key])
+                          : formatNumber(row[key])}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
 
           <TablePagination
-
             rowsPerPageOptions={[50, 100, 200, 300, 500]}
             component="div"
             count={totalRecords || dataArray.length}
-
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
