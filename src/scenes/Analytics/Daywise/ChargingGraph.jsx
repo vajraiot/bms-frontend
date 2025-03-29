@@ -48,7 +48,7 @@ export default function ChargingGraph({ data }) {
       )
     )
   );
-  const yAxisMax = Math.max(maxEnergy * 1.3, 10);
+  const yAxisMax = Math.max(maxEnergy * 1.2, 10);
 
   // Handle bar click
   const handleBarClick = async (barData) => {
@@ -126,7 +126,7 @@ export default function ChargingGraph({ data }) {
           )
         )
       : 0;
-  const cycleYAxisMax = Math.max(maxCycleEnergy * 1.5, 10);
+  const cycleYAxisMax = Math.max(maxCycleEnergy * 1.2, 10);
 
   const chartStyle = {
     background: '#ffffff',

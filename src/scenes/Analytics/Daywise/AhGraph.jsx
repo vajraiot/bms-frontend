@@ -44,7 +44,7 @@ export default function AHGraph({ data }) {
     ),
     0
   );
-  const yAxisMax = Math.max(maxAH * 1.3, 10);
+  const yAxisMax = Math.max(maxAH * 1.2, 10);
 
   const handleBarClick = async (barData) => {
     setCycle([]);
@@ -90,7 +90,7 @@ export default function AHGraph({ data }) {
           )
         )
       : 0;
-  const cycleYAxisMax = Math.max(maxCycleAH * 1.5, 10);
+  const cycleYAxisMax = Math.max(maxCycleAH * 1.2, 10);
 
   // Custom Tooltip component
   const CustomTooltip = ({ active, payload, label }) => {
