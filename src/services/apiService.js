@@ -245,34 +245,7 @@ export const fetchMonthlyBatteryandChargerdetails = async (
     throw error;
   }
 };
-export const downloadBatteryAlarms=async(siteId,serialNumber,strStartDate,strEndDate)=>{
 
-  try {
-   
-    const params = {
-        siteId,
-        serialNumber,
-        strStartDate,
-        strEndDate,
-    };
-    const response = await apiClient.get(`${BASE_URL}/downloadHistoricalAlarmsReport`, {
-        params, 
-        responseType: 'blob', 
-    });
-
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `AlarmsReport_${siteId}.xls`; 
-    document.body.appendChild(a); 
-    a.click();
-    window.URL.revokeObjectURL(url); 
-    document.body.removeChild(a); 
-} catch (error) {
-    console.error('Error downloading the Excel file:', error);
-}
-
-  }
 export const fetchSiteDetailsBatteryandChargerdetails = async (
   siteId,
   serialNumber
