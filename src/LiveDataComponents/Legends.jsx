@@ -67,7 +67,8 @@ const {
             sx={{
               fontWeight: "bold",
               textAlign: "center",
-              flex: 1, // Equal width for both titles
+              flex: 1, 
+              pr:"120px"// Equal width for both titles
             }}
           >
             Cell Info
