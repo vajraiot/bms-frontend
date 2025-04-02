@@ -107,10 +107,13 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
         id: "value",
         label: data.name,
         render: (item) =>
-          typeof item.value === "boolean"
+           data.name === "Charger Load"
+          ? "Over"
+          :typeof item.value === "boolean"
             ? !item.value // Reverse the boolean
               ? "Normal"
               : "Fail"
+             // Specific condition for chargerLoad  
             : `${item.value}${item.units ? " " + item.units : ""}`,
       },
     ];
@@ -181,48 +184,49 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
                 >
                   {columns.map((column) => (
                     <TableCell
-                      key={column.id}
-                      style={
-                        column.id === "siteId"
-                          ? {
-                              color: "#1976d2",
-                              textDecoration: "underline",
-                              cursor: "pointer",
-                              border: "1px solid #ccc",
-                              padding: "3px",
-                              fontWeight: "bold",
-                              whiteSpace: "nowrap",
-                              textAlign: "center",
-                            }
-                          : {
-                              border: "1px solid #ccc",
-                              padding: "3px",
-                              whiteSpace: "nowrap",
-                              textAlign: "center",
-                            }
-                      }
-                      title={column.id === "siteId" ? "Double tap here" : undefined}
-                    >
-                      {column.id === "serverTime" && item[column.id]
-                        ? new Date(item[column.id]).toLocaleString("en-GB", {
-                            day: "numeric",
-                            month: "numeric",
-                            year: "numeric",
-                            hour: "numeric",
-                            minute: "numeric",
-                            second: "numeric",
-                            hour12: true,
-                          })
-                        : column.render
-                        ? column.render(item) // Use render for value column
-                        : typeof item[column.id] === "boolean"
-                        ? !item[column.id] // Reverse boolean for other columns
-                          ? "True"
-                          : "False"
-                        : item[column.id] !== undefined && item[column.id] !== null
-                        ? item[column.id]
-                        : "No Data"}
-                    </TableCell>
+                    key={column.id}
+                    style={
+                      column.id === "siteId"
+                        ? {
+                            color: "#1976d2",
+                            textDecoration: "underline",
+                            cursor: "pointer",
+                            border: "1px solid #ccc",
+                            padding: "3px",
+                            fontWeight: "bold",
+                            whiteSpace: "nowrap",
+                            textAlign: "center",
+                          }
+                        : {
+                            border: "1px solid #ccc",
+                            padding: "3px",
+                            whiteSpace: "nowrap",
+                            textAlign: "center",
+                          }
+                    }
+                    title={column.id === "siteId" ? "Double tap here" : undefined}
+                  >
+                    {column.id === "serverTime" && item[column.id]
+                      ? new Date(item[column.id]).toLocaleString("en-GB", {
+                          day: "numeric",
+                          month: "numeric",
+                          year: "numeric",
+                          hour: "numeric",
+                          minute: "numeric",
+                          second: "numeric",
+                          hour12: true,
+                        })
+                      : column.render
+                      ? column.render(item) // Use render for value column
+                      : typeof item[column.id] === "boolean"
+                      ? !item[column.id] 
+                        ? "True" 
+                        : "False"
+                      : item[column.id] !== undefined && item[column.id] !== null
+                      ? item[column.id]
+                      : "No Data"}
+                  </TableCell>
+                  
                   ))}
                 </TableRow>
               ))}
