@@ -1,18 +1,19 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,LabelList } from 'recharts';
-import { useTheme,Box,Typography } from '@mui/material';
+
+import { BarChart, Bar, XAxis, YAxis, LabelList, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useTheme,Box, Typography } from '@mui/material';
 import { tokens } from '../../theme';
 
-const VoltageG = ({ data }) => {
+const SpecificGravityG = ({ data }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
-  // Filter out invalid voltage values (65.535)
-  const filteredData = data.filter(cell => cell.cellVoltage !== 65.535);
+  // Filter out invalid temperature values (65535)
+  const filteredData = data.filter(cell=> cell.cellTemperature !== 65535)
 
   return (
     <Box sx={{ height: '150px', width: '100%', marginBottom: '30px' }}>
-         <Typography 
+    <Typography 
         variant="h6" 
         sx={{ 
           textAlign: 'center', 
@@ -21,7 +22,7 @@ const VoltageG = ({ data }) => {
           fontWeight: 'bold'
         }}
       >
-        Cell Voltage
+        Cell Specific Gravity
       </Typography>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart 
@@ -43,22 +44,22 @@ const VoltageG = ({ data }) => {
               borderRadius: '4px',
               fontSize: '12px'
             }}
-            formatter={(value) => [`${value.toFixed(2)} V`, 'Voltage']}
+            formatter={(value) => [`${value.toFixed(1)} `, 'Sg']}
           />
           <Bar
-            dataKey="cellVoltage"
-            fill={colors.greenAccent[500]}
+            dataKey="cellSpecificgravity"
+            fill="orange"
             maxBarSize={40} // Limits maximum bar width
             minPointSize={2} // Ensures bars are visible even with many cells
           >
             {/* Add labels on top of bars */}
             {/* {filteredData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={colors.greenAccent[500]} />
+              <Cell key={`cell-${index}`} fill={colors.blueAccent[500]} />
             ))} */}
             <LabelList 
-              dataKey="cellVoltage" 
+              dataKey="cellSpecificgravity" 
               position="top" 
-              formatter={(value) => value.toFixed(2)}
+              formatter={(value) => value.toFixed(1)}
               style={{ 
                 fill: 'black', 
                 fontSize: '12px',
@@ -71,5 +72,4 @@ const VoltageG = ({ data }) => {
     </Box>
   );
 };
-
-export default VoltageG;
+export default SpecificGravityG;

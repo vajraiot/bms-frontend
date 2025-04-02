@@ -51,9 +51,10 @@ const VoltageTemperatureTable = ({ data }) => {
           }
         }}
       >
-        <TableCell>Number</TableCell>
+        <TableCell>Cell No.</TableCell>
         <TableCell>Voltage (V)</TableCell>
         <TableCell>Temperature (°C)</TableCell>
+        <TableCell>Specific Gravity</TableCell>
       </TableRow>
     </TableHead>
     <TableBody>
@@ -76,6 +77,9 @@ const VoltageTemperatureTable = ({ data }) => {
           </TableCell>
           <TableCell>
             {row.cellTemperature === 65535 ? "N/A" : row.cellTemperature}
+          </TableCell>
+          <TableCell>
+            {row.cellTemperature === 65535 ? "N/A" : row.cellSpecificgravity}
           </TableCell>
         </TableRow>
       ))}

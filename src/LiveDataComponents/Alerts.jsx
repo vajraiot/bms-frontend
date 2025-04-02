@@ -56,7 +56,7 @@ const Alerts = () => {
     inputMains: "Input Mains",
     inputPhase:"Input phase",
     acVoltageULN: "AC Voltage",
-    chargerTrip: "Charger Trip",
+    chargerTrip: "Charger ",
     outputMccb: "Output Mccb",
     inputFuse: "Input Fuse",
     rectifierFuse: "Rectifier fuse",
@@ -72,7 +72,7 @@ const Alerts = () => {
     if (key === "acVoltageULN") {
         switch (bit) {
             case 0:
-                return { status: "Low", severity: "low", IconComponent:()=> <ACVoltagered size={20}/> };
+                return { status: "low", severity: "low", IconComponent:()=> <ACVoltagered size={20}/> };
             case 1:
                 return { status: "", severity: "medium", IconComponent: ()=> <ACVoltageIcon size={20}/>};
             case 2:
@@ -107,10 +107,8 @@ const Alerts = () => {
         status = combinedData[key] ? "fail" : "";
         severity = combinedData[key] ? "high" : "medium";
       }
-      if (key === "chargerTrip") {
-        IconComponent =()=> <img src={trip} alt="" style={{width:30}}/>;
-      }
-      else if (key === "inputMains"||key === "inputPhase" ) {
+    
+      if (key === "inputMains"||key === "inputPhase" ) {
         IconComponent = () =><img src={acNV} style={{width:23}}></img>
       }
        else if (key === "resetPushButton") {
@@ -162,10 +160,12 @@ const Alerts = () => {
 
         if (key === "chargerLoad" ) {
           IconComponent =()=> combinedData[key]?<img src={chargerloadO} style={{width:35}}></img>:<img src={chargerload} style={{width:35}}></img> 
+          status = combinedData[key] ? "Over" : "";
         }
         if (key === "chargerTrip" ) {
           IconComponent = () =>
             combinedData[key] ?<img src={InputPhase} style={{width:28}}></img>:<img src={InputPhaseF} style={{width:28}}></img> 
+          status = combinedData[key] ? "Tripped" : "Trip";
         }
 
       return {

@@ -120,7 +120,7 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
         borderRadius: '3px 3px 0 0',
       }}
     />
-    <Typography variant="h7" sx={{ color: '#333' }}>
+    <Typography variant="h8" sx={{ color: '#333' }}>
       C {cellData.cellNumber}
     </Typography>
     <Box
@@ -169,20 +169,20 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
       {cellData.cellVoltage === 65.535 || cellData.cellTemperature === 65535 ? (
         <Box >
           <Box display="flex" justifyContent="space-between">
-            <Typography variant="h7" sx={{fontSize: "8px"}}>⚡</Typography>
-            <Typography variant="h7" sx={{  fontWeight: 'bold', color: '#333',fontSize: "9px" }}>
+            <Typography variant="h8" sx={{fontSize: "8px"}}>⚡</Typography>
+            <Typography variant="h8" sx={{  fontWeight: 'bold', color: '#333',fontSize: "9px" }}>
               N/A
             </Typography>
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
           <img src={thermometer} height={12} width={20} style={{ marginLeft: "-4px" }} />
-          <Typography variant="h7" sx={{ fontWeight: 'bold', color: '#333', fontSize: "9px" }}>
+          <Typography variant="h8" sx={{ fontWeight: 'bold', color: '#333', fontSize: "9px" }}>
             N/A
           </Typography>
           </Box>
           <Box display="flex" justifyContent="space-between">
-            <Typography variant="h7"  sx={{ fontWeight: 'bold', color: '#333',fontSize: "9px" }}>sg :</Typography>
-            <Typography variant="h7" sx={{ fontWeight: 'bold', color: '#333',fontSize: "9px" }}>
+            <Typography variant="h8"  sx={{ fontWeight: 'bold', color: '#333',fontSize: "9px" }}>sg :</Typography>
+            <Typography variant="h8" sx={{ fontWeight: 'bold', color: '#333',fontSize: "9px" }}>
             N/A
           </Typography>
           </Box>
@@ -190,20 +190,20 @@ const CellLayout = ({ cellData, thresholds, chargingStatus, siteId, serialNumber
       ) : (
         <>
           <Box display="flex" justifyContent="space-between">
-            <Typography variant="h7" sx={{fontSize: "8px"}}>⚡</Typography>
-            <Typography variant="h7" sx={{  fontWeight: 'bold', color: '#333',fontSize: "9px" }}>
+            <Typography variant="h8" sx={{fontSize: "8px"}}>⚡</Typography>
+            <Typography variant="h8" sx={{  fontWeight: 'bold', color: '#333',fontSize: "9px" }}>
               {cellData?.cellVoltage} V
             </Typography>
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
           <img src={thermometer} height={12} width={20} style={{ marginLeft: "-4px" }} />
-          <Typography variant="h7" sx={{ fontWeight: 'bold', color: '#333', fontSize: "9px" }}>
+          <Typography variant="h8" sx={{ fontWeight: 'bold', color: '#333', fontSize: "9px" }}>
             {cellData?.cellTemperature} °C
           </Typography>
           </Box>
           <Box display="flex" justifyContent="space-between">
-            <Typography variant="h7"  sx={{ fontWeight: 'bold', color: '#333',fontSize: "9px" }}>sg :</Typography>
-            <Typography variant="h7" sx={{ fontWeight: 'bold', color: '#333',fontSize: "9px" }}>
+            <Typography variant="h8"  sx={{ fontWeight: 'bold', color: '#333',fontSize: "9px" }}>sg :</Typography>
+            <Typography variant="h8" sx={{ fontWeight: 'bold', color: '#333',fontSize: "9px" }}>
             {cellData?.cellSpecificgravity !== undefined && cellData?.cellSpecificgravity !== null
             ? Number(cellData.cellSpecificgravity).toFixed(5)
             : "N/A"}

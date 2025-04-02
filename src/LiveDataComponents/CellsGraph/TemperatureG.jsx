@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { BarChart, Bar, XAxis, YAxis, LabelList, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { useTheme,Box } from '@mui/material';
+import { useTheme,Box,Typography } from '@mui/material';
 import { tokens } from '../../theme';
 
 const TemperatureG = ({ data }) => {
@@ -9,13 +9,22 @@ const TemperatureG = ({ data }) => {
   const colors = tokens(theme.palette.mode);
 
   // Filter out invalid temperature values (65535)
-  const filteredData = data.map(cell => ({
-    ...cell,
-    cellTemperature: cell.cellTemperature === 65535 ? 0 : cell.cellTemperature
-  }));
+  const filteredData = data.filter(cell=> cell.cellTemperature !== 65535)
+  
 
   return (
     <Box sx={{ height: '150px', width: '100%', marginBottom: '30px' }}>
+         <Typography 
+        variant="h6" 
+        sx={{ 
+          textAlign: 'center', 
+          marginBottom: '10px', 
+          color: "black", // Adjust color to match your theme
+          fontWeight: 'bold'
+        }}
+      >
+        Cell Temperature
+      </Typography>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart 
           data={filteredData}

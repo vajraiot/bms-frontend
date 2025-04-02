@@ -99,6 +99,7 @@ const MonthlyEnergyChart = ({ data = [] }) => {
                 offset: 10,
                 fill: "#666",
                 fontSize: 14,
+                dx: -10
               }}
             />
             <YAxis
@@ -114,6 +115,7 @@ const MonthlyEnergyChart = ({ data = [] }) => {
                 offset: 10,
                 fill: "#666",
                 fontSize: 14,
+                dx: 10
               }}
             />
             <Tooltip content={<CustomTooltip />} />

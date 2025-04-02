@@ -87,6 +87,7 @@ const MonthlyAHChart = ({ data = [] }) => {
                 offset: -30,
                 fill: '#666',
                 fontSize: 14,
+                dx: -10
               }}
             />
             <YAxis
@@ -102,6 +103,7 @@ const MonthlyAHChart = ({ data = [] }) => {
                 offset: -30,
                 fill: '#666',
                 fontSize: 14,
+                dx: 10
               }}
             />
             <Tooltip content={<CustomTooltip />} />
