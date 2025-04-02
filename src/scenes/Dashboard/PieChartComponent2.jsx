@@ -5,8 +5,12 @@ import { formatToTime } from "../../services/AppContext";
 import {
   Box, Typography, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, TablePagination, Paper, Button, Dialog,
-  DialogTitle, DialogContent, DialogActions
+  DialogTitle, DialogContent, DialogActions,IconButton
 } from '@mui/material';
+import FirstPageIcon from '@mui/icons-material/FirstPage';
+import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
+import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
+import LastPageIcon from '@mui/icons-material/LastPage';
 import { AppContext } from "../../services/AppContext";
 import { useNavigate } from "react-router-dom";
 import { fetchCommunicationStatus } from '../../services/apiService';
@@ -99,16 +103,32 @@ const PieChartComponent2 = ({ data1, handlePieClickCommu }) => {
         </Box>
       </DialogTitle>
       <DialogContent>
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
+        <TableContainer component={Paper}
+        sx={{
+          height: "400px", // Fixed height for the entire table
+          overflow: "auto", // Enable horizontal scrolling if needed
+          display: "flex",
+          flexDirection: "column", // Stack header, body, and footer vertically
+          border: "1px solid #ccc",
+          borderRadius: "8px",
+        }}
+        >
+          <Table sx={{ tableLayout: "fixed", minWidth: "100%" }}>
+            <TableHead sx={{ 
+              position: "sticky", // Fix header at the top
+              top: 0,
+              zIndex: 1,
+            }}>
               <TableRow>
                 {TABLE_HEADERS.map((header, index) => (
                   <TableCell key={index} sx={TABLE_CELL_STYLE}>{header}</TableCell>
                 ))}
               </TableRow>
             </TableHead>
-            <TableBody>
+            <TableBody  sx={{ 
+              flex: 1,
+              overflowY: "auto",
+            }}>
               {tableData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
                 <TableRow key={index}>
                   <TableCell>
@@ -141,8 +161,7 @@ const PieChartComponent2 = ({ data1, handlePieClickCommu }) => {
               ))}
             </TableBody>
           </Table>
-        </TableContainer>
-        <TablePagination
+          <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
           count={tableData.length}
@@ -150,7 +169,17 @@ const PieChartComponent2 = ({ data1, handlePieClickCommu }) => {
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          sx={{
+            borderTop: "1px solid #ccc",
+            backgroundColor: "#f5f5f5",
+            position: "sticky",
+            bottom: 0,
+            zIndex: 1,
+            flexShrink: 0 // Prevent pagination from shrinking
+          }}
         />
+        </TableContainer>
+      
       </DialogContent>
       <DialogActions>
         <Button

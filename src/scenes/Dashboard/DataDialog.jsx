@@ -144,12 +144,16 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
             overflowX: "auto",
             border: "1px solid black",
             borderRadius: "8px",
-            paddingBottom: 3,
+            paddingBottom: 0,
             height: "300px",
           }}
         >
           <Table aria-label="simple table">
-            <TableHead sx={{ backgroundColor: "#d82b27", color: "#ffffff" }}>
+            <TableHead sx={{ backgroundColor: "#d82b27", color: "#ffffff" ,
+              position: "sticky", // Fix header at the top
+              top: 0,
+              zIndex: 1,
+            }}>
               <TableRow>
                 {columns.map((column) => (
                   <TableCell
@@ -168,7 +172,7 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
                 ))}
               </TableRow>
             </TableHead>
-            <TableBody>
+            <TableBody sx={{  height: "20px"}}>
               {paginatedData?.map((item, index) => (
                 <TableRow
                   key={index}
@@ -239,6 +243,10 @@ const TableDialog = ({ open, handleClose, data, alarmType }) => {
             sx={{
               borderTop: "1px solid #ccc",
               backgroundColor: "#f5f5f5",
+              position: "sticky", // Fix pagination at the bottom
+              bottom: 0,
+              zIndex: 1, // Ensure it stays above the body
+              paddingBottom: 3,
             }}
           />
         </TableContainer>
@@ -752,6 +760,9 @@ const DataDialog = ({
       setOpenTableDialog(true);
     }
   };
+  const chartHeight = Math.max(350, 100 + barChartData.length * 30); // Dynamic height
+  const maxCount = Math.max(...barChartData.map(item => item.count), 0); // Max bar height
+  const yAxisMax = maxCount * 1.2; // 20% buffer for labels
   return (
     <>
       <Dialog
@@ -854,7 +865,7 @@ const DataDialog = ({
                 hide={true} 
                 tick={{ fontSize: 0, color: "black", fontWeight: 500 }} 
                 tickCount={10} 
-                domain={[1, barChartData.length]} 
+                domain={[0, yAxisMax]}
               />
               <Tooltip cursor={{ fill: "rgba(0, 0, 0, 0.1)" }} />
               <Bar 
