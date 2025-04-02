@@ -61,35 +61,46 @@ const Dashboard = () => {
             cell.cellVoltage < lowVoltageThreshold
           );
           const isOpenBattery = cellVoltageData.some(cell => cell.cellVoltage <= openBatteryThreshold);
-          const isLowVoltageConditionMet = cellVoltageData.some(cell => cell.cellVoltage === lowVoltageThreshold);
+          const isLowVoltageConditionMet = cellVoltageData.some(cell => cell.cellVoltage <= lowVoltageThreshold  &&cell.cellVoltage > batteryAboutToDieThreshold );
 
-          if (isBatteryAboutToDie || isOpenBattery || bmsAlarms.stringVoltageLNH === 0 ||
-              (bmsAlarms.cellVoltageLN === true && isLowVoltageConditionMet) ||
-              bmsAlarms.socLN === true || chargerMonitoring.chargerTrip === true) {
-            mostCriticalCount++;
-          }
+          // Most Critical Alarms
+          if (isBatteryAboutToDie) mostCriticalCount++;
+          if (isOpenBattery) mostCriticalCount++;
+          if (bmsAlarms.stringVoltageLNH === 0) mostCriticalCount++;
+          if (bmsAlarms.cellVoltageLN === true && isLowVoltageConditionMet) mostCriticalCount++;
+          if (bmsAlarms.socLN === true) mostCriticalCount++;
+          if (chargerMonitoring.chargerTrip === true) mostCriticalCount++;
 
-          if (bmsAlarms.stringVoltageLNH === 2 || bmsAlarms.cellVoltageNH === true ||
-              bmsAlarms.stringCurrentHN === true || chargerMonitoring.inputMains === true ||
-              chargerMonitoring.inputPhase === true || chargerMonitoring.rectifierFuse === true ||
-              chargerMonitoring.filterFuse === true || chargerMonitoring.outputMccb === true ||
-              chargerMonitoring.batteryCondition === true || chargerMonitoring.inputFuse === true ||
-              chargerMonitoring.acVoltageULN === 2) {
-            criticalCount++;
-          }
+          // Critical Alarms
+          if (bmsAlarms.stringVoltageLNH === 2) criticalCount++;
+          if (bmsAlarms.cellVoltageNH === true) criticalCount++;
+          if (bmsAlarms.stringCurrentHN === true) criticalCount++;
+          if (chargerMonitoring.inputMains === true) criticalCount++;
+          if (chargerMonitoring.inputPhase === true) criticalCount++;
+          if (chargerMonitoring.rectifierFuse === true) criticalCount++;
+          if (chargerMonitoring.filterFuse === true) criticalCount++;
+          if (chargerMonitoring.outputMccb === true) criticalCount++;
+          if (chargerMonitoring.batteryCondition === true) criticalCount++;
+          if (chargerMonitoring.inputFuse === true) criticalCount++;
+          if (chargerMonitoring.acVoltageULN === 2) criticalCount++;
 
-          if (bmsAlarms.ambientTemperatureHN === true || bmsAlarms.cellCommunication === true ||
-              chargerMonitoring.dcVoltageOLN === 2 || chargerMonitoring.dcVoltageOLN === 0 ||
-              chargerMonitoring.acVoltageULN === 0 || chargerMonitoring.outputFuse === true) {
-            majorCount++;
-          }
+          // Major Alarms
+          if (bmsAlarms.ambientTemperatureHN === true) majorCount++;
+          if (bmsAlarms.cellCommunication === true) majorCount++;
+          if (chargerMonitoring.dcVoltageOLN === 2) majorCount++;
+          if (chargerMonitoring.dcVoltageOLN === 0) majorCount++;
+          if (chargerMonitoring.acVoltageULN === 0) majorCount++;
+          if (chargerMonitoring.outputFuse === true) majorCount++;
 
-          if (bmsAlarms.bankDischargeCycle === true || bmsAlarms.bmsSedCommunication === true ||
-              bmsAlarms.cellTemperatureHN === true || bmsAlarms.buzzer === true ||
-              chargerMonitoring.chargerLoad === true || chargerMonitoring.alarmSupplyFuse === true ||
-              chargerMonitoring.testPushButton === true || chargerMonitoring.resetPushButton === true) {
-            minorCount++;
-          }
+          // Minor Alarms
+          if (bmsAlarms.bankDischargeCycle === true) minorCount++;
+          if (bmsAlarms.bmsSedCommunication === true) minorCount++;
+          if (bmsAlarms.cellTemperatureHN === true) minorCount++;
+          if (bmsAlarms.buzzer === true) minorCount++;
+          if (chargerMonitoring.chargerLoad === true) minorCount++;
+          if (chargerMonitoring.alarmSupplyFuse === true) minorCount++;
+          if (chargerMonitoring.testPushButton === true) minorCount++;
+          if (chargerMonitoring.resetPushButton === true) minorCount++;
 
           if (item.siteLocationDTO) {
             const { latitude, longitude, area, vendorName, siteId } = item.siteLocationDTO;
@@ -151,6 +162,7 @@ const Dashboard = () => {
         const cellData = item.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData || [];
 
         const aboutToDieVoltage = parseFloat(threshold.batteryAboutToDie) || 0;
+        const temperature =parseFloat(threshold.highTemperature||0)
         const lowVoltage = parseFloat(threshold.lowVoltage) || 0;
         const highVoltage = parseFloat(threshold.highVoltage) || 0;
         const openBattery = parseFloat(threshold.openBattery) || 0;
@@ -161,24 +173,45 @@ const Dashboard = () => {
           cellTemperature: cell.cellTemperature,
         }));
 
-        const cellVoltageLow = cellDetails.filter(cell => cell.cellVoltage < lowVoltage && cell.cellVoltage > aboutToDieVoltage && cell.cellVoltage > openBattery);
+        const cellVoltageLow = cellDetails.filter(cell => cell.cellVoltage <= lowVoltage && cell.cellVoltage > aboutToDieVoltage);
         const cellNotComm = cellDetails.filter(cell => cell.cellVoltage === 65.535 && cell.cellTemperature === 65535);
         const cellVoltageHigh = cellDetails.filter(cell => cell.cellVoltage > highVoltage);
-        const cellVoltageAboutToDie = cellDetails.filter(cell => cell.cellVoltage <= aboutToDieVoltage && cell.cellVoltage > openBattery);
-        const cellVoltageOpenBattery = cellDetails.filter(cell => cell.cellVoltage <= openBattery);
+        const cellTemperatureHigh = cellDetails.filter(cell => cell.cellTemperature > temperature);
+        const cellVoltageAboutToDie = cellDetails.filter(cell => cell.cellVoltage <= aboutToDieVoltage && cell.cellVoltage > openBattery && cell.cellVoltage< lowVoltage);
+        const cellVoltageOpenBattery = cellDetails.filter(cell => cell.cellVoltage <= openBattery &&cell.cellVoltage < aboutToDieVoltage );
 
         return {
           serverTime: item.generalDataDTO?.serverTime || "N/A",
           siteId: item.siteId || "N/A",
           serialNumber: item.generalDataDTO?.deviceDataDTO?.[0]?.serialNumber || "N/A",
-          stringVoltage: item.generalDataDTO?.deviceDataDTO?.[0]?.stringVoltage || "N/A",
+          stringvoltage: item.generalDataDTO?.deviceDataDTO?.[0]?.stringvoltage || "N/A",
           instantaneousCurrent: item.generalDataDTO?.deviceDataDTO?.[0]?.instantaneousCurrent || "N/A",
           ambientTemperature: item.generalDataDTO?.deviceDataDTO?.[0]?.ambientTemperature || "N/A",
           socLatestValueForEveryCycle: item.generalDataDTO?.deviceDataDTO?.[0]?.socLatestValueForEveryCycle || "N/A",
           dodLatestValueForEveryCycle: item.generalDataDTO?.deviceDataDTO?.[0]?.dodLatestValueForEveryCycle || "N/A",
-          acVoltage: item.generalDataDTO?.chargerMonitoringDTO?.[0]?.acVoltage || "N/A",
+          acVoltage: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.acVoltage || "N/A",
+          inputMains: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.inputMains || "N/A",
+          batteryCondition: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.batteryCondition || "N/A",
+          chargerTrip: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.chargerTrip || "N/A",
+          inputPhase: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.inputPhase || "N/A",
+          rectifierFuse: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.rectifierFuse || "N/A",
+          filterFuse: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.filterFuse || "N/A",
+          outputFuse: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.outputFuse || "N/A",
+          outputMccb: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.outputMccb || "N/A",
+          chargerLoad: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.chargerLoad || "N/A",
+          inputFuse: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.inputFuse || "N/A",
+          alarmSupplyFuse: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.alarmSupplyFuse || "N/A",
+          testPushButton: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.testPushButton || "N/A",
+          resetPushButton: item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.resetPushButton || "N/A",
+          cellVoltage: cellData[0]?.cellVoltage || "N/A",
+          cellTemperature: cellData[0]?.cellTemperature || "N/A",
+          bankDischargeCycle: item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.bankDischargeCycle || "N/A",
+          bmsSedCommunication: item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.bmsSedCommunication || "N/A",
+          cellCommunication: item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.cellCommunication || "N/A",
+          buzzer: item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.buzzer || "N/A",
           cellVoltageLow: cellVoltageLow.length > 0 ? cellVoltageLow : "No low voltage cells",
           cellVoltageHigh: cellVoltageHigh.length > 0 ? cellVoltageHigh : "No high voltage cells",
+          cellTemperatureHigh: cellTemperatureHigh.length > 0 ? cellTemperatureHigh : "No high Temperarture cells",
           cellVoltageAboutToDie: cellVoltageAboutToDie.length > 0 ? cellVoltageAboutToDie : "No about to die cells",
           cellVoltageOpenBattery: cellVoltageOpenBattery.length > 0 ? cellVoltageOpenBattery : "No open battery cells",
           cellNotComm: cellNotComm.length > 0 ? cellNotComm : "No non-communicating cells",
@@ -215,20 +248,22 @@ const Dashboard = () => {
               cell.cellVoltage < lowVoltageThreshold
             );
             const isOpenBattery = cellData.some(cell => cell.cellVoltage <= openBatteryThreshold);
-            const isCellVoltageLow = bmsAlarms.cellVoltageLN === true && cellData.some(cell => cell.cellVoltage === lowVoltageThreshold);
+            const isCellVoltageLow = bmsAlarms.cellVoltageLN === true && cellData.some(cell => cell.cellVoltage <= lowVoltageThreshold && cell.cellVoltage >batteryAboutToDieThreshold );
 
             return (
-              bmsAlarms.stringVoltageLNH === 0 || isCellVoltageLow || bmsAlarms.socLN === true ||
-              isOpenBattery || isBatteryAboutToDie || chargerMonitoring.chargerTrip === true
+              isBatteryAboutToDie || isOpenBattery || bmsAlarms.stringVoltageLNH === 0 ||
+              isCellVoltageLow || bmsAlarms.socLN === true || chargerMonitoring.chargerTrip === true
             );
           });
 
           chartData = [
             generateChartData(filteredData, "String(V) Low", item => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.stringVoltageLNH === 0),
             generateChartData(filteredData, "Cell(V) Low", item => {
+              const openBatteryThreshold = parseFloat(item?.siteLocationDTO?.manufacturerDTO?.openBattery) || 0;
               const lowVoltageThreshold = parseFloat(item?.siteLocationDTO?.manufacturerDTO?.lowVoltage) || 0;
+              const batteryAboutToDieThreshold = parseFloat(item?.siteLocationDTO?.manufacturerDTO?.batteryAboutToDie) || 0;
               return item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.cellVoltageLN === true &&
-                item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.some(cell => cell.cellVoltage === lowVoltageThreshold);
+                item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.some(cell => cell.cellVoltage >= lowVoltageThreshold &&  cell.cellVoltage>batteryAboutToDieThreshold &&cell.cellVoltage>openBatteryThreshold ) ;
             }),
             generateChartData(filteredData, "SOC Low", item => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.socLN === true),
             generateChartData(filteredData, "Battery Open", item => {
@@ -303,7 +338,14 @@ const Dashboard = () => {
             generateChartData(filteredData, "Battery Bank(Discharging)", item => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.bankDischargeCycle === true),
             generateChartData(filteredData, "String Commu", item => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.bmsSedCommunication === true),
             generateChartData(filteredData, "Buzzer Alarm", item => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.buzzer === true),
-            generateChartData(filteredData, "Cell Temperature", item => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.cellTemperatureHN === true),
+            
+            generateChartData(filteredData, "Cell Temperature", item => {
+              const cellTemperatureThreshold = parseFloat(item?.siteLocationDTO?.manufacturerDTO?.highTemperature) || 0;
+              return (
+                item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.cellTemperatureHN === true &&
+                item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.some(cell => cell.cellTemperature <= cellTemperatureThreshold)
+              );
+            }),
             generateChartData(filteredData, "Charger Load", item => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.chargerLoad === true),
             generateChartData(filteredData, "Alarm Supply Fuse Fail", item => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.alarmSupplyFuse === true),
             generateChartData(filteredData, "Test Push Button", item => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.testPushButton === true),

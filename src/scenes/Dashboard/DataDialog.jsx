@@ -376,12 +376,12 @@ const DataDialog = ({
                 }
                 break;
               case "Cell Temperature":
-              if (detail.cellTemperature !== undefined) {
+              if (detail.cellTemperatureHigh !== undefined) {
                 return {
                   siteId: detail.siteId,
                   serialNumber: detail.serialNumber,
                   serverTime: detail.serverTime,
-                  value: detail.cellTemperature,
+                  value: detail.cellTemperatureHigh,
                   units: "°C",
                 };
               }
