@@ -22,12 +22,11 @@ const Dashboard = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [siteId, setSiteId] = useState('');
   const [barChartData, setBarChartData] = useState([]);
-
+  const [totalData,setTotalData]=useState([])
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetchCommunicationStatus(marginMinutes);
-        console.log("Fetched Communication Data:", response);
 
         if (!response || !Array.isArray(response)) {
           console.error("Invalid API response:", response);
@@ -130,7 +129,7 @@ const Dashboard = () => {
           { name: "Major Alarm", value: majorCount },
           { name: "Minor Alarm", value: minorCount },
         ]);
-
+        setTotalData(response)
         setMapMarkers(markers);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -140,7 +139,7 @@ const Dashboard = () => {
     fetchData();
   }, [marginMinutes, setMapMarkers]);
 
-  const handlePieClick = async (data) => {
+  const handlePieClick =  (data) => {
     setSelectedStatus(data.name);
     setOpenDialog(true);
 
@@ -218,26 +217,24 @@ const Dashboard = () => {
         };
       });
 
-      console.log(`${alarmType} - Count: ${count}, Details:`, details);
       return { name: alarmType, count, details };
     };
 
     try {
-      const response = await fetchCommunicationStatus(marginMinutes);
-      console.log("API Response for Pie Click:", response);
+      // const response = await fetchCommunicationStatus(marginMinutes);
 
-      if (!response || !Array.isArray(response)) {
-        console.error("Invalid API response:", response);
-        setBarChartData([]);
-        return;
-      }
+      // if (!response || !Array.isArray(response)) {
+      //   console.error("Invalid API response:", response);
+      //   setBarChartData([]);
+      //   return;
+      // }
 
       let filteredData;
       let chartData = [];
 
       switch (data.name) {
         case 'Most Critical Alarm':
-          filteredData = filterData(response, (bmsAlarms, chargerMonitoring, threshold, cellData) => {
+          filteredData = filterData(totalData, (bmsAlarms, chargerMonitoring, threshold, cellData) => {
             const batteryAboutToDieThreshold = parseFloat(threshold.batteryAboutToDie) || 0;
             const openBatteryThreshold = parseFloat(threshold.openBattery) || 0;
             const lowVoltageThreshold = parseFloat(threshold.lowVoltage) || 0;
@@ -283,9 +280,9 @@ const Dashboard = () => {
             generateChartData(filteredData, "Charger Trip", item => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.chargerTrip === true),
           ];
           break;
-
+ 
         case 'Critical Alarm':
-          filteredData = filterData(response, (bmsAlarms, chargerMonitoring) => (
+          filteredData = filterData(totalData, (bmsAlarms, chargerMonitoring) => (
             bmsAlarms.stringVoltageLNH === 2 || bmsAlarms.cellVoltageNH === true ||
             bmsAlarms.stringCurrentHN === true || chargerMonitoring.inputMains === true ||
             chargerMonitoring.inputPhase === true || chargerMonitoring.rectifierFuse === true ||
@@ -310,7 +307,7 @@ const Dashboard = () => {
           break;
 
         case 'Major Alarm':
-          filteredData = filterData(response, (bmsAlarms, chargerMonitoring) => (
+          filteredData = filterData(totalData, (bmsAlarms, chargerMonitoring) => (
             bmsAlarms.ambientTemperatureHN === true || bmsAlarms.cellCommunication === true ||
             chargerMonitoring.dcVoltageOLN === 2 || chargerMonitoring.dcVoltageOLN === 0 ||
             chargerMonitoring.acVoltageULN === 0 || chargerMonitoring.outputFuse === true
@@ -327,7 +324,7 @@ const Dashboard = () => {
           break;
 
         case 'Minor Alarm':
-          filteredData = filterData(response, (bmsAlarms, chargerMonitoring) => (
+          filteredData = filterData(totalData, (bmsAlarms, chargerMonitoring) => (
             bmsAlarms.bankDischargeCycle === true || bmsAlarms.bmsSedCommunication === true ||
             bmsAlarms.cellTemperatureHN === true || bmsAlarms.buzzer === true ||
             chargerMonitoring.chargerLoad === true || chargerMonitoring.alarmSupplyFuse === true ||
@@ -358,9 +355,6 @@ const Dashboard = () => {
           setBarChartData([]);
           return;
       }
-
-      console.log("Filtered Data:", filteredData);
-      console.log("Chart Data:", chartData);
       setBarChartData(chartData);
     } catch (error) {
       console.error("Error fetching communication status:", error);
@@ -368,7 +362,7 @@ const Dashboard = () => {
     }
   };
 
-  const handlePieClickCommu = async (data) => {
+  const handlePieClickCommu = (data) => {
     setSelectedCategory(data.name);
     setOpenDialog(true);
 
@@ -384,15 +378,15 @@ const Dashboard = () => {
     ]);
 
     try {
-      const response = await fetchCommunicationStatus(marginMinutes);
+     // const response = await fetchCommunicationStatus(marginMinutes);
       let filteredData = [];
 
       switch (data.name) {
         case 'Communicating':
-          filteredData = response.filter(item => item.statusType === 1);
+          filteredData = totalData.filter(item => item.statusType === 1);
           break;
         case 'Non-Communicating':
-          filteredData = response.filter(item => item.statusType === 0);
+          filteredData = totalData.filter(item => item.statusType === 0);
           break;
         default:
           filteredData = [];
