@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, useTheme } from "@mui/material";
+import { Box, Typography, useTheme,useMediaQuery } from "@mui/material";
 import { tokens } from "../theme.js";
 import dtIcon from "../assets/images/png/run hours.png";
 import pdcIcon from "../assets/images/png/Ah capacity.png"; // Icon for Peak Discharge Current
@@ -12,7 +12,19 @@ export default function DischargeCycleWise({
 }) {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const isXs = useMediaQuery(theme.breakpoints.down('sm')); // < 600px
+  const isSm = useMediaQuery(theme.breakpoints.between('sm', 'md')); // 600px–899px
+  const isMd = useMediaQuery(theme.breakpoints.between('md', 'lg')); // 900px–1199px
+  const isLg = useMediaQuery(theme.breakpoints.up('lg')); // 1200px+
 
+  // Dynamic variant based on screen size
+  const getVariant = () => {
+    if (isXs) return 'h8'; // 10px
+    if (isSm) return 'h7'; // 12px
+    if (isMd) return 'h6'; // 14px
+    if (isLg) return 'h6'; // 14px
+    return 'h6'; // Default fallback
+  };
   const dischargeTime = (totalSeconds = 0) => {
     try {
       const hours = Math.floor(totalSeconds / 3600);
@@ -40,7 +52,7 @@ export default function DischargeCycleWise({
 
         ml="8px"
       >
-        <Typography variant="h6" mb="1px" sx={{ alignSelf: "center" }}>
+        <Typography variant={getVariant()} sx={{ alignSelf: "center", mb: { xs: '5px', sm: '10px' }}}>
           <strong>Discharge Cycle Info</strong>
         </Typography>
         <Box display="flex" flexDirection="column">
@@ -58,16 +70,18 @@ export default function DischargeCycleWise({
               {/* Render the icon if available */}
               🔹
               <Typography
-                variant="h6"
-                fontWeight="bold"
-                style={{ minWidth: "170px" }}
+                 variant={getVariant()}
+                 sx={{
+                  fontWeight: 'bold',
+                  minWidth: { xs: '100px', sm: '150px', md: '200px', lg: '120px' },
+                }}
               >
                 {label}
               </Typography>
-              <Typography variant="h6"   fontWeight="bold" style={{ color: "inherit" }}>
+              <Typography variant={getVariant()}  fontWeight="bold" style={{ color: "inherit" }}>
                 :
               </Typography>
-              <Typography  fontWeight="bold" variant="h6" style={{ color: "#000f89"}}>
+              <Typography  fontWeight="bold" variant={getVariant()} style={{ color: "#000f89"}}>
                 {value}{" "} {unit || ""}
               </Typography>
             </Box>

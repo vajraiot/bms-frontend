@@ -68,7 +68,7 @@ const VoltageVisualizations = ({}) => {
               position: "Left",
               fontSize: 10, // Smaller font size for label
               fontWeight: "bold",
-              dx: -10
+              dx: -5
             }}
           />
           <Tooltip />

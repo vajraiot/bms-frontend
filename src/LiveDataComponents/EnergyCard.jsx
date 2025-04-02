@@ -70,6 +70,7 @@ const {
                 position: "Left",
                 fontSize: 10,
                 fontWeight: "bold",
+                dx:-10
               }}
             />
             <Tooltip />

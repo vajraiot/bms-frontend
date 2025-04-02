@@ -891,22 +891,120 @@ export const HighVoltage = () => {
   );
 };
 
+import React from 'react';
+
 export const HighTemperature = () => {
   return (
-    <svg viewBox="0 0 100 60" style={{ width: "3rem", }}>
+    <svg viewBox="0 0 100 60" style={{ width: "3rem" }}>
       <g transform="translate(10,10) scale(0.8)">
-        <rect x="0" y="0" width="100" height="60" rx="8" fill="none" stroke="#D84315" strokeWidth="3">
-          <animate attributeName="stroke-opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite" />
+        {/* Battery cell outline */}
+        <rect
+          x="0"
+          y="0"
+          width="100"
+          height="60"
+          rx="8"
+          fill="#FFEBEE"
+          stroke="#E53935"
+          strokeWidth="3"
+        >
+          <animate
+            attributeName="fill"
+            values="#FFEBEE;#FFCDD2;#FFEBEE"
+            dur="1s"
+            repeatCount="indefinite"
+          />
         </rect>
-        <rect x="100" y="20" width="8" height="20" fill="none" stroke="#D84315" strokeWidth="3" />
-
-        <path d="M20,30 Q35,20 50,30 Q65,40 80,30" stroke="#D84315" strokeWidth="2" fill="none">
-          <animate attributeName="d" values="M20,30 Q35,20 50,30 Q65,40 80,30;M20,30 Q35,40 50,30 Q65,20 80,30;M20,30 Q35,20 50,30 Q65,40 80,30" dur="1s" repeatCount="indefinite" />
-        </path>
+        
+        {/* Battery terminal */}
+        <rect
+          x="100"
+          y="20"
+          width="8"
+          height="20"
+          fill="#FFEBEE"
+          stroke="#E53935"
+          strokeWidth="3"
+        />
+        
+        {/* Thermometer - drawn with simple SVG shapes */}
+        <g transform="translate(25, 10)">
+          {/* Thermometer bulb */}
+          <circle 
+            cx="8" 
+            cy="35" 
+            r="8" 
+            fill="#E53935" 
+            stroke="#B71C1C" 
+            strokeWidth="1.5"
+          />
+          
+          {/* Thermometer stem background */}
+          <rect 
+            x="5" 
+            y="7" 
+            width="6" 
+            height="28" 
+            rx="3" 
+            fill="white" 
+            stroke="#B71C1C" 
+            strokeWidth="1.5"
+          />
+          
+          {/* Thermometer liquid (high level) */}
+          <rect 
+            x="6.5" 
+            y="10" 
+            width="3" 
+            height="25" 
+            rx="1.5" 
+            fill="#E53935"
+          >
+            <animate
+              attributeName="height"
+              values="22;25;22"
+              dur="1.2s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="y"
+              values="13;10;13"
+              dur="1.2s"
+              repeatCount="indefinite"
+            />
+          </rect>
+          
+          {/* Thermometer markings */}
+          <line x1="14" y1="12" x2="11" y2="12" stroke="#B71C1C" strokeWidth="1" />
+          <line x1="14" y1="20" x2="11" y2="20" stroke="#B71C1C" strokeWidth="1" />
+          <line x1="14" y1="28" x2="11" y2="28" stroke="#B71C1C" strokeWidth="1" />
+        </g>
+        
+        {/* Fire/flame symbol */}
+        <g transform="translate(60, 10)">
+          <text
+            x="0"
+            y="32"
+            fontFamily="Arial, sans-serif"
+            fontSize="28"
+            fontWeight="bold"
+            fill="#FF5722"
+          >
+          
+            <animate
+              attributeName="font-size"
+              values="28;30;28"
+              dur="0.8s"
+              repeatCount="indefinite"
+            />
+          </text>
+        </g>
       </g>
     </svg>
   );
 };
+
+export default HighTemperature;
 
 export const AboutToDie = () => {
   return (
