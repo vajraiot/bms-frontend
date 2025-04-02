@@ -52,105 +52,105 @@ const {
     (cell) => cell.cellVoltage < lowVoltThreshold
   ).length;
     return (
-        <Box display="flex" flexDirection="column" gap="0px">
-  {/* Header Section */}
-  <Box
-    display="flex"
-    flexDirection="row"
-    justifyContent="space-between" // Distribute space between the two titles
-    width="100%"
-    padding="0px 5px"
-  >
-    <Typography
-      variant="h5"
-      gutterBottom
-      sx={{
-        fontWeight: "bold",
-        textAlign: "center",
-        flex: 1, // Equal width for both titles
-      }}
-    >
-      Cell Info
-    </Typography>
-    <Typography
-      variant="h5"
-      gutterBottom
-      sx={{
-        fontWeight: "bold",
-        textAlign: "center",
-        flex: 1, // Equal width for both titles
-      }}
-    >
-      Cell Representation
-    </Typography>
-  </Box>
+      <Box display="flex" flexDirection="column" gap="0px">
+        {/* Header Section */}
+        <Box
+          display="flex"
+          flexDirection="row"
+          justifyContent="space-between" // Distribute space between the two titles
+          width="100%"
+          padding="0px 0px"
+        >
+          <Typography
+            variant="h5"
+            gutterBottom
+            sx={{
+              fontWeight: "bold",
+              textAlign: "center",
+              flex: 1, // Equal width for both titles
+            }}
+          >
+            Cell Info
+          </Typography>
+          <Typography
+            variant="h5"
+            gutterBottom
+            sx={{
+              fontWeight: "bold",
+              textAlign: "center",
+              flex: 1, // Equal width for both titles
+            }}
+          >
+          
+          </Typography>
+        </Box>
 
-  {/* Content Section */}
-  <Box
-    display="flex"
-    flexDirection="row"
-    alignItems="center"
-    justifyContent="space-between"
-    padding="0px 5px 0px 5px"
-    border="0px solid #ccc"
-    borderRadius="8px"
-    sx={{ overflowX: "auto" }} // Allow horizontal scrolling if needed
-  >
-    {[
-      { label: "High Temp", value: highTemperatureCount, color: "#db4f4a" },
-      { label: "Commun", value: communicatingCount, color: "#4cceac" },
-      { label: "Not Commun", value: nonCommunicatingCount, color: "#666666" },
-      { label: "High Voltage", value: highVoltageCount, color: "#db4f4a" },
-      { label: "Low Voltage", value: lowVoltageCount, color: "#6870fa" },
-      { label: "Charging", icon: CellLegends.LegendCharging, color: "green" },
-      { label: "DisCharging", icon: CellLegends.LegendDisCharging, color: "olive" },
-      { label: "Low Volt", icon: CellLegends.BatteryLowVoltage, color: "#1e88e5" },
-      { label: "About to Die", icon: CellLegends.BatteryAboutToDie, color: "red" },
-      { label: "Open Battery", icon: CellLegends.OpenBattery, color: "red" },
-      { label: "High Voltage", icon: CellLegends.BatteryHighVoltage, color: "brown" },
-      { label: "High Temp", icon: CellLegends.BatteryHighTemperature, color: "purple" },
-      { label: "CommnFail", icon: CellLegends.CommnFail, color: "black" },
-    ].map((item, index) => (
-      <Box
-        key={index}
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-        borderRadius="8px"
-        sx={{ flexShrink: 0, minWidth: "80px" }} // Fixed min-width to prevent squashing
-      >
-        {item.icon ? (
-          <>
-            <Box display="flex" alignItems="center" justifyContent="center" marginBottom="2px">
-              {item.icon}
+        {/* Content Section */}
+        <Box
+          display="flex"
+          flexDirection="row"
+          alignItems="center"
+          justifyContent="space-between"
+          padding="0px 5px 0px 5px"
+          border="0px solid #ccc"
+          borderRadius="8px"
+          sx={{ overflowX: "auto" }} // Allow horizontal scrolling if needed
+        >
+          {[
+            { label: "High Temp", value: highTemperatureCount, color: "#db4f4a" },
+            { label: "Commun", value: communicatingCount, color: "#4cceac" },
+            { label: "Not Commun", value: nonCommunicatingCount, color: "#666666" },
+            { label: "High Voltage", value: highVoltageCount, color: "#db4f4a" },
+            { label: "Low Voltage", value: lowVoltageCount, color: "#6870fa" },
+            { label: "Charging", icon: CellLegends.LegendCharging, color: "green" },
+            { label: "DisCharging", icon: CellLegends.LegendDisCharging, color: "olive" },
+            { label: "Low Volt", icon: CellLegends.BatteryLowVoltage, color: "#1e88e5" },
+            { label: "About to Die", icon: CellLegends.BatteryAboutToDie, color: "red" },
+            { label: "Open Battery", icon: CellLegends.OpenBattery, color: "red" },
+            { label: "High Voltage", icon: CellLegends.BatteryHighVoltage, color: "brown" },
+            { label: "High Temp", icon: CellLegends.BatteryHighTemperature, color: "purple" },
+            { label: "CommnFail", icon: CellLegends.CommnFail, color: "black" },
+          ].map((item, index) => (
+            <Box
+              key={index}
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="center"
+              borderRadius="8px"
+              sx={{ flexShrink: 0, minWidth: "80px" }} // Fixed min-width to prevent squashing
+            >
+              {item.icon ? (
+                <>
+                  <Box display="flex" alignItems="center" justifyContent="center" marginBottom="2px">
+                    {item.icon}
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    align="center"
+                    sx={{ color: item.color, fontWeight: "bold" }}
+                  >
+                    {item.label}
+                  </Typography>
+                </>
+              ) : (
+                <>
+                  <Typography
+                    variant="body2"
+                    align="center"
+                    sx={{ color: item.color, fontWeight: "bold" }}
+                  >
+                    {item.label}
+                  </Typography>
+                  <Typography variant="body1" align="center" sx={{ color: item.color }}>
+                    {item.value}
+                  </Typography>
+                </>
+              )}
             </Box>
-            <Typography
-              variant="body2"
-              align="center"
-              sx={{ color: item.color, fontWeight: "bold" }}
-            >
-              {item.label}
-            </Typography>
-          </>
-        ) : (
-          <>
-            <Typography
-              variant="body2"
-              align="center"
-              sx={{ color: item.color, fontWeight: "bold" }}
-            >
-              {item.label}
-            </Typography>
-            <Typography variant="body1" align="center" sx={{ color: item.color }}>
-              {item.value}
-            </Typography>
-          </>
-        )}
+          ))}
+        </Box>
       </Box>
-    ))}
-  </Box>
-</Box>
     );
 };
 

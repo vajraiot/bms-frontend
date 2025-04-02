@@ -158,11 +158,11 @@ const{instantaneousCurrent, stringvoltage,ambientTemperature, bmsAlarmsDTO,socLa
                             <PowerIcon
                               sx={{
                                 fontSize: "2rem",
-                                color: getColorForDCV(stringVoltageLNH)
+                                color: getColorForDCV(stringVoltageLNH) 
                               }}
                             />
                           </Tooltip>
-                          <Typography variant="h5" sx={{ mt: 1 }}>
+                          <Typography variant="h7" sx={{ mt: 1 }}>
                             {Idata.voltage.value} {Idata.voltage.unit}
                           </Typography>
                         </Box>
@@ -187,7 +187,7 @@ const{instantaneousCurrent, stringvoltage,ambientTemperature, bmsAlarmsDTO,socLa
                               }}
                             />
                           </Tooltip>
-                          <Typography variant="h5" sx={{ mt: 1 }}>
+                          <Typography variant="h7" sx={{ mt: 1 }}>
                             {Idata.current.value} {Idata.current.unit}
                           </Typography>
                         </Box>
@@ -212,7 +212,7 @@ const{instantaneousCurrent, stringvoltage,ambientTemperature, bmsAlarmsDTO,socLa
                               }}
                             />
                           </Tooltip>
-                          <Typography variant="h5" sx={{ mt: 1 }}>
+                          <Typography variant="h7" sx={{ mt: 1 }}>
                             {Idata.temperature.value} {Idata.temperature.unit}
                           </Typography>
                         </Box>
