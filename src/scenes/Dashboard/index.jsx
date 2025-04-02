@@ -259,11 +259,10 @@ const Dashboard = () => {
           chartData = [
             generateChartData(filteredData, "String(V) Low", item => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.stringVoltageLNH === 0),
             generateChartData(filteredData, "Cell(V) Low", item => {
-              const openBatteryThreshold = parseFloat(item?.siteLocationDTO?.manufacturerDTO?.openBattery) || 0;
               const lowVoltageThreshold = parseFloat(item?.siteLocationDTO?.manufacturerDTO?.lowVoltage) || 0;
               const batteryAboutToDieThreshold = parseFloat(item?.siteLocationDTO?.manufacturerDTO?.batteryAboutToDie) || 0;
               return item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.cellVoltageLN === true &&
-                item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.some(cell => cell.cellVoltage >= lowVoltageThreshold &&  cell.cellVoltage>batteryAboutToDieThreshold &&cell.cellVoltage>openBatteryThreshold ) ;
+                item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.some(cell => cell.cellVoltage <= lowVoltageThreshold &&  cell.cellVoltage>batteryAboutToDieThreshold) ;
             }),
             generateChartData(filteredData, "SOC Low", item => item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.socLN === true),
             generateChartData(filteredData, "Battery Open", item => {
@@ -343,7 +342,7 @@ const Dashboard = () => {
               const cellTemperatureThreshold = parseFloat(item?.siteLocationDTO?.manufacturerDTO?.highTemperature) || 0;
               return (
                 item?.generalDataDTO?.deviceDataDTO?.[0]?.bmsAlarmsDTO?.cellTemperatureHN === true &&
-                item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.some(cell => cell.cellTemperature <= cellTemperatureThreshold)
+                item?.generalDataDTO?.deviceDataDTO?.[0]?.cellVoltageTemperatureData?.some(cell => cell.cellTemperature >= cellTemperatureThreshold)
               );
             }),
             generateChartData(filteredData, "Charger Load", item => item?.generalDataDTO?.chargerMonitoringDTO?.[0]?.chargerDTO?.chargerLoad === true),
